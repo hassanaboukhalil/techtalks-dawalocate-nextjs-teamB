@@ -11,7 +11,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  // url      = env("DATABASE_URL")
 }
 
 enum UserStatus {
@@ -38,18 +38,18 @@ enum DonationRequestStatus {
 }
 
 model UserType {
-  id        String   @id @default(cuid())
+  id        Int   @id @default(autoincrement())
   name      String   @unique // "admin" | "pharmacy" | "charity" | "patient"
   createdAt DateTime @default(now())
   users     User[]
 }
 
 model User {
-  id           String    @id @default(cuid())
+  id           Int    @id @default(autoincrement())
   name         String
   email        String    @unique
   passwordHash String
-  userTypeId   String
+  userTypeId   Int
   userType     UserType  @relation(fields: [userTypeId], references: [id])
 
   city         String?
@@ -74,7 +74,7 @@ model User {
 }
 
 model Medicine {
-  id          String              @id @default(cuid())
+  id          Int              @id @default(autoincrement())
   name        String
   genericName String?
   strength    String?
@@ -93,11 +93,11 @@ model Medicine {
 }
 
 model PharmacyMedicine {
-  id           String           @id @default(cuid())
-  pharmacyId   String
+  id           Int           @id @default(autoincrement())
+  pharmacyId   Int
   pharmacy     User             @relation(fields: [pharmacyId], references: [id], onDelete: Cascade)
 
-  medicineId   String
+  medicineId   Int
   medicine     Medicine         @relation(fields: [medicineId], references: [id], onDelete: Restrict)
 
   status       InventoryStatus  @default(OUT)
@@ -112,8 +112,8 @@ model PharmacyMedicine {
 }
 
 model HealthProfile {
-  id                 String   @id @default(cuid())
-  userId             String   @unique
+  id                 Int   @id @default(autoincrement())
+  userId             Int   @unique
   user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   conditions         String?
   allergies          String?
@@ -127,11 +127,11 @@ model HealthProfile {
 }
 
 model DonationOffer {
-  id           String               @id @default(cuid())
-  userId       String
+  id           Int               @id @default(autoincrement())
+  userId       Int
   user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  medicineId   String
+  medicineId   Int
   medicine     Medicine             @relation(fields: [medicineId], references: [id], onDelete: Restrict)
 
   city         String
@@ -147,11 +147,11 @@ model DonationOffer {
 }
 
 model DonationRequest {
-  id           String                  @id @default(cuid())
-  userId       String
+  id           Int                  @id @default(autoincrement())
+  userId       Int
   user         User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  medicineId   String
+  medicineId   Int
   medicine     Medicine                @relation(fields: [medicineId], references: [id], onDelete: Restrict)
 
   city         String
@@ -165,8 +165,8 @@ model DonationRequest {
 }
 
 model Campaign {
-  id              String             @id @default(cuid())
-  charityUserId   String
+  id              Int             @id @default(autoincrement())
+  charityUserId   Int
   charity         User               @relation("CampaignCharityUser", fields: [charityUserId], references: [id], onDelete: Cascade)
 
   title           String
@@ -186,11 +186,11 @@ model Campaign {
 }
 
 model CampaignMedicine {
-  id         String    @id @default(cuid())
-  campaignId String
+  id         Int    @id @default(autoincrement())
+  campaignId Int
   campaign   Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 
-  medicineId String
+  medicineId Int
   medicine   Medicine  @relation(fields: [medicineId], references: [id], onDelete: Restrict)
 
   createdAt  DateTime  @default(now())
