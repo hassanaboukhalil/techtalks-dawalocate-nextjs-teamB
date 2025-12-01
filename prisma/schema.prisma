@@ -1,0 +1,148 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model UserType {
+  id        String   @id @default(cuid())
+  name      String   @unique // "admin" | "pharmacy" | "charity" | "patient"
+  createdAt DateTime @default(now())
+  users     User[]
+}
+
+model User {
+  id              String    @id @default(cuid())
+  name            String
+  email           String    @unique
+  passwordHash    String
+  userTypeId      String
+  userType        UserType  @relation(fields: [userTypeId], references: [id])
+  city            String?
+  phone           String?
+  address         String?
+  openingHours    String?
+  hasDelivery     Boolean?  @default(false)
+  status          String?   @default("PENDING") // PENDING, APPROVED, REJECTED
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // Relations
+  healthProfile    HealthProfile?
+  pharmacyMedicines PharmacyMedicine[]
+  donationOffers   DonationOffer[]
+  donationRequests DonationRequest[]
+  campaigns        Campaign[]
+
+  @@index([email])
+  @@index([userTypeId])
+}
+
+model PharmacyMedicine {
+  id           String    @id @default(cuid())
+  pharmacyId   String
+  pharmacy     User      @relation(fields: [pharmacyId], references: [id], onDelete: Cascade)
+  medicineName String
+  genericName  String?
+  strength     String?
+  form         String?
+  synonyms     String?
+  imageUrl     String?
+  description  String?
+  status       String    @default("OUT") // IN_STOCK, LOW, OUT
+  quantity     Int       @default(0)
+  expiresAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([pharmacyId])
+  @@index([medicineName])
+  @@index([status])
+}
+
+model HealthProfile {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conditions         String?
+  allergies          String?
+  currentMedications String?
+  bloodType          String?
+  emergencyContact   String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model DonationOffer {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  medicineName String
+  genericName  String?
+  strength     String?
+  form         String?
+  synonyms     String?
+  imageUrl     String?
+  description  String?
+  city         String
+  expiry       DateTime?
+  notes        String?
+  status       String    @default("OPEN") // OPEN, CLOSED
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([city])
+  @@index([status])
+}
+
+model DonationRequest {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  medicineName String
+  genericName  String?
+  strength     String?
+  form         String?
+  synonyms     String?
+  imageUrl     String?
+  description  String?
+  city         String
+  status       String   @default("OPEN") // OPEN, IN_PROGRESS, FULFILLED
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+  @@index([city])
+  @@index([status])
+}
+
+model Campaign {
+  id              String    @id @default(cuid())
+  charityUserId   String
+  charity         User      @relation(fields: [charityUserId], references: [id], onDelete: Cascade)
+  title           String
+  description     String
+  targetMedicines String
+  targetAreas     String
+  startDate       DateTime
+  endDate         DateTime?
+  contactInfo     String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([charityUserId])
+  @@index([startDate])
+}
