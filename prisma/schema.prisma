@@ -45,51 +45,69 @@ model UserType {
 }
 
 model User {
-  id              String    @id @default(cuid())
-  name            String
-  email           String    @unique
-  passwordHash    String
-  userTypeId      String
-  userType        UserType  @relation(fields: [userTypeId], references: [id])
-  city            String?
-  phone           String?
-  address         String?
-  openingHours    String?
-  hasDelivery     Boolean?  @default(false)
-  status       UserStatus? // no default; set it in code for pharmacies
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  userTypeId   String
+  userType     UserType  @relation(fields: [userTypeId], references: [id])
+
+  city         String?
+  phone        String?
+  address      String?
+  openingHours String?
+  hasDelivery  Boolean?  @default(false)
+  status       UserStatus?          // only used for pharmacy/charity; NULL for patients/admins
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   // Relations
-  healthProfile    HealthProfile?
+  healthProfile     HealthProfile?
   pharmacyMedicines PharmacyMedicine[]
-  donationOffers   DonationOffer[]
-  donationRequests DonationRequest[]
-  campaigns        Campaign[]
+  donationOffers    DonationOffer[]
+  donationRequests  DonationRequest[]
+  campaigns         Campaign[]      @relation("CampaignCharityUser")
 
   @@index([email])
   @@index([userTypeId])
 }
 
+model Medicine {
+  id          String              @id @default(cuid())
+  name        String
+  genericName String?
+  strength    String?
+  form        String?
+  synonyms    String?
+  imageUrl    String?
+  description String?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  // Relations
+  pharmacyMedicines PharmacyMedicine[]
+  donationOffers    DonationOffer[]
+  donationRequests  DonationRequest[]
+  campaignMedicines CampaignMedicine[]
+}
+
 model PharmacyMedicine {
-  id           String    @id @default(cuid())
+  id           String           @id @default(cuid())
   pharmacyId   String
-  pharmacy     User      @relation(fields: [pharmacyId], references: [id], onDelete: Cascade)
-  medicineName String
-  genericName  String?
-  strength     String?
-  form         String?
-  synonyms     String?
-  imageUrl     String?
-  description  String?
-  status       InventoryStatus @default(OUT)
-  quantity     Int       @default(0)
+  pharmacy     User             @relation(fields: [pharmacyId], references: [id], onDelete: Cascade)
+
+  medicineId   String
+  medicine     Medicine         @relation(fields: [medicineId], references: [id], onDelete: Restrict)
+
+  status       InventoryStatus  @default(OUT)
+  quantity     Int              @default(0)
   expiresAt    DateTime?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
 
   @@index([pharmacyId])
-  @@index([medicineName])
+  @@index([medicineId])
   @@index([status])
 }
 
@@ -109,22 +127,19 @@ model HealthProfile {
 }
 
 model DonationOffer {
-  id           String    @id @default(cuid())
+  id           String               @id @default(cuid())
   userId       String
-  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  medicineName String
-  genericName  String?
-  strength     String?
-  form         String?
-  synonyms     String?
-  imageUrl     String?
-  description  String?
+  user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  medicineId   String
+  medicine     Medicine             @relation(fields: [medicineId], references: [id], onDelete: Restrict)
+
   city         String
   expiry       DateTime?
   notes        String?
-  status       DonationOfferStatus @default(OPEN)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  status       DonationOfferStatus  @default(OPEN)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
 
   @@index([userId])
   @@index([city])
@@ -132,20 +147,17 @@ model DonationOffer {
 }
 
 model DonationRequest {
-  id           String   @id @default(cuid())
+  id           String                  @id @default(cuid())
   userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  medicineName String
-  genericName  String?
-  strength     String?
-  form         String?
-  synonyms     String?
-  imageUrl     String?
-  description  String?
+  user         User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  medicineId   String
+  medicine     Medicine                @relation(fields: [medicineId], references: [id], onDelete: Restrict)
+
   city         String
-  status       DonationRequestStatus @default(OPEN)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  status       DonationRequestStatus   @default(OPEN)
+  createdAt    DateTime                @default(now())
+  updatedAt    DateTime                @updatedAt
 
   @@index([userId])
   @@index([city])
@@ -153,19 +165,38 @@ model DonationRequest {
 }
 
 model Campaign {
-  id              String    @id @default(cuid())
+  id              String             @id @default(cuid())
   charityUserId   String
-  charity         User      @relation(fields: [charityUserId], references: [id], onDelete: Cascade)
+  charity         User               @relation("CampaignCharityUser", fields: [charityUserId], references: [id], onDelete: Cascade)
+
   title           String
   description     String
-  targetMedicines String
-  targetAreas     String
+  targetAreas     String             // could be comma-separated or JSON
   startDate       DateTime
   endDate         DateTime?
   contactInfo     String
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  // Relations
+  campaignMedicines CampaignMedicine[]
 
   @@index([charityUserId])
   @@index([startDate])
+}
+
+model CampaignMedicine {
+  id         String    @id @default(cuid())
+  campaignId String
+  campaign   Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  medicineId String
+  medicine   Medicine  @relation(fields: [medicineId], references: [id], onDelete: Restrict)
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@unique([campaignId, medicineId])
+  @@index([campaignId])
+  @@index([medicineId])
 }
