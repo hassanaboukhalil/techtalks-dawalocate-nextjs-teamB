@@ -1,41 +1,71 @@
-// import { PrismaClient } from "@prisma/client";
-// // import * as bcrypt from "bcryptjs"; // You'll need to install this
+import { db } from "../lib/db";
 
-// const prisma = new PrismaClient();
+async function seed() {
+  console.log("🌱 Starting seed...");
 
-// async function main() {
-//   // Create user types
-//   const userTypes = await Promise.all([
-//     prisma.userType.upsert({
-//       where: { name: "admin" },
-//       update: {},
-//       create: { name: "admin" },
-//     }),
-//     prisma.userType.upsert({
-//       where: { name: "patient" },
-//       update: {},
-//       create: { name: "patient" },
-//     }),
-//     prisma.userType.upsert({
-//       where: { name: "pharmacy" },
-//       update: {},
-//       create: { name: "pharmacy" },
-//     }),
-//     prisma.userType.upsert({
-//       where: { name: "charity" },
-//       update: {},
-//       create: { name: "charity" },
-//     }),
-//   ]);
+  await db.userType.createMany({
+    data: [
+      { name: "admin" },
+      { name: "pharmacy" },
+      { name: "charity" },
+      { name: "patient" },
+    ],
+    skipDuplicates: true, // Important: prevents error if already exists
+  });
 
-//   console.log("Seeded user types:", userTypes);
-// }
+  console.log("✅ Created user types");
 
-// main()
-//   .catch((e) => {
-//     console.error(e);
-//     process.exit(1);
-//   })
-//   .finally(async () => {
-//     await prisma.$disconnect();
-//   });
+  const medicines = [
+    {
+      name: "Paracetamol",
+      genericName: "Acetaminophen",
+      strength: "500mg",
+      form: "Tablet",
+      description: "Pain reliever and fever reducer",
+    },
+    {
+      name: "Paracetamol",
+      genericName: "Acetaminophen",
+      strength: "1000mg",
+      form: "Tablet",
+      description: "Pain reliever and fever reducer - Extra strength",
+    },
+    {
+      name: "Amoxicillin",
+      genericName: "Amoxicillin",
+      strength: "500mg",
+      form: "Capsule",
+      description: "Antibiotic for bacterial infections",
+    },
+  ];
+
+  for (const med of medicines) {
+    const existing = await db.medicine.findFirst({
+      where: {
+        name: med.name,
+        strength: med.strength,
+        form: med.form,
+      },
+    });
+
+    if (!existing) {
+      await db.medicine.create({ data: med });
+      console.log(`✅ Created: ${med.name} ${med.strength} ${med.form}`);
+    } else {
+      console.log(
+        `❗  Already exists: ${med.name} ${med.strength} ${med.form}`
+      );
+    }
+  }
+
+  console.log("🎉 Seed completed successfully!");
+}
+
+seed()
+  .catch((e) => {
+    console.error("❌ Seed failed:", e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await db.$disconnect();
+  });
