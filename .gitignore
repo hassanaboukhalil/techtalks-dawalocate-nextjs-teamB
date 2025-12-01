@@ -44,3 +44,5 @@ next-env.d.ts
 # project context
 PROJECT_CONTEXT.md
 /lib/generated/prisma
+
+/lib/generated/
