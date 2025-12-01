@@ -1,26 +1,131 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* colors */
+    --color-primary: #0AA6C8;
+    --color-secondary: #0886A2;
+    --color-background: #F5F7FA;
+    --color-card: #FFFFFF;
+    --color-green: #22C55E;
+    --color-gray: #bbbbbb;
+    --color-warning: #FF7A3C;
+    --color-error: #E53935;
+
+    --container-padding-x: 1rem;
+  }
+
+  * {
+    @apply border-0 m-0 p-0;
+    box-sizing: border-box;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    /* @apply bg-background text-foreground; */
+    background: var(--color-background);
+    /* color: var(--foreground); */
+    font-family: Arial, Helvetica, sans-serif;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  /* ===== BACKGROUND COLORS ===== */
+  .bg-primary{
+    background-color: var(--color-primary);
+  }
+  .bg-secondary{
+    background-color: var(--color-secondary);
+  }
+  .bg-background{
+      background-color: var(--color-background);
+  }
+  .bg-card{
+    background-color: var(--color-card)
+  }
+  .bg-gray{
+    background-color: var(--color-gray);
+  }
+  .bg-green{
+    background-color: var(--color-green);
+  }
+
+  /* ===== TEXT COLORS ===== */
+  .text-primary{
+    color: var(--color-primary);
+  }
+  .text-secondary{
+    color: var(--color-secondary);
+  }
+  .text-background{
+      color: var(--color-background);
+  }
+  .text-gray{
+    color: var(--color-gray);
+  }
+  .text-green{
+    color: var(--color-green);
+  }
+
+/* ========================================== TAILWIND STYLES ==========================================*/
+@layer utilities {
+  /* ===== ALIGNMENTS */
+  .flex-center {
+    @apply flex items-center justify-center;
+  }
+
+  /* ===== text sizes */
+  .text-h1{
+    @apply font-bold text-4xl md:text-6xl lg:text-5xl;
+  }
+  .text-h2{
+    @apply font-bold text-4xl lg:text-4xl;
+  }
+  .text-h3{
+    @apply font-bold text-xl md:text-2xl lg:text-xl;
+  }
+
+  .text-body-1{
+    @apply text-xl md:text-2xl lg:text-xl
+  }
+  .text-body-2{
+    @apply text-xl lg:text-lg
+  }
+  .text-body-3{
+    @apply text-xl lg:text-lg
+  }
+  .text-body-4{
+    @apply text-xl lg:text-base
+  }
+  .text-body-5{
+    @apply text-xl lg:text-sm
+  }
+}
+
+/* ========================================== Other Styles ==========================================*/
+button{
+  cursor: pointer;
+}
+
+.my-container {
+  width: 100%;
+  padding-right: var(--container-padding-x);
+  padding-left: var(--container-padding-x);
+  margin-right: auto;
+  margin-left: auto;
+}
+
+@media (width > 724px) {
+  :root {
+      --container-padding-x: 5.12rem;
+    }
+  }
+@media (width > 1290px) {
+  :root {
+    --container-padding-x: 8rem;
+  }
 }
