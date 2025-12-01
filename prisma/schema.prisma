@@ -14,6 +14,29 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum InventoryStatus {
+  IN_STOCK
+  LOW
+  OUT
+}
+
+enum DonationOfferStatus {
+  OPEN
+  CLOSED
+}
+
+enum DonationRequestStatus {
+  OPEN
+  IN_PROGRESS
+  FULFILLED
+}
+
 model UserType {
   id        String   @id @default(cuid())
   name      String   @unique // "admin" | "pharmacy" | "charity" | "patient"
@@ -33,10 +56,10 @@ model User {
   address         String?
   openingHours    String?
   hasDelivery     Boolean?  @default(false)
-  status          String?   @default("PENDING") // PENDING, APPROVED, REJECTED
+  status       UserStatus? // no default; set it in code for pharmacies
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
-  
+
   // Relations
   healthProfile    HealthProfile?
   pharmacyMedicines PharmacyMedicine[]
@@ -59,7 +82,7 @@ model PharmacyMedicine {
   synonyms     String?
   imageUrl     String?
   description  String?
-  status       String    @default("OUT") // IN_STOCK, LOW, OUT
+  status       InventoryStatus @default(OUT)
   quantity     Int       @default(0)
   expiresAt    DateTime?
   createdAt    DateTime  @default(now())
@@ -99,7 +122,7 @@ model DonationOffer {
   city         String
   expiry       DateTime?
   notes        String?
-  status       String    @default("OPEN") // OPEN, CLOSED
+  status       DonationOfferStatus @default(OPEN)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
@@ -120,7 +143,7 @@ model DonationRequest {
   imageUrl     String?
   description  String?
   city         String
-  status       String   @default("OPEN") // OPEN, IN_PROGRESS, FULFILLED
+  status       DonationRequestStatus @default(OPEN)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
