@@ -58,7 +58,7 @@ You are a **team member** helping us build a real product.
 - **Framework:** Next.js 15 (App Router)
 - **Language:** TypeScript
 - **Rendering:** Server Components by default, Client Components when needed
-- **Routing style:** App Router route groups (e.g. `(public)`, `(auth)`, `(patient)`, `(pharmacy)`, `(admin)`, `(charity)`)
+- **Routing style:** App Router route groups (e.g. (public), (auth), patient, pharmacy, admin, charity)
 
 ### Styling
 
@@ -163,10 +163,10 @@ We use route groups in `app/` for clarity by role:
 
 - `(public)` – landing, public campaigns, info pages
 - `(auth)` – login & registration
-- `(patient)` – patient dashboard, search, health profile & card, donations, requests
-- `(pharmacy)` – pharmacy dashboard, profile, inventory, local requests
-- `(charity)` – charity dashboard & campaigns management
-- `(admin)` – admin console (pharmacies, charities, medicines, dashboard)
+- `patient` – patient dashboard, search, health profile & card, donations, requests
+- `pharmacy` – pharmacy dashboard, profile, inventory, local requests
+- `charity` – charity dashboard & campaigns management
+- `admin` – admin console (pharmacies, charities, medicines, dashboard)
 
 **AI: when adding pages, respect these groups.**
 
