@@ -7,6 +7,7 @@
   :root {
     /* colors */
     --color-primary: #0AA6C8;
+    --color-primary-hover: #E6F7FB;
     --color-secondary: #0886A2;
     --color-background: #F5F7FA;
     --color-card: #FFFFFF;
@@ -62,6 +63,9 @@
   /* ===== BACKGROUND COLORS ===== */
   .bg-primary{
     background-color: var(--color-primary);
+  }
+  .bg-primary-hover{
+    background-color: var(--color-primary-hover);
   }
   .bg-secondary{
     background-color: var(--color-secondary);
