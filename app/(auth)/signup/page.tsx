@@ -225,6 +225,7 @@ export default function SignupPage() {
                     }
                     className="h-11 rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-gray-900"
                     placeholder="Enter your city"
+                    required
                   />
                 </div>
 
@@ -240,6 +241,7 @@ export default function SignupPage() {
                     }
                     className="h-11 rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-gray-900"
                     placeholder="+1 (555) 000-0000"
+                    required
                   />
                 </div>
 
@@ -255,6 +257,7 @@ export default function SignupPage() {
                     }
                     className="h-11 rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-gray-900"
                     placeholder="Street address"
+                    required
                   />
                 </div>
 
@@ -275,6 +278,7 @@ export default function SignupPage() {
                         }
                         className="h-11 rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-gray-900"
                         placeholder="e.g., Mon-Fri: 8am-6pm"
+                        required
                       />
                     </div>
 
