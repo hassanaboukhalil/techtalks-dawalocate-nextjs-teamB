@@ -77,9 +77,9 @@ export default function SignupPage() {
     formData.userType === "pharmacy" || formData.userType === "charity";
 
   return (
-    <div className="min-h-screen flex">
+    <div className="flex">
       {/* Left Panel - Hidden on mobile */}
-      <div className="hidden md:flex md:w-1/2 bg-linear-to-br from-[#0AA6C8] via-[#0886A2] to-[#6366f1] relative overflow-hidden">
+      <div className="hidden md:flex md:w-1/2 bg-linear-to-br from-[#0AA6C8] via-[#0886A2] to-[#6366f1] relative overflow-hidden shadow-lg">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE2YzAgMTEuMDUtOC45NSAyMC0yMCAyMHMtMjAtOC45NS0yMC0yMCA4Ljk1LTIwIDIwLTIwIDIwIDguOTUgMjAgMjB6bS0yMC0yYzYuNjI3IDAgMTItNS4zNzMgMTItMTJzLTUuMzczLTEyLTEyLTEyUzQgNS4zNzMgNCAxMnM1LjM3MyAxMiAxMiAxMnoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-30"></div>
 
         <div className="relative z-10 flex flex-col justify-center items-center text-white px-12 w-full">
@@ -100,220 +100,219 @@ export default function SignupPage() {
       </div>
 
       {/* Right Panel - Form */}
-      <div className="w-full md:w-1/2 flex items-center justify-center p-6 md:p-12 bg-background">
-        <div className="w-full max-w-md">
-          <div className="bg-card rounded-2xl shadow-lg p-8 md:p-10">
-            <div className="mb-8">
-              <div className="flex items-center gap-2 mb-2">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  Create an account
-                </h2>
-                <Sparkles className="w-5 h-5 text-primary" />
+      <div className="w-full max-w-md md:w-1/2 bg-background">
+        <div className="bg-card shadow-lg p-8 md:p-10">
+          <div className="mb-8">
+            <div className="flex items-center gap-2 mb-2">
+              <h2 className="text-2xl font-bold text-gray-900">
+                Create an account
+              </h2>
+              <Sparkles className="w-5 h-5 text-primary" />
+            </div>
+            <p className="text-gray-600 text-sm">
+              Join DawaLocate to get started
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-3 rounded-lg">
+                {error}
               </div>
-              <p className="text-gray-600 text-sm">
-                Join DawaLocate to get started
-              </p>
+            )}
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Full Name
+              </label>
+              <Input
+                type="text"
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+                className="h-11 rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-gray-900"
+                placeholder="John Doe"
+                required
+              />
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-3 rounded-lg">
-                  {error}
-                </div>
-              )}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Email Address
+              </label>
+              <Input
+                type="email"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+                className="h-11 rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-gray-900"
+                placeholder="you@example.com"
+                required
+              />
+            </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Full Name
-                </label>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Password
+              </label>
+              <div className="relative">
                 <Input
-                  type="text"
-                  value={formData.name}
+                  type={showPassword ? "text" : "password"}
+                  value={formData.password}
                   onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
+                    setFormData({ ...formData, password: e.target.value })
                   }
-                  className="h-11 rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-gray-900"
-                  placeholder="John Doe"
+                  className="h-11 rounded-lg border-gray-300 focus:border-primary focus:ring-primary pr-10 text-gray-900"
+                  placeholder="••••••••"
                   required
                 />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Email Address
-                </label>
-                <Input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                  className="h-11 rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-gray-900"
-                  placeholder="you@example.com"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Password
-                </label>
-                <div className="relative">
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    value={formData.password}
-                    onChange={(e) =>
-                      setFormData({ ...formData, password: e.target.value })
-                    }
-                    className="h-11 rounded-lg border-gray-300 focus:border-primary focus:ring-primary pr-10 text-gray-900"
-                    placeholder="••••••••"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="w-5 h-5" />
-                    ) : (
-                      <Eye className="w-5 h-5" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  I am a
-                </label>
-                <Select
-                  value={formData.userType}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, userType: value })
-                  }
-                  required
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
                 >
-                  <SelectTrigger className="w-full h-11 rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-gray-900">
-                    <SelectValue placeholder="Select your role" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white text-gray-900">
-                    <SelectItem value="patient" className="text-gray-900">
-                      Patient
-                    </SelectItem>
-                    <SelectItem value="pharmacy" className="text-gray-900">
-                      Pharmacy
-                    </SelectItem>
-                    <SelectItem value="charity" className="text-gray-900">
-                      Charity Organization
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Pharmacy/Charity Extra Fields */}
-              {showExtraFields && (
-                <div className="space-y-5 pt-2 border-t border-gray-200">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      City
-                    </label>
-                    <Input
-                      type="text"
-                      value={formData.city}
-                      onChange={(e) =>
-                        setFormData({ ...formData, city: e.target.value })
-                      }
-                      className="h-11 rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-gray-900"
-                      placeholder="Enter your city"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      Phone Number
-                    </label>
-                    <Input
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) =>
-                        setFormData({ ...formData, phone: e.target.value })
-                      }
-                      className="h-11 rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-gray-900"
-                      placeholder="+1 (555) 000-0000"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      Address
-                    </label>
-                    <Input
-                      type="text"
-                      value={formData.address}
-                      onChange={(e) =>
-                        setFormData({ ...formData, address: e.target.value })
-                      }
-                      className="h-11 rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-gray-900"
-                      placeholder="Street address"
-                    />
-                  </div>
-
-                  {formData.userType === "pharmacy" && (
-                    <>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700">
-                          Opening Hours
-                        </label>
-                        <Input
-                          type="text"
-                          value={formData.openingHours}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              openingHours: e.target.value,
-                            })
-                          }
-                          className="h-11 rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-gray-900"
-                          placeholder="e.g., Mon-Fri: 8am-6pm"
-                        />
-                      </div>
-
-                      <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
-                        <input
-                          type="checkbox"
-                          id="hasDelivery"
-                          checked={formData.hasDelivery}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              hasDelivery: e.target.checked,
-                            })
-                          }
-                          className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer"
-                        />
-                        <label
-                          htmlFor="hasDelivery"
-                          className="text-sm font-medium text-gray-700 cursor-pointer"
-                        >
-                          We offer delivery service
-                        </label>
-                      </div>
-                    </>
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
                   )}
-                </div>
-              )}
+                </button>
+              </div>
+            </div>
 
-              <Button
-                type="submit"
-                className="w-full h-11 bg-primary hover:bg-secondary text-white rounded-lg font-medium transition-all duration-200 shadow-sm hover:shadow-md"
-                disabled={loading}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                I am a
+              </label>
+              <Select
+                value={formData.userType}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, userType: value })
+                }
+                required
               >
-                {loading ? "Creating account..." : "Create Account"}
-              </Button>
-            </form>
+                <SelectTrigger className="w-full h-11 rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-gray-900">
+                  <SelectValue placeholder="Select your role" />
+                </SelectTrigger>
+                <SelectContent className="bg-white text-gray-900">
+                  <SelectItem value="patient" className="text-gray-900">
+                    Patient
+                  </SelectItem>
+                  <SelectItem value="pharmacy" className="text-gray-900">
+                    Pharmacy
+                  </SelectItem>
+                  <SelectItem value="charity" className="text-gray-900">
+                    Charity Organization
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-            {/* <div className="mt-6">
+            {/* Pharmacy/Charity Extra Fields */}
+            {showExtraFields && (
+              <div className="space-y-5 pt-2 border-t border-gray-200">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    City
+                  </label>
+                  <Input
+                    type="text"
+                    value={formData.city}
+                    onChange={(e) =>
+                      setFormData({ ...formData, city: e.target.value })
+                    }
+                    className="h-11 rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-gray-900"
+                    placeholder="Enter your city"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    Phone Number
+                  </label>
+                  <Input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) =>
+                      setFormData({ ...formData, phone: e.target.value })
+                    }
+                    className="h-11 rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-gray-900"
+                    placeholder="+1 (555) 000-0000"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    Address
+                  </label>
+                  <Input
+                    type="text"
+                    value={formData.address}
+                    onChange={(e) =>
+                      setFormData({ ...formData, address: e.target.value })
+                    }
+                    className="h-11 rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-gray-900"
+                    placeholder="Street address"
+                  />
+                </div>
+
+                {formData.userType === "pharmacy" && (
+                  <>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700">
+                        Opening Hours
+                      </label>
+                      <Input
+                        type="text"
+                        value={formData.openingHours}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            openingHours: e.target.value,
+                          })
+                        }
+                        className="h-11 rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-gray-900"
+                        placeholder="e.g., Mon-Fri: 8am-6pm"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
+                      <input
+                        type="checkbox"
+                        id="hasDelivery"
+                        checked={formData.hasDelivery}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            hasDelivery: e.target.checked,
+                          })
+                        }
+                        className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer"
+                      />
+                      <label
+                        htmlFor="hasDelivery"
+                        className="text-sm font-medium text-gray-700 cursor-pointer"
+                      >
+                        We offer delivery service
+                      </label>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            <Button
+              type="submit"
+              className="w-full h-11 bg-primary hover:bg-secondary text-white rounded-lg font-medium transition-all duration-200 shadow-sm hover:shadow-md"
+              disabled={loading}
+            >
+              {loading ? "Creating account..." : "Create Account"}
+            </Button>
+          </form>
+
+          {/* <div className="mt-6">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-gray-300"></div>
@@ -379,16 +378,15 @@ export default function SignupPage() {
               </div>
             </div> */}
 
-            <p className="mt-8 text-center text-sm text-gray-600">
-              Already have an account?{" "}
-              <Link
-                href="/login"
-                className="text-primary hover:text-secondary font-medium transition-colors"
-              >
-                Log in
-              </Link>
-            </p>
-          </div>
+          <p className="mt-8 text-center text-sm text-gray-600">
+            Already have an account?{" "}
+            <Link
+              href="/login"
+              className="text-primary hover:text-secondary font-medium transition-colors"
+            >
+              Log in
+            </Link>
+          </p>
         </div>
       </div>
     </div>
