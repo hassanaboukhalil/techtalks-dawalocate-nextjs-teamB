@@ -87,8 +87,8 @@ You are a **team member** helping us build a real product.
 ### Authentication & Authorization
 
 - **Auth:** Auth.js (NextAuth) with credentials provider.
-- **User model** includes a `role` field:
-  - `"patient" | "pharmacy" | "admin" | "charity"`
+- **User model** includes a `userTypeId` field that references the `UserType` table:
+  - UserType names: `"patient" | "pharmacy" | "admin" | "charity"`
 - Sessions should be resolved using a helper in `lib/auth.ts` (e.g. `getCurrentUser()`).
 - Route protection:
   - Use middleware and/or checks inside API handlers & layouts.
@@ -109,47 +109,57 @@ AI should follow these core entities (names can slightly vary, but keep meaning 
 
 ### Models
 
-- `user_types` (UserType)
+- `UserType`
 
-  - `id` (Int, auto-increment), `name` (`"admin" | "pharmacy" | "charity" | "patient"`, unique), `createdAt`.
+  - `id` (Int, auto-increment, PK), `name` (String, unique - `"admin" | "pharmacy" | "charity" | "patient"`), `createdAt` (DateTime), `users` (relation to User[]).
 
-- `users` (User)
+- `User`
 
-  - `id` (Int, auto-increment), `name`, `email` (unique), `passwordHash`, `userTypeId` (FK to `user_types`), `city?`, `phone?`, `address?`, `openingHours?`, `hasDelivery?` (default: false), `status?` (UserStatus enum), `createdAt`, `updatedAt`.
+  - `id` (Int, auto-increment, PK), `name` (String), `email` (String, unique), `passwordHash` (String), `userTypeId` (Int, FK to UserType), `userType` (relation to UserType), `city?` (String), `phone?` (String), `address?` (String), `openingHours?` (String), `hasDelivery?` (Boolean, default: false), `status?` (UserStatus enum), `createdAt` (DateTime), `updatedAt` (DateTime).
+  - **Relations:** `healthProfile` (HealthProfile), `pharmacyMedicines` (PharmacyMedicine[]), `donationOffers` (DonationOffer[]), `donationRequests` (DonationRequest[]), `campaigns` (Campaign[]).
+  - **Indexes:** email, userTypeId.
   - **Note:** `status` is only used for pharmacy/charity; `NULL` for patients/admins.
 
-- `medicines` (Medicine)
+- `Medicine`
 
-  - `id` (Int, auto-increment), `name`, `genericName?`, `strength?`, `form?`, `synonyms?`, `imageUrl?`, `description?`, `createdAt`, `updatedAt`.
+  - `id` (Int, auto-increment, PK), `name` (String), `genericName?` (String), `strength?` (String), `form?` (String), `synonyms?` (String), `imageUrl?` (String), `description?` (String), `createdAt` (DateTime), `updatedAt` (DateTime).
+  - **Relations:** `pharmacyMedicines` (PharmacyMedicine[]), `donationOffers` (DonationOffer[]), `donationRequests` (DonationRequest[]), `campaignMedicines` (CampaignMedicine[]).
   - **Central medicine catalog** — referenced by pharmacy inventory, donations, requests, and campaigns.
   - **Note:** Same medicine name can exist with different strength/form combinations (e.g., Paracetamol 500mg Tablet vs 1000mg Tablet).
 
-- `pharmacy_medicines` (PharmacyMedicine - Inventory)
+- `PharmacyMedicine`
 
-  - `id` (Int, auto-increment), `pharmacyId` (FK to `User`), `medicineId` (FK to `Medicine`), `status` (InventoryStatus enum, default: OUT), `quantity` (default: 0), `expiresAt?`, `createdAt`, `updatedAt`.
+  - `id` (Int, auto-increment, PK), `pharmacyId` (Int, FK to User), `pharmacy` (relation to User), `medicineId` (Int, FK to Medicine), `medicine` (relation to Medicine), `status` (InventoryStatus enum, default: OUT), `quantity` (Int, default: 0), `expiresAt?` (DateTime), `createdAt` (DateTime), `updatedAt` (DateTime).
+  - **Indexes:** pharmacyId, medicineId, status.
   - References the central `Medicine` catalog instead of storing medicine details directly.
 
-- `health_profiles` (HealthProfile)
+- `HealthProfile`
 
-  - `id` (Int, auto-increment), `userId` (FK to `User`, unique), `conditions?`, `allergies?`, `currentMedications?`, `bloodType?`, `emergencyContact?`, `createdAt`, `updatedAt`.
+  - `id` (Int, auto-increment, PK), `userId` (Int, FK to User, unique), `user` (relation to User), `conditions?` (String), `allergies?` (String), `currentMedications?` (String), `bloodType?` (String), `emergencyContact?` (String), `createdAt` (DateTime), `updatedAt` (DateTime).
+  - **Indexes:** userId.
 
-- `donation_offers` (DonationOffer)
+- `DonationOffer`
 
-  - `id` (Int, auto-increment), `userId` (FK to `User`), `medicineId` (FK to `Medicine`), `city`, `expiry?`, `notes?`, `status` (DonationOfferStatus enum, default: OPEN), `createdAt`, `updatedAt`.
+  - `id` (Int, auto-increment, PK), `userId` (Int, FK to User), `user` (relation to User), `medicineId` (Int, FK to Medicine), `medicine` (relation to Medicine), `city` (String), `expiry?` (DateTime), `notes?` (String), `status` (DonationOfferStatus enum, default: OPEN), `createdAt` (DateTime), `updatedAt` (DateTime).
+  - **Indexes:** userId, city, status.
 
-- `donation_requests` (DonationRequest)
+- `DonationRequest`
 
-  - `id` (Int, auto-increment), `userId` (FK to `User`), `medicineId` (FK to `Medicine`), `city`, `status` (DonationRequestStatus enum, default: OPEN), `createdAt`, `updatedAt`.
+  - `id` (Int, auto-increment, PK), `userId` (Int, FK to User), `user` (relation to User), `medicineId` (Int, FK to Medicine), `medicine` (relation to Medicine), `city` (String), `status` (DonationRequestStatus enum, default: OPEN), `createdAt` (DateTime), `updatedAt` (DateTime).
+  - **Indexes:** userId, city, status.
 
-- `campaigns` (Campaign)
+- `Campaign`
 
-  - `id` (Int, auto-increment), `charityUserId` (FK to `User`), `title`, `description`, `targetAreas` (string - comma-separated or JSON), `startDate`, `endDate?`, `contactInfo`, `createdAt`, `updatedAt`.
-  - Target medicines are stored via the `campaign_medicines` join table (many-to-many).
+  - `id` (Int, auto-increment, PK), `charityUserId` (Int, FK to User), `charity` (relation to User), `title` (String), `description` (String), `targetAreas` (String - comma-separated or JSON), `startDate` (DateTime), `endDate?` (DateTime), `contactInfo` (String), `createdAt` (DateTime), `updatedAt` (DateTime).
+  - **Relations:** `campaignMedicines` (CampaignMedicine[]).
+  - **Indexes:** charityUserId, startDate.
+  - Target medicines are stored via the `CampaignMedicine` join table (many-to-many).
 
-- `campaign_medicines` (CampaignMedicine)
-  - `id` (Int, auto-increment), `campaignId` (FK to `Campaign`), `medicineId` (FK to `Medicine`), `createdAt`, `updatedAt`.
+- `CampaignMedicine`
+  - `id` (Int, auto-increment, PK), `campaignId` (Int, FK to Campaign), `campaign` (relation to Campaign), `medicineId` (Int, FK to Medicine), `medicine` (relation to Medicine), `createdAt` (DateTime), `updatedAt` (DateTime).
+  - **Indexes:** campaignId, medicineId.
+  - **Unique constraint:** `(campaignId, medicineId)`.
   - Join table linking campaigns to their target medicines.
-  - Unique constraint on `(campaignId, medicineId)`.
 
 If you add new tables or fields, keep them consistent with this domain.
 
