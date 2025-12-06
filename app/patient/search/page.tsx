@@ -1,26 +1,16 @@
 'use client';
 
-import React, { useState, useCallback, useMemo, ReactNode } from 'react';
-import axios, { AxiosError } from 'axios';
+import React, { useState, FormEvent } from 'react';
+import axios from 'axios';
 import { 
-  Search, Phone, MapPin, Clock, Truck, AlertCircle, 
-  Loader2, RefreshCw, CheckCircle, Mail, TrendingUp, Filter 
+  Search, Phone, MapPin, AlertCircle, 
+  Loader2, RefreshCw, CheckCircle, Mail, Truck, Filter 
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 
 // ============================================================================
 // TYPE DEFINITIONS
 // ============================================================================
-
-interface SearchParams {
-  medicine: string;
-  city: string;
-  pharmacyName: string;
-  status: string;
-  includeOutOfStock: boolean;
-}
 
 interface Medicine {
   id: number;
@@ -129,29 +119,25 @@ const formatDate = (dateString: string | null): string => {
 };
 
 const getErrorMessage = (err: unknown): string => {
-  let errorMessage = 'An error occurred during search';
-
   if (axios.isAxiosError(err)) {
     if (err.response?.status === 400) {
-      errorMessage = err.response.data?.message || 'Invalid search parameters';
+      return err.response.data?.message || 'Invalid search parameters';
     } else if (err.response?.status === 404) {
-      errorMessage = 'Medicine not found in our database';
+      return 'Medicine not found in our database';
     } else if (err.response?.status === 500) {
-      errorMessage = 'Server error. Please try again later';
+      return 'Server error. Please try again later';
     } else if (err.code === 'ECONNABORTED') {
-      errorMessage = 'Request timeout. Please check your connection';
+      return 'Request timeout. Please check your connection';
     } else if (err.message === 'Network Error') {
-      errorMessage = 'Network error. Please check your internet connection';
+      return 'Network error. Please check your internet connection';
     } else if (err.response?.data?.error) {
-      errorMessage = err.response.data.error;
-    } else if (err.message) {
-      errorMessage = err.message;
+      return err.response.data.error;
     }
-  } else if (err instanceof Error) {
-    errorMessage = err.message;
   }
-
-  return errorMessage;
+  if (err instanceof Error) {
+    return err.message;
+  }
+  return 'An error occurred during search';
 };
 
 // ============================================================================
@@ -159,685 +145,406 @@ const getErrorMessage = (err: unknown): string => {
 // ============================================================================
 
 export default function PatientSearchPage() {
-  // State Management
-  const [searchParams, setSearchParams] = useState<SearchParams>({
-    medicine: '',
-    city: '',
-    pharmacyName: '',
-    status: 'IN_STOCK,LOW',
-    includeOutOfStock: false,
-  });
+  // Form state
+  const [medicine, setMedicine] = useState('');
+  const [city, setCity] = useState('');
+  const [pharmacyName, setPharmacyName] = useState('');
+  const [status, setStatus] = useState('IN_STOCK,LOW');
+  const [includeOutOfStock, setIncludeOutOfStock] = useState(false);
 
+  // Results state
   const [results, setResults] = useState<PharmacyResult[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [hasSearched, setHasSearched] = useState(false);
   const [matchingMedicines, setMatchingMedicines] = useState<Medicine[]>([]);
   const [totalResults, setTotalResults] = useState(0);
 
-  // Memoized derived values for performance
-  const hasSearchFilters = useMemo(
-    () => searchParams.medicine.trim().length > 0,
-    [searchParams.medicine]
-  );
+  // UI state
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [hasSearched, setHasSearched] = useState(false);
 
-  const isSearchDisabled = useMemo(
-    () => isLoading || !hasSearchFilters,
-    [isLoading, hasSearchFilters]
-  );
-
-  // Event handlers with useCallback for optimization
-  const handleInputChange = useCallback(
-    (field: keyof SearchParams, value: string | boolean) => {
-      setSearchParams((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
-      setError(null);
-    },
-    []
-  );
-
-  const handleStatusChange = useCallback(
-    (newStatus: string) => {
-      handleInputChange('status', newStatus);
-    },
-    [handleInputChange]
-  );
-
-  const toggleOutOfStock = useCallback(() => {
-    handleInputChange('includeOutOfStock', !searchParams.includeOutOfStock);
-  }, [handleInputChange, searchParams.includeOutOfStock]);
-
-  const resetSearch = useCallback(() => {
-    setSearchParams({
-      medicine: '',
-      city: '',
-      pharmacyName: '',
-      status: 'IN_STOCK,LOW',
-      includeOutOfStock: false,
-    });
-    setResults([]);
-    setError(null);
-    setHasSearched(false);
-    setMatchingMedicines([]);
-    setTotalResults(0);
-  }, []);
-
-  const performSearch = useCallback(async (e: React.FormEvent) => {
+  const handleSearch = async (e: FormEvent) => {
     e.preventDefault();
+    
+    if (!medicine.trim()) {
+      setError('Please enter a medicine name');
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setHasSearched(true);
 
     try {
-      // Validate required input
-      if (!searchParams.medicine.trim()) {
-        setError('Please enter a medicine name to search');
-        setIsLoading(false);
-        return;
-      }
+      const params = new URLSearchParams();
+      params.append('medicine', medicine.trim());
+      params.append('status', status);
+      params.append('includeOutOfStock', String(includeOutOfStock));
+      
+      if (city.trim()) params.append('city', city.trim());
+      if (pharmacyName.trim()) params.append('name', pharmacyName.trim());
 
-      // Build query parameters
-      const params: Record<string, string | boolean> = {
-        medicine: searchParams.medicine.trim(),
-        status: searchParams.status,
-        includeOutOfStock: searchParams.includeOutOfStock,
-      };
-
-      if (searchParams.city.trim()) params.city = searchParams.city.trim();
-      if (searchParams.pharmacyName.trim()) params.name = searchParams.pharmacyName.trim();
-
-      // Make API call using Axios with timeout
       const response = await axios.get<SearchResponse>(
-        '/api/patient/search-medicines',
-        {
-          params,
-          timeout: 10000, // 10 second timeout
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
+        `/api/patient/search-medicines?${params.toString()}`,
+        { timeout: 10000 }
       );
 
-      // Handle successful response
       if (response.data.success && response.data.data) {
         setResults(response.data.data.results || []);
         setMatchingMedicines(response.data.data.matchingMedicines || []);
         setTotalResults(response.data.data.total || 0);
       } else {
-        throw new Error(response.data.error || 'Failed to search medicines');
+        setError(response.data.error || 'Search failed');
       }
     } catch (err) {
-      const errorMessage = getErrorMessage(err);
-      setError(errorMessage);
+      setError(getErrorMessage(err));
       setResults([]);
       setMatchingMedicines([]);
       setTotalResults(0);
     } finally {
       setIsLoading(false);
     }
-  }, [searchParams]);
+  };
 
-  // Retry search handler
-  const handleRetrySearch = useCallback(() => {
-    void performSearch({ preventDefault: () => {} } as React.FormEvent);
-  }, [performSearch]);
+  const handleReset = () => {
+    setMedicine('');
+    setCity('');
+    setPharmacyName('');
+    setStatus('IN_STOCK,LOW');
+    setIncludeOutOfStock(false);
+    setResults([]);
+    setMatchingMedicines([]);
+    setTotalResults(0);
+    setError(null);
+    setHasSearched(false);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      {/* Header Section */}
-      <PageHeader />
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+          <div className="flex items-center gap-3 mb-2">
+            <Search className="h-8 w-8 text-blue-600" />
+            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
+              Find Medicines
+            </h1>
+          </div>
+          <p className="text-gray-600 ml-11">
+            Search for medicines across pharmacies near you
+          </p>
+        </div>
+      </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Search Form Card */}
-        <SearchFormCard
-          searchParams={searchParams}
-          isLoading={isLoading}
-          onInputChange={handleInputChange}
-          onStatusChange={handleStatusChange}
-          onToggleOutOfStock={toggleOutOfStock}
-          onSearch={performSearch}
-        />
+        {/* Search Form */}
+        <Card className="mb-8">
+          <div className="px-6 py-6">
+            <div className="flex items-center gap-2 mb-6">
+              <Filter className="h-5 w-5 text-blue-600" />
+              <h2 className="text-lg font-semibold text-gray-900">Search Criteria</h2>
+            </div>
+            
+            <form onSubmit={handleSearch} className="space-y-6">
+              {/* Medicine Name Input */}
+              <div className="space-y-2">
+                <label 
+                  htmlFor="medicine" 
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Medicine Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="medicine"
+                  type="text"
+                  placeholder="e.g., Paracetamol, Aspirin, Ibuprofen"
+                  value={medicine}
+                  onChange={(e) => setMedicine(e.target.value)}
+                  disabled={isLoading}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:bg-gray-100"
+                  autoComplete="off"
+                />
+                <p className="text-xs text-gray-500">
+                  Enter the medicine name you're looking for
+                </p>
+              </div>
+
+              {/* Filters Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* City */}
+                <div className="space-y-2">
+                  <label 
+                    htmlFor="city" 
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    City <span className="text-gray-400">(Optional)</span>
+                  </label>
+                  <input
+                    id="city"
+                    type="text"
+                    placeholder="e.g., Lahore, Karachi"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    disabled={isLoading}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:bg-gray-100"
+                    autoComplete="off"
+                  />
+                </div>
+
+                {/* Pharmacy Name */}
+                <div className="space-y-2">
+                  <label 
+                    htmlFor="pharmacy" 
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Pharmacy Name <span className="text-gray-400">(Optional)</span>
+                  </label>
+                  <input
+                    id="pharmacy"
+                    type="text"
+                    placeholder="e.g., City Pharmacy"
+                    value={pharmacyName}
+                    onChange={(e) => setPharmacyName(e.target.value)}
+                    disabled={isLoading}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:bg-gray-100"
+                    autoComplete="off"
+                  />
+                </div>
+
+                {/* Status Filter */}
+                <div className="space-y-2">
+                  <label 
+                    htmlFor="status" 
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Stock Status
+                  </label>
+                  <select
+                    id="status"
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
+                    disabled={isLoading}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:bg-gray-100"
+                  >
+                    {STATUS_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Checkbox */}
+              <div className="flex items-center gap-3">
+                <input
+                  id="outOfStock"
+                  type="checkbox"
+                  checked={includeOutOfStock}
+                  onChange={(e) => setIncludeOutOfStock(e.target.checked)}
+                  disabled={isLoading}
+                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                />
+                <label 
+                  htmlFor="outOfStock" 
+                  className="text-sm text-gray-700"
+                >
+                  Include out of stock items
+                </label>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="submit"
+                  disabled={isLoading || !medicine.trim()}
+                  className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Searching...
+                    </>
+                  ) : (
+                    <>
+                      <Search className="h-4 w-4" />
+                      Search
+                    </>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  disabled={isLoading}
+                  className="px-4 py-2 border border-gray-300 rounded-md font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Reset
+                </button>
+              </div>
+            </form>
+          </div>
+        </Card>
 
         {/* Error Banner */}
         {error && (
-          <ErrorBanner 
-            error={error} 
-            isLoading={isLoading}
-            onRetry={handleRetrySearch}
-          />
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+            <div className="flex-1">
+              <p className="font-medium text-red-800">{error}</p>
+            </div>
+          </div>
         )}
 
         {/* Loading State */}
-        {isLoading && <LoadingBanner />}
+        {isLoading && (
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-3">
+            <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
+            <p className="text-blue-800">Searching for medicines...</p>
+          </div>
+        )}
 
-        {/* Results Section */}
-        {hasSearched && !isLoading && (
-          <ResultsSection
-            totalResults={totalResults}
-            matchingMedicines={matchingMedicines}
-            results={results}
-            onReset={resetSearch}
-          />
+        {/* Results */}
+        {hasSearched && !isLoading && results.length > 0 && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Search Results
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Found {totalResults} results across {results.length} pharmacies
+                </p>
+              </div>
+              <button
+                onClick={handleReset}
+                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+              >
+                New Search
+              </button>
+            </div>
+
+            {/* Pharmacy Results */}
+            {results.map((result) => (
+              <Card key={result.pharmacy.id} className="overflow-hidden">
+                <div className="p-6">
+                  {/* Pharmacy Header */}
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
+                    <div>
+                      <h4 className="text-xl font-semibold text-gray-900">
+                        {result.pharmacy.name}
+                      </h4>
+                      {result.pharmacy.city && (
+                        <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
+                          <MapPin className="h-4 w-4" />
+                          {result.pharmacy.city}
+                        </p>
+                      )}
+                    </div>
+                    {result.pharmacy.hasDelivery && (
+                      <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                        <Truck className="h-4 w-4" />
+                        Delivery Available
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Contact Info */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4 text-sm">
+                    {result.pharmacy.phone && (
+                      <a
+                        href={`tel:${result.pharmacy.phone}`}
+                        className="text-blue-600 hover:underline flex items-center gap-2"
+                      >
+                        <Phone className="h-4 w-4" />
+                        {result.pharmacy.phone}
+                      </a>
+                    )}
+                    {result.pharmacy.email && (
+                      <a
+                        href={`mailto:${result.pharmacy.email}`}
+                        className="text-blue-600 hover:underline flex items-center gap-2"
+                      >
+                        <Mail className="h-4 w-4" />
+                        {result.pharmacy.email}
+                      </a>
+                    )}
+                  </div>
+
+                  {/* Medicines */}
+                  <div className="border-t pt-4">
+                    <h5 className="font-medium text-gray-900 mb-3">
+                      Available Medicines ({result.medicines.length})
+                    </h5>
+                    <div className="space-y-2">
+                      {result.medicines.map((item) => {
+                        const config = getStatusBadgeConfig(item.availability.status);
+                        return (
+                          <div
+                            key={item.inventoryId}
+                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                          >
+                            <div>
+                              <p className="font-medium text-gray-900">
+                                {item.medicine.name}
+                              </p>
+                              {item.medicine.strength && (
+                                <p className="text-sm text-gray-600">
+                                  {item.medicine.strength}
+                                  {item.medicine.form && ` • ${item.medicine.form}`}
+                                </p>
+                              )}
+                              <p className="text-xs text-gray-500 mt-1">
+                                Qty: {item.availability.quantity}
+                                {item.availability.expiresAt && (
+                                  <>
+                                    {' '}• Expires: {formatDate(item.availability.expiresAt)}
+                                  </>
+                                )}
+                              </p>
+                            </div>
+                            <span
+                              className={`px-3 py-1 rounded-full text-sm font-medium border ${config.bg} ${config.text} ${config.border}`}
+                            >
+                              {config.label}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {/* No Results State */}
+        {hasSearched && !isLoading && results.length === 0 && !error && (
+          <div className="text-center py-12">
+            <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No results found</h3>
+            <p className="text-gray-600 mb-4">
+              Try searching with different keywords or filters
+            </p>
+            <button
+              onClick={handleReset}
+              className="text-blue-600 hover:text-blue-700 font-medium"
+            >
+              Start a new search
+            </button>
+          </div>
         )}
 
         {/* Empty State */}
-        {!hasSearched && <EmptyState />}
+        {!hasSearched && !error && (
+          <div className="text-center py-12">
+            <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Start searching</h3>
+            <p className="text-gray-600">
+              Enter a medicine name and click search to find nearby pharmacies
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
 }
-
-// ============================================================================
-// SUB-COMPONENTS
-// ============================================================================
-
-/** Page header component */
-const PageHeader = () => (
-  <div className="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <div className="flex items-center gap-3 mb-2">
-        <Search className="h-8 w-8 text-blue-600" />
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
-          Find Medicines
-        </h1>
-      </div>
-      <p className="text-gray-600 ml-11">
-        Search for medicines across pharmacies near you
-      </p>
-    </div>
-  </div>
-);
-
-/** Search form card component */
-interface SearchFormCardProps {
-  searchParams: SearchParams;
-  isLoading: boolean;
-  onInputChange: (field: keyof SearchParams, value: string | boolean) => void;
-  onStatusChange: (status: string) => void;
-  onToggleOutOfStock: () => void;
-  onSearch: (e: React.FormEvent) => Promise<void>;
-}
-
-const SearchFormCard = ({
-  searchParams,
-  isLoading,
-  onInputChange,
-  onStatusChange,
-  onToggleOutOfStock,
-  onSearch,
-}: SearchFormCardProps) => (
-  <Card className="mb-8">
-    <div className="px-6 py-6">
-      <div className="flex items-center gap-2 mb-6">
-        <Filter className="h-5 w-5 text-blue-600" />
-        <h2 className="text-lg font-semibold text-gray-900">Search Criteria</h2>
-      </div>
-      
-      <form onSubmit={onSearch} className="space-y-6">
-        {/* Medicine Search Input */}
-        <div className="space-y-2">
-          <label 
-            htmlFor="medicine" 
-            className="block text-sm font-medium text-gray-700"
-          >
-            Medicine Name <span className="text-red-500">*</span>
-          </label>
-          <Input
-            id="medicine"
-            type="text"
-            placeholder="e.g., Paracetamol, Aspirin, Ibuprofen"
-            value={searchParams.medicine}
-            onChange={(e) => onInputChange('medicine', e.target.value)}
-            disabled={isLoading}
-            className="w-full"
-            autoComplete="off"
-            required
-          />
-          <p className="text-xs text-gray-500">
-            Enter the medicine name you're looking for
-          </p>
-        </div>
-
-        {/* Filter Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* City Filter */}
-          <div className="space-y-2">
-            <label 
-              htmlFor="city" 
-              className="block text-sm font-medium text-gray-700"
-            >
-              City <span className="text-gray-400">(Optional)</span>
-            </label>
-            <Input
-              id="city"
-              type="text"
-              placeholder="e.g., Beirut, Tripoli"
-              value={searchParams.city}
-              onChange={(e) => onInputChange('city', e.target.value)}
-              disabled={isLoading}
-              autoComplete="off"
-            />
-          </div>
-
-          {/* Pharmacy Name Filter */}
-          <div className="space-y-2">
-            <label 
-              htmlFor="pharmacyName" 
-              className="block text-sm font-medium text-gray-700"
-            >
-              Pharmacy Name <span className="text-gray-400">(Optional)</span>
-            </label>
-            <Input
-              id="pharmacyName"
-              type="text"
-              placeholder="e.g., Al-Shifa Pharmacy"
-              value={searchParams.pharmacyName}
-              onChange={(e) => onInputChange('pharmacyName', e.target.value)}
-              disabled={isLoading}
-              autoComplete="off"
-            />
-          </div>
-
-          {/* Status Filter */}
-          <div className="space-y-2">
-            <label 
-              htmlFor="status" 
-              className="block text-sm font-medium text-gray-700"
-            >
-              Availability Status
-            </label>
-            <select
-              id="status"
-              value={searchParams.status}
-              onChange={(e) => onStatusChange(e.target.value)}
-              disabled={isLoading}
-              className="w-full h-9 rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-colors outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:opacity-50"
-            >
-              {STATUS_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Out of Stock Toggle */}
-        <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
-          <input
-            type="checkbox"
-            id="includeOutOfStock"
-            checked={searchParams.includeOutOfStock}
-            onChange={onToggleOutOfStock}
-            disabled={isLoading}
-            className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 cursor-pointer"
-          />
-          <label
-            htmlFor="includeOutOfStock"
-            className="text-sm text-gray-700 cursor-pointer flex-1"
-          >
-            Include out of stock items in results
-          </label>
-        </div>
-
-        {/* Search Button */}
-        <Button
-          type="submit"
-          disabled={isLoading || !searchParams.medicine.trim()}
-          className="w-full sm:w-auto gap-2 font-medium"
-          size="lg"
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Searching...
-            </>
-          ) : (
-            <>
-              <Search className="h-4 w-4" />
-              Search Medicines
-            </>
-          )}
-        </Button>
-      </form>
-    </div>
-  </Card>
-);
-
-/** Error banner component */
-interface ErrorBannerProps {
-  error: string;
-  isLoading: boolean;
-  onRetry: () => void;
-}
-
-const ErrorBanner = ({ error, isLoading, onRetry }: ErrorBannerProps) => (
-  <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg flex items-start gap-4 shadow-sm animate-in fade-in slide-in-from-top-2">
-    <AlertCircle className="h-6 w-6 text-red-600 flex-shrink-0 mt-0.5" />
-    <div className="flex-1">
-      <h3 className="font-semibold text-red-900 text-base mb-1">Search Error</h3>
-      <p className="text-sm text-red-700 mb-3 leading-relaxed">{error}</p>
-      <Button
-        onClick={onRetry}
-        disabled={isLoading}
-        variant="outline"
-        size="sm"
-        className="text-red-600 border-red-300 hover:bg-red-50"
-      >
-        <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
-        Retry Search
-      </Button>
-    </div>
-  </div>
-);
-
-/** Loading banner component */
-const LoadingBanner = () => (
-  <div className="mb-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-lg flex items-center gap-4 shadow-sm animate-in fade-in slide-in-from-top-2">
-    <Loader2 className="h-6 w-6 text-blue-600 animate-spin flex-shrink-0" />
-    <div>
-      <h3 className="font-semibold text-blue-900">Searching for medicines...</h3>
-      <p className="text-sm text-blue-700 mt-1">
-        Please wait while we find pharmacies with your requested medicine
-      </p>
-    </div>
-  </div>
-);
-
-/** Results section component */
-interface ResultsSectionProps {
-  totalResults: number;
-  matchingMedicines: Medicine[];
-  results: PharmacyResult[];
-  onReset: () => void;
-}
-
-const ResultsSection = ({
-  totalResults,
-  matchingMedicines,
-  results,
-  onReset,
-}: ResultsSectionProps) => (
-  <>
-    {/* Success Banner */}
-    {totalResults > 0 && (
-      <div className="mb-6 p-4 bg-green-50 border-l-4 border-green-500 rounded-lg flex items-start gap-3 shadow-sm animate-in fade-in slide-in-from-top-2">
-        <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-        <div className="flex-1">
-          <h3 className="font-semibold text-green-900">Search Successful!</h3>
-          <p className="text-sm text-green-700 mt-1">
-            Found <span className="font-semibold">{totalResults}</span> pharmacy
-            {totalResults !== 1 ? 'ies' : ''} with{' '}
-            <span className="font-semibold">{matchingMedicines.length}</span> matching medicine
-            {matchingMedicines.length !== 1 ? 's' : ''}
-          </p>
-        </div>
-      </div>
-    )}
-
-    {/* Results Summary */}
-    {totalResults > 0 && (
-      <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
-        <div className="flex items-center justify-between">
-          <p className="text-gray-700">
-            <span className="font-semibold text-gray-900">{totalResults}</span> pharmacy
-            {totalResults !== 1 ? 'ies' : ''} available with{' '}
-            <span className="font-semibold text-gray-900">
-              {matchingMedicines.length}
-            </span>{' '}
-            matching medicine{matchingMedicines.length !== 1 ? 's' : ''}
-          </p>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={onReset}
-            className="text-blue-600 hover:text-blue-700"
-          >
-            New Search
-          </Button>
-        </div>
-      </div>
-    )}
-
-    {/* Matching Medicines Info */}
-    {matchingMedicines.length > 0 && (
-      <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <h3 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
-          <TrendingUp className="h-4 w-4" />
-          Matching Medicines:
-        </h3>
-        <div className="flex flex-wrap gap-2">
-          {matchingMedicines.map((medicine) => (
-            <span
-              key={medicine.id}
-              className="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium hover:bg-blue-200 transition-colors"
-            >
-              {medicine.name}
-              {medicine.strength && ` ${medicine.strength}`}
-              {medicine.form && ` (${medicine.form})`}
-            </span>
-          ))}
-        </div>
-      </div>
-    )}
-
-    {/* Results Grid */}
-    {totalResults > 0 ? (
-      <div className="space-y-4">
-        {results.map((result) => (
-          <PharmacyCard key={result.pharmacy.id} result={result} />
-        ))}
-      </div>
-    ) : (
-      <div className="text-center py-12">
-        <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-          No Results Found
-        </h3>
-        <p className="text-gray-600 max-w-md mx-auto mb-4">
-          We couldn't find any pharmacies with the medicine you're looking for.
-          Try adjusting your search filters or search for an alternative medicine.
-        </p>
-        <Button variant="outline" onClick={onReset}>
-          Start New Search
-        </Button>
-      </div>
-    )}
-  </>
-);
-
-/** Pharmacy card component */
-interface PharmacyCardProps {
-  result: PharmacyResult;
-}
-
-const PharmacyCard = ({ result }: PharmacyCardProps) => (
-  <Card className="overflow-hidden hover:shadow-md transition-shadow">
-    <div className="px-6 py-4">
-      {/* Pharmacy Header */}
-      <div className="mb-4">
-        <h3 className="text-xl font-semibold text-gray-900 mb-3">
-          {result.pharmacy.name}
-        </h3>
-
-        {/* Pharmacy Details Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-gray-600">
-          {result.pharmacy.address && (
-            <PharmacyDetailItem icon={MapPin}>
-              {result.pharmacy.address}
-            </PharmacyDetailItem>
-          )}
-
-          {result.pharmacy.city && (
-            <PharmacyDetailItem icon={MapPin} highlight>
-              {result.pharmacy.city}
-            </PharmacyDetailItem>
-          )}
-
-          {result.pharmacy.phone && (
-            <a
-              href={`tel:${result.pharmacy.phone}`}
-              className="flex items-center gap-2 text-blue-600 hover:underline"
-            >
-              <Phone className="h-4 w-4 text-gray-400 flex-shrink-0" />
-              {result.pharmacy.phone}
-            </a>
-          )}
-
-          {result.pharmacy.email && (
-            <a
-              href={`mailto:${result.pharmacy.email}`}
-              className="flex items-center gap-2 text-blue-600 hover:underline truncate"
-            >
-              <Mail className="h-4 w-4 text-gray-400 flex-shrink-0" />
-              <span className="truncate">{result.pharmacy.email}</span>
-            </a>
-          )}
-
-          {result.pharmacy.openingHours && (
-            <PharmacyDetailItem icon={Clock}>
-              {result.pharmacy.openingHours}
-            </PharmacyDetailItem>
-          )}
-
-          {result.pharmacy.hasDelivery && (
-            <div className="flex items-center gap-2 text-green-600 font-medium">
-              <Truck className="h-4 w-4 flex-shrink-0" />
-              <span>Delivery Available</span>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Medicines Section */}
-      <div className="border-t border-gray-200 pt-4">
-        <h4 className="font-semibold text-gray-900 mb-3">
-          Available Medicines ({result.medicines.length})
-        </h4>
-
-        <div className="space-y-3">
-          {result.medicines.map((med) => (
-            <MedicineAvailabilityItem key={med.inventoryId} medicine={med} />
-          ))}
-        </div>
-      </div>
-
-      {/* Contact Actions */}
-      <div className="mt-4 flex gap-2 flex-wrap">
-        {result.pharmacy.phone && (
-          <Button variant="outline" size="sm" asChild>
-            <a href={`tel:${result.pharmacy.phone}`}>
-              <Phone className="h-4 w-4" />
-              <span className="hidden sm:inline">Call Pharmacy</span>
-              <span className="sm:hidden">Call</span>
-            </a>
-          </Button>
-        )}
-        {result.pharmacy.email && (
-          <Button variant="outline" size="sm" asChild>
-            <a href={`mailto:${result.pharmacy.email}`}>
-              <Mail className="h-4 w-4" />
-              <span className="hidden sm:inline">Email</span>
-            </a>
-          </Button>
-        )}
-      </div>
-    </div>
-  </Card>
-);
-
-/** Pharmacy detail item component */
-interface PharmacyDetailItemProps {
-  icon: React.ComponentType<{ className: string }>;
-  children: ReactNode;
-  highlight?: boolean;
-}
-
-const PharmacyDetailItem = ({ 
-  icon: Icon, 
-  children, 
-  highlight = false 
-}: PharmacyDetailItemProps) => (
-  <div className={`flex items-start gap-2 ${highlight ? 'text-blue-600 font-medium' : ''}`}>
-    <Icon className="h-4 w-4 text-gray-400 flex-shrink-0 mt-0.5" />
-    <span>{children}</span>
-  </div>
-);
-
-/** Medicine availability item component */
-interface MedicineAvailabilityItemProps {
-  medicine: PharmacyMedicine;
-}
-
-const MedicineAvailabilityItem = ({ medicine }: MedicineAvailabilityItemProps) => {
-  const badgeConfig = getStatusBadgeConfig(medicine.availability.status);
-  
-  return (
-    <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
-      {/* Medicine Header */}
-      <div className="flex justify-between items-start gap-4 mb-2">
-        <div className="flex-1">
-          <p className="font-semibold text-gray-900">{medicine.medicine.name}</p>
-          <div className="text-sm text-gray-600 space-y-0.5 mt-1">
-            {medicine.medicine.genericName && (
-              <p className="text-gray-500">
-                Generic: <span className="text-gray-700">{medicine.medicine.genericName}</span>
-              </p>
-            )}
-            {(medicine.medicine.strength || medicine.medicine.form) && (
-              <p>
-                {medicine.medicine.strength && `${medicine.medicine.strength} `}
-                {medicine.medicine.form && `${medicine.medicine.form}`}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Status Badge */}
-        <span
-          className={`px-3 py-1 rounded-full text-xs font-semibold border whitespace-nowrap ${badgeConfig.bg} ${badgeConfig.text} ${badgeConfig.border}`}
-        >
-          {badgeConfig.label}
-        </span>
-      </div>
-
-      {/* Availability Details Grid */}
-      <div className="grid grid-cols-3 gap-2 text-xs text-gray-600 mt-3 pt-3 border-t border-gray-200">
-        <div>
-          <p className="text-gray-500 font-medium">Quantity</p>
-          <p className="font-semibold text-gray-900 mt-0.5">
-            {medicine.availability.quantity} {medicine.availability.quantity === 1 ? 'unit' : 'units'}
-          </p>
-        </div>
-        <div>
-          <p className="text-gray-500 font-medium">Expires</p>
-          <p className="font-semibold text-gray-900 mt-0.5">
-            {formatDate(medicine.availability.expiresAt)}
-          </p>
-        </div>
-        <div>
-          <p className="text-gray-500 font-medium">Updated</p>
-          <p className="font-semibold text-gray-900 mt-0.5">
-            {formatDate(medicine.availability.lastUpdated)}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-/** Empty state component */
-const EmptyState = () => (
-  <div className="text-center py-16">
-    <Search className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-    <h3 className="text-lg font-semibold text-gray-900 mb-2">
-      Start Your Search
-    </h3>
-    <p className="text-gray-600 max-w-md mx-auto">
-      Enter a medicine name and optional filters to find nearby pharmacies with
-      the medicine in stock.
-    </p>
-  </div>
-);
