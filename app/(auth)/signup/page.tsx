@@ -16,6 +16,9 @@ import { Eye, EyeOff, Sparkles } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { CityAutocomplete } from "@/components/ui/CityAutocomplete";
 import { LEBANON_CITIES } from "@/constants/lebanon-cities";
+import Image from "next/image";
+
+import lebanonFlag from "@/public/images/Lebanon.jpeg";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -40,10 +43,16 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
+      // Prepend +961 to phone number for backend
+      const submissionData = {
+        ...formData,
+        phone: formData.phone ? `+961${formData.phone.replace(/^0/, "")}` : "",
+      };
+
       const response = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(submissionData),
       });
 
       const data = await response.json();
@@ -234,16 +243,34 @@ export default function SignupPage() {
                   <label className="text-sm font-medium text-gray-700">
                     Phone Number
                   </label>
-                  <Input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) =>
-                      setFormData({ ...formData, phone: e.target.value })
-                    }
-                    className="h-11 rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-gray-900"
-                    placeholder="+1 (555) 000-0000"
-                    required
-                  />
+                  <div className="relative">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none z-10">
+                      <Image
+                        src={lebanonFlag}
+                        alt="Lebanon"
+                        className="w-6 h-4 object-cover rounded-sm"
+                        width={20}
+                        height={20}
+                      />
+                      <span className="text-gray-900 font-medium text-sm">
+                        +961
+                      </span>
+                      <span className="text-gray-300">|</span>
+                    </div>
+                    <Input
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, "");
+                        setFormData({ ...formData, phone: value });
+                      }}
+                      pattern="^(0)?(3|70|71|76|78|79|81)\d{6}$"
+                      className="h-11 rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-gray-900 pl-[110px]"
+                      placeholder="70 123456"
+                      required
+                      title="Please enter a valid Lebanon phone number (e.g., 70 123456)"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
