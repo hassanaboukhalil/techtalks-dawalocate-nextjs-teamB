@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import Link from "next/link";
 import { Eye, EyeOff, Sparkles } from "lucide-react";
+import { signIn } from "next-auth/react";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -50,8 +51,21 @@ export default function SignupPage() {
         return;
       }
 
-      // Success - redirect to login
-      router.push("/login?signup=success");
+      // Auto-login after successful signup
+      const signInResult = await signIn("credentials", {
+        email: formData.email,
+        password: formData.password,
+        redirect: false,
+      });
+
+      if (signInResult?.error) {
+        // Signup succeeded but login failed - redirect to login
+        router.push("/login?signup=success");
+        return;
+      }
+
+      // Redirect to home - middleware will handle routing to correct dashboard
+      router.push("/");
     } catch {
       setError("Failed to connect to server");
     } finally {
