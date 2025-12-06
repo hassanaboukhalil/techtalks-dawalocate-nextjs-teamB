@@ -14,6 +14,8 @@ import {
 import Link from "next/link";
 import { Eye, EyeOff, Sparkles } from "lucide-react";
 import { signIn } from "next-auth/react";
+import { CityAutocomplete } from "@/components/ui/CityAutocomplete";
+import { LEBANON_CITIES } from "@/constants/lebanon-cities";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -217,15 +219,14 @@ export default function SignupPage() {
                   <label className="text-sm font-medium text-gray-700">
                     City
                   </label>
-                  <Input
-                    type="text"
+                  <CityAutocomplete
+                    cities={LEBANON_CITIES}
                     value={formData.city}
-                    onChange={(e) =>
-                      setFormData({ ...formData, city: e.target.value })
+                    onChange={(value) =>
+                      setFormData({ ...formData, city: value })
                     }
-                    className="h-11 rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-gray-900"
-                    placeholder="Enter your city"
-                    required
+                    placeholder="Select your city"
+                    className="border-gray-300 focus:border-primary focus:ring-primary"
                   />
                 </div>
 
