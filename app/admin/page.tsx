@@ -1,8 +1,4 @@
-
-
 function Page() {
-    return <div>
-admin page
-  </div>;
-  }
-  export default Page;
+  return <div>admin page</div>;
+}
+export default Page;
