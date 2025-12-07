@@ -31,7 +31,7 @@ export default function SignupPage() {
     name: "",
     email: "",
     password: "",
-    userType: "",
+    userType: "patient",
     city: "",
     phone: "",
     address: "",
