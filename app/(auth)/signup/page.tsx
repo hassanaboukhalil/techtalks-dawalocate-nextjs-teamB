@@ -144,7 +144,7 @@ export default function SignupPage() {
       </div>
 
       {/* Right Panel - Form */}
-      <div className="md:w-1/2 flex flex-col items-center bg-card p-8 md:p-10 md:max-h-screen overflow-y-auto">
+      <div className="md:w-1/2 flex flex-col items-center bg-background p-8 md:p-10 md:max-h-screen overflow-y-auto">
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <Logo withTitle={false} width={28} height={28} />
