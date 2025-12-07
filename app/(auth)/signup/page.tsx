@@ -43,6 +43,19 @@ export default function SignupPage() {
     setError("");
     setLoading(true);
 
+    // Validate city and phone
+    if (!formData.city) {
+      setError("Please select your city");
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.phone || formData.phone.length !== 8) {
+      setError("Please enter a valid 8-digit phone number");
+      setLoading(false);
+      return;
+    }
+
     // Validate opening hours for pharmacy
     if (formData.userType === "pharmacy" && formData.openingHours) {
       try {
@@ -68,7 +81,7 @@ export default function SignupPage() {
       // Prepend +961 to phone number for backend
       const submissionData = {
         ...formData,
-        phone: formData.phone ? `+961${formData.phone.replace(/^0/, "")}` : "",
+        phone: formData.phone ? `+961${formData.phone}` : "",
       };
 
       const response = await fetch("/api/auth/signup", {
@@ -243,8 +256,8 @@ export default function SignupPage() {
               </Select>
             </div>
 
-            {/* Pharmacy/Charity Extra Fields */}
-            {showExtraFields && (
+            {/* Extra Fields for All User Types */}
+            {formData.userType && (
               <div className="space-y-5 pt-2 border-t border-gray-200">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">
@@ -284,32 +297,38 @@ export default function SignupPage() {
                       value={formData.phone}
                       onChange={(e) => {
                         const value = e.target.value.replace(/\D/g, "");
-                        setFormData({ ...formData, phone: value });
+                        if (value.length <= 8) {
+                          setFormData({ ...formData, phone: value });
+                        }
                       }}
-                      pattern="^(0)?(3|70|71|76|78|79|81)\d{6}$"
+                      pattern="^\d{8}$"
                       className="h-11 rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-gray-900 pl-[110px]"
-                      placeholder="70 123456"
+                      placeholder="70123456"
                       required
-                      title="Please enter a valid Lebanon phone number (e.g., 70 123456)"
+                      minLength={8}
+                      maxLength={8}
+                      title="Please enter exactly 8 digits (e.g., 70123456)"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">
-                    Address
-                  </label>
-                  <Input
-                    type="text"
-                    value={formData.address}
-                    onChange={(e) =>
-                      setFormData({ ...formData, address: e.target.value })
-                    }
-                    className="h-11 rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-gray-900"
-                    placeholder="Street address"
-                    required
-                  />
-                </div>
+                {showExtraFields && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Address
+                    </label>
+                    <Input
+                      type="text"
+                      value={formData.address}
+                      onChange={(e) =>
+                        setFormData({ ...formData, address: e.target.value })
+                      }
+                      className="h-11 rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-gray-900"
+                      placeholder="Street address"
+                      required
+                    />
+                  </div>
+                )}
 
                 {formData.userType === "pharmacy" && (
                   <>
