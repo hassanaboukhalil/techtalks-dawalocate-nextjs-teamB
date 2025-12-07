@@ -152,7 +152,7 @@ export default function SignupPage() {
               Create an account
             </h2>
           </div>
-          <p className="text-gray-600 text-sm">
+          <p className="text-gray-600 text-sm text-center">
             Join DawaLocate to get started
           </p>
         </div>
