@@ -12,11 +12,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Link from "next/link";
-import { Eye, EyeOff, Sparkles } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { CityAutocomplete } from "@/components/ui/CityAutocomplete";
 import { LEBANON_CITIES } from "@/constants/lebanon-cities";
 import { OpeningHoursInput } from "@/components/ui/OpeningHoursInput";
+import Logo from "@/components/layout/Logo";
 import Image from "next/image";
 
 import lebanonFlag from "@/public/images/Lebanon.jpeg";
@@ -131,9 +132,6 @@ export default function SignupPage() {
         <div className="relative z-10 flex flex-col justify-center items-center text-white px-12 w-full">
           <div className="max-w-md">
             <div className="mb-8">
-              <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6">
-                <Sparkles className="w-8 h-8 text-white" />
-              </div>
               <h1 className="text-4xl font-bold mb-4">Welcome to DawaLocate</h1>
             </div>
             <p className="text-lg text-white/90 leading-relaxed">
@@ -149,11 +147,11 @@ export default function SignupPage() {
       <div className="w-full max-w-md md:w-1/2 bg-background">
         <div className="bg-card shadow-lg p-8 md:p-10">
           <div className="mb-8">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-3 mb-2">
+              <Logo withTitle={false} width={28} height={28} />
               <h2 className="text-2xl font-bold text-gray-900">
                 Create an account
               </h2>
-              <Sparkles className="w-5 h-5 text-primary" />
             </div>
             <p className="text-gray-600 text-sm">
               Join DawaLocate to get started
