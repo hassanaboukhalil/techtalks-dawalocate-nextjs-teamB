@@ -28,7 +28,7 @@ export default function PharmacyInventoryPage() {
   useEffect(() => {
     const fetchMedicines = async () => {
       try {
-        const response = await axios.get("/api/medicines");
+        const response = await axios.get("/api/global");
         if (response.data.success) {
           setMedicines(response.data.data);
         }
@@ -216,4 +216,3 @@ export default function PharmacyInventoryPage() {
     </div>
   );
 }
-
