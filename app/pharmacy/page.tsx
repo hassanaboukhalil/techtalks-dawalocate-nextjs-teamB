@@ -4,10 +4,10 @@ const page = () => {
   return (
     <div className="p-8">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Patient Dashboard</h1>
+        <h1 className="text-3xl font-bold">Pharmacy Dashboard</h1>
         <LogoutButton />
       </div>
-      <div>patient home page</div>
+      <div>pharmacy home page</div>
     </div>
   );
 };
