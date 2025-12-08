@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"; // NextResponse → used to return JSON responses in Next.js API routes.
-// import { getCurrentUser, isPatient } from "@/lib/auth"; // Using your new helper , a helper that returns the currently logged-in user from authentication , isPatient(user) → a helper that checks if the user’s role is "PATIENT".
+//import {authOptions, getCurrentUser, isPatient } from "@/lib/auth"; // Using your new helper , a helper that returns the currently logged-in user from authentication , isPatient(user) → a helper that checks if the user’s role is "PATIENT".
 import { db } from "@/lib/db"; // db → Prisma database instance (db.healthProfile refers to the table/model).
+//import { getServerSession } from "next-auth";
 
 /*
 export async function GET() {
@@ -57,8 +58,7 @@ export async function GET() {
 */
 
 
-
-const TEMP_USER_ID = 3; // until real login is added
+const TEMP_USER_ID = 9; // until real login is added
 
 // ========= GET ==========
 export async function GET() {
@@ -78,7 +78,10 @@ export async function GET() {
   }
 }
 
+
 // ========= POST ===========
+
+
 export async function POST(req: Request) {
   try {
     const data = await req.json();
@@ -127,3 +130,135 @@ export async function POST(req: Request) {
     );
   }
 }
+
+/* try-1
+export async function POST(req: Request) {
+  try {
+    const user = await getCurrentUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (!isPatient(user)) {
+      return NextResponse.json(
+        { error: "Forbidden: Only patients can update their profile" },
+        { status: 403 }
+      );
+    }
+
+    const data = await req.json();
+
+    const saved = await db.healthProfile.upsert({
+      where: { userId: user.id },
+      create: {
+        userId: user.id,
+        fullName: data.fullName,
+        dob: data.dob,
+        gender: data.gender,
+        bloodType: data.bloodType,
+        height: data.height,
+        weight: data.weight,
+        conditions: data.conditions,
+        medications: data.medications,
+        emergencyName: data.contactName,
+        emergencyRelation: data.relationship,
+        emergencyPhone: data.contactNumber
+      },
+      update: {
+        fullName: data.fullName,
+        dob: data.dob,
+        gender: data.gender,
+        bloodType: data.bloodType,
+        height: data.height,
+        weight: data.weight,
+        conditions: data.conditions,
+        medications: data.medications,
+        emergencyName: data.contactName,
+        emergencyRelation: data.relationship,
+        emergencyPhone: data.contactNumber
+      }
+    });
+
+    return NextResponse.json(
+      { success: true, data: saved },
+      { status: 200 }
+    );
+
+  } catch (error) {
+    console.error("[HEALTH_PROFILE_POST]", error);
+    return NextResponse.json(
+      { error: "Failed to save profile" },
+      { status: 500 }
+    );
+  }
+}
+*/
+/*
+export async function POST(req: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const user = session.user;
+
+    if (!isPatient(user)) {
+      return NextResponse.json(
+        { error: "Forbidden: Only patients can update their profile" },
+        { status: 403 }
+      );
+    }
+
+    const data = await req.json();
+
+    const saved = await db.healthProfile.upsert({
+      where: { userId: user.id },
+      create: {
+        userId: user.id,
+        fullName: data.fullName,
+        dob: data.dob,
+        gender: data.gender,
+        bloodType: data.bloodType,
+        height: data.height,
+        weight: data.weight,
+        conditions: data.conditions,
+        medications: data.medications,
+        emergencyName: data.contactName,
+        emergencyRelation: data.relationship,
+        emergencyPhone: data.contactNumber,
+      },
+      update: {
+        fullName: data.fullName,
+        dob: data.dob,
+        gender: data.gender,
+        bloodType: data.bloodType,
+        height: data.height,
+        weight: data.weight,
+        conditions: data.conditions,
+        medications: data.medications,
+        emergencyName: data.contactName,
+        emergencyRelation: data.relationship,
+        emergencyPhone: data.contactNumber,
+      },
+    });
+
+    return NextResponse.json(
+      { success: true, data: saved },
+      { status: 200 }
+    );
+
+  } catch (error) {
+    console.error("[HEALTH_PROFILE_POST]", error);
+    return NextResponse.json(
+      { error: "Failed to save profile" },
+      { status: 500 }
+    );
+  }
+}
+*/

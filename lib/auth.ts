@@ -1,73 +1,79 @@
-import { type NextAuthOptions } from "next-auth";
+import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { db } from "@/lib/db";
 import bcrypt from "bcryptjs";
+import { db } from "./db";
 import { getServerSession } from "next-auth";
 
-//
-// 1. AUTH OPTIONS (REQUIRED by NextAuth)
-//
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        email: { label: "Email", type: "text" },
-        password: { label: "Password", type: "password" }
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error("Missing credentials");
+        }
 
         const user = await db.user.findUnique({
-          where: { email: credentials.email }
+          where: { email: credentials.email },
+          include: { userType: true },
         });
 
-        if (!user) return null;
+        if (!user) {
+          throw new Error("Invalid credentials");
+        }
 
-        const valid = await bcrypt.compare(credentials.password, user.password);
-        if (!valid) return null;
+        const isValid = await bcrypt.compare(
+          credentials.password,
+          user.passwordHash
+        );
+
+        if (!isValid) {
+          throw new Error("Invalid credentials");
+        }
 
         return {
-          id: user.id,
+          id: user.id.toString(),
           email: user.email,
           name: user.name,
-          role: user.role
+          userType: user.userType.name,
+          status: user.status,
         };
-      }
-    })
+      },
+    }),
   ],
-
-  session: { strategy: "jwt" },
-
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = user.role;
+        token.userType = user.userType;
+        token.status = user.status;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id;
-        session.user.role = token.role;
+        session.user.id = token.id as string;
+        session.user.userType = token.userType as string;
+        session.user.status = token.status as string;
       }
       return session;
-    }
-  }
+    },
+  },
+  pages: {
+    signIn: "/login",
+    signOut: "/login",
+  },
+  session: {
+    strategy: "jwt",
+  },
+  secret: process.env.NEXTAUTH_SECRET,
 };
 
-//
-// 2. getCurrentUser() — Used in backend routes
-//
-export async function getCurrentUser() {
+export const getCurrentUser = async () => {
   const session = await getServerSession(authOptions);
-  return session?.user ?? null;
-}
-
-//
-// 3. isPatient() — role-based permission helper
-//
-export function isPatient(user: { role?: string } | null): boolean {
-  return !!user && user.role === "patient";
-}
+  return session?.user;
+};
