@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { InventoryStatus } from "@/lib/generated/prisma/client";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 
 /**
@@ -9,21 +11,27 @@ import { InventoryStatus } from "@/lib/generated/prisma/client";
  */
 export async function POST(request: NextRequest) {
   try {
+    // Get authenticated user from session
+    const session = await getServerSession(authOptions);
+    
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: "Unauthorized. Please log in." 
+        },
+        { status: 401 }
+      );
+    }
+
+    // Get pharmacy ID from authenticated user
+    const pharmacyId = parseInt(session.user.id);
+
     // Parse request body
     const body = await request.json();
 
     // Validate required fields
-    const { pharmacyId, medicineId, quantity, status, expiresAt } = body;
-
-    if (!pharmacyId || typeof pharmacyId !== "number") {
-      return NextResponse.json(
-        { 
-          success: false,
-          error: "Invalid or missing pharmacyId. Must be a number." 
-        },
-        { status: 400 }
-      );
-    }
+    const { medicineId, quantity, status, expiresAt } = body;
 
     if (!medicineId || typeof medicineId !== "number") {
       return NextResponse.json(
@@ -202,4 +210,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
