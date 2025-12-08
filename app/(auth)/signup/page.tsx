@@ -124,7 +124,7 @@ export default function SignupPage() {
     formData.userType === "pharmacy" || formData.userType === "charity";
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-[#F5F7FA">
+    <div className="min-h-screen w-full flex items-center justify-center bg-[#F5F7FA] lg:bg-white">
       <div className="flex items-center justify-center md:w-screen bg-[#F5F7FA] h-3/4 overflow-y-auto">
         {/* Left Panel - Hidden on mobile */}
         <div className="hidden lg:flex justify-center items-center md:w-1/2 bg-linear-to-br from-[#0AA6C8] via-[#0886A2] to-[#6366f1] relative h-screen">
@@ -147,7 +147,7 @@ export default function SignupPage() {
         </div>
 
         {/* Right Panel - Form */}
-        <div className="md:w-[62%] lg:w-1/2 flex flex-col items-center bg-white p-8 md:p-10 md:max-h-screen lg:overflow-y-auto md:my-16">
+        <div className="md:w-[62%] lg:w-1/2 flex flex-col items-center bg-white p-8 md:p-10 md:max-h-screen lg:overflow-y-auto md:my-16 lg:my-0">
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-2">
               <Logo withTitle={false} width={28} height={28} />
