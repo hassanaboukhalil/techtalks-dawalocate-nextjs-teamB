@@ -2,6 +2,7 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { db } from "./db";
+import { getServerSession } from "next-auth";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -70,4 +71,9 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
   },
   secret: process.env.NEXTAUTH_SECRET,
+};
+
+export const getCurrentUser = async () => {
+  const session = await getServerSession(authOptions);
+  return session?.user;
 };
