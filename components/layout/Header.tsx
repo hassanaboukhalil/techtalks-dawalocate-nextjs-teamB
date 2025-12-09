@@ -1,9 +1,29 @@
+"use client";
+
 import Logo from "./Logo";
 import Navbar from "./Navbar";
+import { useEffect, useState } from "react";
 
 const Header = () => {
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <header className="my-container sections-max-width w-full flex justify-between items-center py-4 absolute top-0 z-50 bg-background border-solid border-b-2 border-[#BBBBBB]">
+    <header
+      className={`my-container sections-max-width w-full flex justify-between items-center py-4 fixed top-0 z-50 bg-background transition-all duration-300 ${
+        isScrolled
+          ? "shadow-md border-b border-gray-200"
+          : "border-b-2 border-[#BBBBBB]"
+      }`}
+    >
       <Logo withTitle />
       <Navbar />
     </header>
