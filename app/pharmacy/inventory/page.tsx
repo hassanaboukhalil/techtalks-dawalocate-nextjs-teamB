@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Plus, X } from "lucide-react";
+import { Plus, X, Search, ChevronDown } from "lucide-react";
 
 interface Medicine {
   id: number;
@@ -17,8 +17,11 @@ export default function PharmacyInventoryPage() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [medicines, setMedicines] = useState<Medicine[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedMedicine, setSelectedMedicine] = useState<Medicine | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const [formData, setFormData] = useState({
-    pharmacyId: "",
     medicineId: "",
     quantity: "",
     status: "IN_STOCK",
@@ -39,13 +42,46 @@ export default function PharmacyInventoryPage() {
     fetchMedicines();
   }, []);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Filter medicines based on search term
+  const filteredMedicines = medicines.filter((medicine) => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      medicine.name.toLowerCase().includes(searchLower) ||
+      medicine.genericName?.toLowerCase().includes(searchLower) ||
+      medicine.strength?.toLowerCase().includes(searchLower) ||
+      medicine.form?.toLowerCase().includes(searchLower)
+    );
+  });
+
+  const handleMedicineSelect = (medicine: Medicine) => {
+    setSelectedMedicine(medicine);
+    setFormData({ ...formData, medicineId: medicine.id.toString() });
+    setSearchTerm(medicine.name);
+    setShowDropdown(false);
+  };
+
+  const handleSearchFocus = () => {
+    setShowDropdown(true);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
       const payload = {
-        pharmacyId: parseInt(formData.pharmacyId),
         medicineId: parseInt(formData.medicineId),
         quantity: parseInt(formData.quantity),
         status: formData.status,
@@ -58,12 +94,13 @@ export default function PharmacyInventoryPage() {
         alert("Medicine added successfully!");
         setOpen(false);
         setFormData({
-          pharmacyId: "",
           medicineId: "",
           quantity: "",
           status: "IN_STOCK",
           expiresAt: "",
         });
+        setSearchTerm("");
+        setSelectedMedicine(null);
       }
     } catch (error: any) {
       alert(
@@ -102,42 +139,66 @@ export default function PharmacyInventoryPage() {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Pharmacy ID *
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    value={formData.pharmacyId}
-                    onChange={(e) =>
-                      setFormData({ ...formData, pharmacyId: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900"
-                  />
-                </div>
-
-                <div>
+                <div className="relative" ref={dropdownRef}>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Medicine *
                   </label>
-                  <select
-                    required
-                    value={formData.medicineId}
-                    onChange={(e) =>
-                      setFormData({ ...formData, medicineId: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900"
-                  >
-                    <option value="">Select a medicine</option>
-                    {medicines.map((medicine) => (
-                      <option key={medicine.id} value={medicine.id}>
-                        {medicine.name}
-                        {medicine.strength ? ` - ${medicine.strength}` : ""}
-                        {medicine.form ? ` (${medicine.form})` : ""}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Search size={18} className="text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Search for a medicine..."
+                      value={searchTerm}
+                      onChange={(e) => {
+                        setSearchTerm(e.target.value);
+                        setShowDropdown(true);
+                      }}
+                      onFocus={handleSearchFocus}
+                      className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md text-gray-900 focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                      <ChevronDown size={18} className="text-gray-400" />
+                    </div>
+                  </div>
+                  
+                  {showDropdown && filteredMedicines.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                      {filteredMedicines.map((medicine) => (
+                        <button
+                          key={medicine.id}
+                          type="button"
+                          onClick={() => handleMedicineSelect(medicine)}
+                          className={`w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors ${
+                            selectedMedicine?.id === medicine.id
+                              ? "bg-primary/10"
+                              : ""
+                          }`}
+                        >
+                          <div className="font-medium text-gray-900">{medicine.name}</div>
+                          <div className="text-sm text-gray-600">
+                            {medicine.genericName && (
+                              <span>{medicine.genericName}</span>
+                            )}
+                            {medicine.strength && (
+                              <span className="ml-2">• {medicine.strength}</span>
+                            )}
+                            {medicine.form && (
+                              <span className="ml-2">• {medicine.form}</span>
+                            )}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {showDropdown && searchTerm && filteredMedicines.length === 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg p-4 text-center text-gray-500">
+                      No medicines found
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -169,7 +230,6 @@ export default function PharmacyInventoryPage() {
                   >
                     <option value="IN_STOCK">In Stock</option>
                     <option value="LOW">Low</option>
-                    <option value="OUT">Out</option>
                   </select>
                 </div>
 
