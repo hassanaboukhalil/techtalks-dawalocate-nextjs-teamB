@@ -1,76 +1,125 @@
 import { FOOTER_LINKS, FOOTER_SOCIALS } from "./../../constants/footer";
 import Link from "next/link";
+import { Mail, MapPin, Heart } from "lucide-react";
 
 const Footer = () => {
   return (
-    <footer className="my-container mt-48 flex-center flex-col bg-background z-10 border-solid border-t-2 border-[#BBBBBB] relative">
-      <div className="max-w-[90rem]">
-        <div className="mt-16 flex flex-col lg:flex-row items-start justify-between gap-16 lg:gap-4 w-full">
-          {/* DawaLocate and a summary about the platform */}
-          <div className="flex flex-col lg:w-[30%]">
-            <h3 className="text-h3 text-primary">DawaLocate</h3>
-            <p className="mt-4">
-              DawaLocate is a web platform that helps patients find nearby
-              pharmacies with their needed medicine in stock, manage a digital
-              health profile with QR health card, and connect with donations and
-              charity campaigns.
-            </p>
-          </div>
-
-          {/* Footer links and socials */}
-          <div className="flex w-full justify-between lg:w-fit lg:justify-start lg:gap-24">
-            {/* Footer links */}
-            <div className="flex flex-col w-full gap-4">
-              <p className="font-bold">Quick Links</p>
-              <ul className="flex flex-col gap-2 text-gray">
-                {FOOTER_LINKS.map((item) => (
-                  <Link
-                    key={item.id}
-                    href={item.link}
-                    className="hover:text-[#0AA6C8]"
+    <footer className="bg-gray-900 text-white border-t border-gray-800">
+      <div className="my-container py-16">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+            {/* Brand Section */}
+            <div className="lg:col-span-2">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="bg-primary p-2 rounded-lg">
+                  <Heart className="size-6 text-white" fill="white" />
+                </div>
+                <h3 className="text-2xl font-bold text-white">DawaLocate</h3>
+              </div>
+              <p className="text-gray-400 leading-relaxed mb-6">
+                Connecting patients, pharmacies, and charities to ensure
+                everyone in Lebanon gets the medicine they need. Find medicines
+                faster, donate smarter, help better.
+              </p>
+              <div className="flex flex-col gap-3 text-gray-400">
+                <div className="flex items-center gap-2">
+                  <Mail className="size-4 text-primary" />
+                  <a
+                    href="mailto:info@dawalocate.com"
+                    className="hover:text-primary transition-colors"
                   >
-                    {item.label}
-                  </Link>
+                    info@dawalocate.com
+                  </a>
+                </div>
+                <div className="flex items-center gap-2">
+                  <MapPin className="size-4 text-primary" />
+                  <span>Beirut, Lebanon</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <h4 className="font-bold text-white mb-4">Quick Links</h4>
+              <ul className="flex flex-col gap-3">
+                {FOOTER_LINKS.map((item) => (
+                  <li key={item.id}>
+                    <Link
+                      href={item.link}
+                      className="text-gray-400 hover:text-primary transition-colors"
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
                 ))}
               </ul>
             </div>
 
-            {/* Data and Socials */}
-            <div className="flex flex-col gap-4 w-full">
-              <p className="font-bold">Let&apos;s Connect</p>
+            {/* Connect & Get Started */}
+            <div>
+              <h4 className="font-bold text-white mb-4">Get Started</h4>
+              <ul className="flex flex-col gap-3 mb-6">
+                <li>
+                  <Link
+                    href="/login"
+                    className="text-gray-400 hover:text-primary transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/register"
+                    className="text-gray-400 hover:text-primary transition-colors"
+                  >
+                    Register
+                  </Link>
+                </li>
+              </ul>
 
               {/* Socials */}
-              <div className="flex gap-2">
+              <h4 className="font-bold text-white mb-4">Follow Us</h4>
+              <div className="flex gap-3">
                 {FOOTER_SOCIALS.map((item) => (
                   <Link
                     key={item.id}
                     href={item.link}
-                    className="p-2 border-solid border-1 border-[#BBBBBB] rounded-2xl z-10
-                  hover:bg-gradient-to-r hover:from-[#0AA6C8] hover:to-[#0AA6C8] hover:transform hover:scale-105 hover:shadow-[0_0_10px_rgba(255,255,255,0.5)] transition-all duration-300"
+                    className="p-2 bg-gray-800 rounded-lg hover:bg-primary hover:scale-105 transition-all duration-300"
                     target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={item.label}
                   >
-                    <item.icon />
+                    <item.icon className="size-5" />
                   </Link>
                 ))}
               </div>
-
-              {/* Email and Location */}
-              <div className="text-gray">
-                <p>info@dawalocate.com</p>
-                <p>Beirut, Lebanon</p>
-              </div>
             </div>
           </div>
-        </div>
 
-        {/* copyright */}
-        <div className="mt-16 w-full flex-center border-solid border-t-2 border-[#0AA6C8]">
-          <span className="pt-4 pb-2 text-sm text-gray">
-            © 2025 DawaLocate. All rights reserved.
-          </span>
+          {/* Bottom Bar */}
+          <div className="mt-12 pt-8 border-t border-gray-800 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-gray-400">
+              © 2025 DawaLocate. All rights reserved.
+            </p>
+            <div className="flex gap-6 text-sm text-gray-400">
+              <Link
+                href="/privacy"
+                className="hover:text-primary transition-colors"
+              >
+                Privacy Policy
+              </Link>
+              <Link
+                href="/terms"
+                className="hover:text-primary transition-colors"
+              >
+                Terms of Service
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </footer>
   );
 };
+
 export default Footer;
