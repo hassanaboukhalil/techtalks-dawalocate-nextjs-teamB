@@ -118,7 +118,7 @@ model HealthProfile {
 
   // FULL HEALTH PROFILE FIELDS
   fullName           String?
-  dob                String?
+  dob                String? //date of birth
   gender             String?
   bloodType          String?
   height             String?
