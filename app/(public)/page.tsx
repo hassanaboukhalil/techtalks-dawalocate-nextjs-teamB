@@ -7,7 +7,7 @@ import HowItWorks from "@/components/pages-components/landing/HowItWorks";
 import ForPatients from "@/components/pages-components/landing/ForPatients";
 import ForPharmacies from "@/components/pages-components/landing/ForPharmacies";
 import ForCharities from "@/components/pages-components/landing/ForCharities";
-import Testimonials from "@/components/pages-components/landing/Testimonials";
+// import Testimonials from "@/components/pages-components/landing/Testimonials";
 import FAQ from "@/components/pages-components/landing/FAQ";
 import CTA from "@/components/pages-components/landing/CTA";
 import Footer from "@/components/layout/Footer";
@@ -39,7 +39,7 @@ export default function Home() {
         <ForPatients />
         <ForPharmacies />
         <ForCharities />
-        <Testimonials />
+        {/* <Testimonials /> */}
         <FAQ />
         <CTA />
       </main>
