@@ -1,7 +1,6 @@
 import {
   Home,
   Info,
-  Phone,
   LayoutDashboard,
   Search,
   FileText,
@@ -27,11 +26,11 @@ export interface NavItem {
 
 // 1. PUBLIC Navigation (Accessible by everyone)
 export const PUBLIC_NAV_ITEMS: NavItem[] = [
-  { id: 1, label: "Features", link: "/", icon: Home },
-  { id: 2, label: "For Patients", link: "/for-patients", icon: Tag },
-  { id: 3, label: "For Pharmacies", link: "/for-pharmacies", icon: Info },
-  { id: 4, label: "For Charities", link: "/for-charities", icon: Phone },
-  { id: 5, label: "FAQ", link: "/faq", icon: User },
+  { id: 1, label: "Features", link: "/#features", icon: Home },
+  { id: 2, label: "How It Works", link: "/#how-it-works", icon: Info },
+  { id: 3, label: "For Patients", link: "/#for-patients", icon: Tag },
+  { id: 4, label: "For Pharmacies", link: "/#for-pharmacies", icon: Building2 },
+  { id: 5, label: "For Charities", link: "/#for-charities", icon: Heart },
 ];
 
 // 2. PATIENT Navigation
