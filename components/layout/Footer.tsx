@@ -1,6 +1,7 @@
 import { FOOTER_LINKS, FOOTER_SOCIALS } from "./../../constants/footer";
 import Link from "next/link";
 import { Mail, MapPin, Heart } from "lucide-react";
+import Logo from "./Logo";
 
 const Footer = () => {
   return (
@@ -11,8 +12,8 @@ const Footer = () => {
             {/* Brand Section */}
             <div className="lg:col-span-2">
               <div className="flex items-center gap-2 mb-4">
-                <div className="bg-primary p-2 rounded-lg">
-                  <Heart className="size-6 text-white" fill="white" />
+                <div>
+                  <Logo withTitle={false} />
                 </div>
                 <h3 className="text-2xl font-bold text-white">DawaLocate</h3>
               </div>
