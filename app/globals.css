@@ -9,12 +9,14 @@
     --color-primary: #0AA6C8;
     --color-primary-hover: #E6F7FB;
     --color-secondary: #0886A2;
-    --color-background: #F5F7FA;
+    --color-background: #F8FAFB;
     --color-card: #FFFFFF;
     --color-green: #22C55E;
-    --color-gray: #bbbbbb;
+    --color-gray: #9CA3AF;
     --color-warning: #FF7A3C;
     --color-error: #E53935;
+    --color-accent: #06B6D4;
+    --color-light-gray: #F3F4F6;
 
     --container-padding-x: 1rem;
   }
