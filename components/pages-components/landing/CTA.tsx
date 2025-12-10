@@ -23,7 +23,7 @@ const CTA = () => {
             asChild
             size="lg"
             variant="outline"
-            className="text-base px-8 py-6 bg-primary text-black hover:bg-white/90 border-0"
+            className="text-base px-8 py-6 bg-primary text-white hover:bg-white/90 border-0"
           >
             <Link href="/register">
               Get Started Free
@@ -34,7 +34,7 @@ const CTA = () => {
             asChild
             size="lg"
             variant="ghost"
-            className="text-base px-8 py-6 bg-primary text-black hover:bg-white/10"
+            className="text-base px-8 py-6 bg-primary text-white hover:bg-white/10"
           >
             <Link href="/login">Already have an account? Sign in</Link>
           </Button>
