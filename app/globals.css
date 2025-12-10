@@ -6,7 +6,7 @@
 @layer base {
   :root {
     /* colors */
-    --color-primary: #0AA6C8;
+    /* --color-primary: #0AA6C8;
     --color-primary-hover: #E6F7FB;
     --color-secondary: #0886A2;
     --color-background: #F8FAFB;
@@ -16,7 +16,24 @@
     --color-warning: #FF7A3C;
     --color-error: #E53935;
     --color-accent: #06B6D4;
-    --color-light-gray: #F3F4F6;
+    --color-light-gray: #F3F4F6; */
+
+    /* Brand */
+    --color-primary:        #0AA6C8; /* main brand blue */
+    --color-primary-soft:   #E6F7FB; /* soft backgrounds, pills, hero bg */
+    --color-primary-dark:   #0886A2; /* hover state / stronger emphasis */
+
+    /* Neutrals */
+    --color-bg:             #F8FAFB; /* main page background */
+    --color-surface:        #FFFFFF; /* cards, header, sections */
+    --color-border-subtle:  #E5E7EB; /* light borders, dividers */
+    --color-text-main:      #0F172A; /* almost-black text */
+    --color-text-muted:     #6B7280; /* secondary text */
+
+    /* Semantic */
+    --color-success:        #22C55E;
+    --color-warning:        #F97316;
+    --color-error:          #EF4444;
 
     --container-padding-x: 1rem;
   }
@@ -66,7 +83,7 @@
 }
 
   /* ===== BACKGROUND COLORS ===== */
-  .bg-primary{
+  /* .bg-primary{
     background-color: var(--color-primary);
   }
   .bg-primary-hover{
@@ -86,10 +103,10 @@
   }
   .bg-green{
     background-color: var(--color-green);
-  }
+  } */
 
   /* ===== TEXT COLORS ===== */
-  .text-primary{
+  /* .text-primary{
     color: var(--color-primary);
   }
   .text-secondary{
@@ -103,6 +120,48 @@
   }
   .text-green{
     color: var(--color-green);
+  } */
+
+  /* Backgrounds */
+  .bg-primary{
+    background-color: var(--color-primary);
+  }
+  .bg-primary-soft{
+    background-color: var(--color-primary-soft);
+  }
+  .bg-primary-dark{
+    background-color: var(--color-primary-dark);
+  }
+  .bg-bg{
+    background-color: var(--color-bg);
+  }
+  .bg-background{
+    background-color: var(--color-bg);
+  }
+  .bg-surface{
+    background-color: var(--color-surface);
+  }
+
+  /* Text */
+  .text-main        { color: var(--color-text-main); }
+  .text-muted       { color: var(--color-text-muted); }
+  .text-primary     { color: var(--color-primary); }
+
+  /* Borders */
+  .border-subtle    { border-color: var(--color-border-subtle); }
+
+  /* Semantic */
+  .text-success{
+    color: var(--color-success);
+  }
+  .text-warning{
+    color: var(--color-warning);
+  }
+  .text-error{
+    color: var(--color-error);
+  }
+  .bg-success-soft{
+    background-color: color-mix(in srgb, var(--color-success) 10%, white);
   }
 
 /* ========================================== TAILWIND STYLES ==========================================*/
@@ -112,43 +171,132 @@
     @apply flex items-center justify-center;
   }
 
-  /* ===== text sizes */
-  .text-h1{
-    @apply font-bold text-4xl md:text-6xl lg:text-5xl;
+  /* ===== TYPOGRAPHY SCALE */
+  /* Hero/Page Headlines */
+  .text-h1 {
+    @apply font-bold text-5xl sm:text-6xl lg:text-7xl tracking-tight;
   }
-  .text-h2{
-    @apply font-bold text-4xl lg:text-4xl;
+  
+  /* Section Headlines */
+  .text-h2 {
+    @apply font-bold text-4xl sm:text-5xl lg:text-5xl tracking-tight;
   }
-  .text-h3{
-    @apply font-bold text-xl md:text-2xl lg:text-xl;
+  
+  /* Subsection/Card Headlines */
+  .text-h3 {
+    @apply font-bold text-2xl sm:text-3xl;
   }
 
-  .text-body-1{
-    @apply text-xl md:text-2xl lg:text-xl
+  /* Body Headlines (card titles) */
+  .text-h4 {
+    @apply font-bold text-lg sm:text-xl;
   }
-  .text-body-2{
-    @apply text-xl lg:text-lg
+
+  /* Body text (regular) */
+  .text-body {
+    @apply text-base lg:text-lg leading-relaxed;
   }
-  .text-body-3{
-    @apply text-xl lg:text-lg
+
+  /* Secondary body text */
+  .text-body-secondary {
+    @apply text-sm lg:text-base leading-relaxed;
   }
-  .text-body-4{
-    @apply text-xl lg:text-base
+
+  /* Small text (captions, labels) */
+  .text-caption {
+    @apply text-xs lg:text-sm font-medium;
   }
-  .text-body-5{
-    @apply text-xl lg:text-sm
+
+  /* Badge/Pill text */
+  .text-badge {
+    @apply text-xs sm:text-sm font-semibold;
+  }
+
+  /* ===== BUTTON UTILITY CLASSES */
+  .btn-primary {
+    @apply bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200;
+  }
+
+  .btn-secondary {
+    @apply bg-surface text-primary border border-subtle hover:bg-primary-soft transition-colors duration-200 px-6 py-3 rounded-lg font-semibold;
+  }
+
+  .btn-subtle {
+    @apply bg-primary-soft text-primary hover:bg-primary/10 px-6 py-3 rounded-lg font-semibold transition-colors duration-200;
+  }
+
+  /* ===== CARD STYLING */
+  .card-base {
+    @apply bg-surface rounded-xl border border-subtle shadow-sm p-6;
+  }
+
+  .card-elevated {
+    @apply bg-surface rounded-xl border border-subtle shadow-md hover:shadow-lg transition-shadow duration-200 p-6;
+  }
+
+  .card-soft {
+    @apply bg-primary-soft rounded-xl border border-primary/10 p-6;
+  }
+
+  /* ===== SECTION SPACING */
+  .section-spacing {
+    @apply py-16 sm:py-20 lg:py-24;
+  }
+
+  .section-spacing-dense {
+    @apply py-12 sm:py-16 lg:py-20;
+  }
+
+  /* ===== ICON STYLING */
+  .icon-primary {
+    @apply text-primary;
+  }
+
+  .icon-wrapper {
+    @apply flex items-center justify-center p-3 rounded-xl;
+  }
+
+  .icon-wrapper-primary {
+    @apply icon-wrapper bg-primary-soft;
+  }
+
+  .icon-wrapper-solid {
+    @apply icon-wrapper bg-primary text-white;
+  }
+
+  /* ===== BADGE/PILL STYLING */
+  .badge-primary {
+    @apply inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full text-badge;
+  }
+
+  .badge-soft {
+    @apply inline-flex items-center gap-2 bg-primary-soft text-primary px-4 py-2 rounded-full text-badge;
+  }
+
+  /* ===== DIVIDERS & BORDERS */
+  .divider-subtle {
+    @apply border-b border-subtle;
+  }
+
+  /* ===== GRID LAYOUTS */
+  .grid-features {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8;
+  }
+
+  .grid-features-2col {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-6;
   }
 
   /* ===== Gradient backgrounds for landing page */
   .gradient-primary {
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+    background: linear-gradient(135deg, var(--color-primary) 0%, #0886A2 100%);
   }
   
   .gradient-overlay {
     background: linear-gradient(to bottom, rgba(245, 247, 250, 0) 0%, rgba(245, 247, 250, 1) 100%);
   }
 
-  /* ===== Animations for landing page */
+  /* ===== ANIMATIONS for landing page */
   @keyframes fadeInUp {
     from {
       opacity: 0;
@@ -162,6 +310,21 @@
 
   .animate-fade-in-up {
     animation: fadeInUp 0.6s ease-out;
+  }
+
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .animate-slide-in-right {
+    animation: slideInRight 0.6s ease-out;
   }
 
   /* ===== Smooth scrolling offset for fixed header */
