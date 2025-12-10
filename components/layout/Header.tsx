@@ -18,10 +18,10 @@ const Header = () => {
 
   return (
     <header
-      className={`my-container sections-max-width w-full flex justify-between items-center py-4 fixed top-0 z-50 bg-background transition-all duration-300 ${
+      className={`my-container sections-max-width w-full flex justify-between items-center py-4 fixed top-0 z-50 bg-background/95 backdrop-blur-md transition-all duration-300 ${
         isScrolled
-          ? "shadow-md border-b border-gray-200"
-          : "border-b-2 border-[#BBBBBB]"
+          ? "shadow-lg border-b border-gray-100"
+          : "border-b border-gray-100"
       }`}
     >
       <Logo withTitle />
