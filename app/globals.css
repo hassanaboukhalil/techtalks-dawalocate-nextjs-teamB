@@ -7,8 +7,10 @@
   :root {
     /* colors */
     --color-primary: #2699b2;
+    /* --color-secondary: #085f72; */
+    --color-secondary: #b7f2ff;
+    --color-tertiary: #094A58;
     --color-primary-hover: #E6F7FB;
-    --color-secondary: #085f72;
     --color-background: #FFFFFF;
     --color-card: #F5F7FA;
     --color-green: #22C55E;
@@ -72,6 +74,9 @@
   .bg-secondary{
     background-color: var(--color-secondary);
   }
+  .bg-tertiary{
+    background-color: var(--color-tertiary);
+  }
   .bg-background{
       background-color: var(--color-background);
   }
@@ -91,6 +96,9 @@
   }
   .text-secondary{
     color: var(--color-secondary);
+  }
+  .text-tertiary{
+    color: var(--color-tertiary);
   }
   .text-background{
       color: var(--color-background);
