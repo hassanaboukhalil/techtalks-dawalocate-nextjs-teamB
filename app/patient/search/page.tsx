@@ -80,6 +80,14 @@ const STATUS_OPTIONS = [
   { value: 'IN_STOCK,LOW,OUT', label: 'All (Including Out of Stock)' },
 ] as const;
 
+const CITY_OPTIONS = [
+  { value: '', label: 'All Cities' },
+  { value: 'Beirut', label: 'Beirut' },
+  { value: 'Tripoli', label: 'Tripoli' },
+  { value: 'Sidon', label: 'Sidon' },
+  { value: 'Jounieh', label: 'Jounieh' },
+] as const;
+
 const getStatusBadgeConfig = (status: string) => {
   const configs: Record<string, { bg: string; text: string; border: string; label: string }> = {
     IN_STOCK: { 
@@ -149,7 +157,6 @@ export default function PatientSearchPage() {
   const [medicine, setMedicine] = useState('');
   const [city, setCity] = useState('');
   const [pharmacyName, setPharmacyName] = useState('');
-  const [status, setStatus] = useState('IN_STOCK,LOW');
   const [includeOutOfStock, setIncludeOutOfStock] = useState(false);
 
   // Results state
@@ -177,7 +184,6 @@ export default function PatientSearchPage() {
     try {
       const params = new URLSearchParams();
       params.append('medicine', medicine.trim());
-      params.append('status', status);
       params.append('includeOutOfStock', String(includeOutOfStock));
       
       if (city.trim()) params.append('city', city.trim());
@@ -209,7 +215,6 @@ export default function PatientSearchPage() {
     setMedicine('');
     setCity('');
     setPharmacyName('');
-    setStatus('IN_STOCK,LOW');
     setIncludeOutOfStock(false);
     setResults([]);
     setMatchingMedicines([]);
@@ -253,14 +258,29 @@ export default function PatientSearchPage() {
                 >
                   Medicine Name <span className="text-red-500">*</span>
                 </label>
-                <input
+                {/* Debug: Show current value */}
+                <div className="text-xs text-blue-600 mb-1">Current value: "{medicine}"</div>
+                <textarea
                   id="medicine"
-                  type="text"
                   placeholder="e.g., Paracetamol, Aspirin, Ibuprofen"
                   value={medicine}
-                  onChange={(e) => setMedicine(e.target.value)}
+                  onChange={(e) => {
+                    console.log('Medicine input changed:', e.target.value);
+                    setMedicine(e.target.value);
+                  }}
                   disabled={isLoading}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:bg-gray-100"
+                  rows={1}
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    outline: 'none',
+                    backgroundColor: 'white',
+                    color: 'black',
+                    fontSize: '14px',
+                    resize: 'none'
+                  }}
                   autoComplete="off"
                 />
                 <p className="text-xs text-gray-500">
@@ -269,7 +289,7 @@ export default function PatientSearchPage() {
               </div>
 
               {/* Filters Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* City */}
                 <div className="space-y-2">
                   <label 
@@ -278,16 +298,28 @@ export default function PatientSearchPage() {
                   >
                     City <span className="text-gray-400">(Optional)</span>
                   </label>
-                  <input
+                  <select
                     id="city"
-                    type="text"
-                    placeholder="e.g., Lahore, Karachi"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                     disabled={isLoading}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:bg-gray-100"
-                    autoComplete="off"
-                  />
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '6px',
+                      outline: 'none',
+                      backgroundColor: 'white',
+                      color: 'black',
+                      fontSize: '14px'
+                    }}
+                  >
+                    {CITY_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 {/* Pharmacy Name */}
@@ -305,32 +337,18 @@ export default function PatientSearchPage() {
                     value={pharmacyName}
                     onChange={(e) => setPharmacyName(e.target.value)}
                     disabled={isLoading}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:bg-gray-100"
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '6px',
+                      outline: 'none',
+                      backgroundColor: 'white',
+                      color: 'black',
+                      fontSize: '14px'
+                    }}
                     autoComplete="off"
                   />
-                </div>
-
-                {/* Status Filter */}
-                <div className="space-y-2">
-                  <label 
-                    htmlFor="status" 
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Stock Status
-                  </label>
-                  <select
-                    id="status"
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value)}
-                    disabled={isLoading}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:bg-gray-100"
-                  >
-                    {STATUS_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
                 </div>
               </div>
 
