@@ -7,9 +7,10 @@
   :root {
     /* colors */
     --color-primary: #0AA6C8;
+    --color-primary-hover: #E6F7FB;
     --color-secondary: #0886A2;
-    --color-background: #F5F7FA;
-    --color-card: #FFFFFF;
+    --color-background: #FFFFFF;
+    --color-card: #F5F7FA;
     --color-green: #22C55E;
     --color-gray: #bbbbbb;
     --color-warning: #FF7A3C;
@@ -56,12 +57,17 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
+    min-height: 100vh;
   }
 }
 
   /* ===== BACKGROUND COLORS ===== */
   .bg-primary{
     background-color: var(--color-primary);
+  }
+  .bg-primary-hover{
+    background-color: var(--color-primary-hover);
   }
   .bg-secondary{
     background-color: var(--color-secondary);
@@ -153,4 +159,66 @@ button{
   :root {
     --container-padding-x: 8rem;
   }
+}
+
+/* ========================================== Custom Animations ==========================================*/
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.2s ease-out;
+}
+
+/* Table row hover effects */
+[data-slot="table-row"]:hover {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Smooth button transitions */
+[data-slot="table-actions"] button {
+  transition: all 0.15s ease-in-out;
+}
+
+[data-slot="table-actions"] button:hover {
+  transform: translateY(-1px);
+}
+
+[data-slot="table-actions"] button:active {
+  transform: translateY(0);
 }
