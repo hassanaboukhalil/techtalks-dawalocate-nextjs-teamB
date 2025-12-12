@@ -10,7 +10,7 @@ const Hero = () => {
     <Section className="min-h-[90vh] flex-center flex-col pt-24 pb-16">
       <div className="max-w-5xl mx-auto text-center">
         {/* Badge */}
-        <div className="inline-flex items-center gap-2 bg-primary-hover px-4 py-2 rounded-full mb-6">
+        <div className="inline-flex items-center gap-2 bg-secondary px-4 py-2 rounded-full mb-6">
           <span className="text-primary font-semibold text-sm">
             🇱🇧 Serving Lebanon
           </span>
@@ -34,7 +34,7 @@ const Hero = () => {
           <Button
             asChild
             size="lg"
-            className="text-base px-8 py-6 bg-primary hover:bg-primary/90 text-white"
+            className="text-base px-8 py-6 hover:bg-[#094A58]! text-white"
           >
             <Link href="/register">
               <Search className="size-5" />
