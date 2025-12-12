@@ -135,7 +135,7 @@ AI should follow these core entities (names can slightly vary, but keep meaning 
 
 - `HealthProfile`
 
-  - `id` (Int, auto-increment, PK), `userId` (Int, FK to User, unique), `user` (relation to User), `conditions?` (String), `allergies?` (String), `currentMedications?` (String), `bloodType?` (String), `emergencyContact?` (String), `createdAt` (DateTime), `updatedAt` (DateTime).
+  - `id` (Int, auto-increment, PK), `userId` (Int, FK to User, unique), `user` (relation to User), `fullName?` (String), `dob?` (String), `gender?` (String), `bloodType?` (String), `height?` (String), `weight?` (String), `conditions?` (String), `medications?` (String), `emergencyName?` (String), `emergencyRelation?` (String), `emergencyPhone?` (String), `createdAt` (DateTime), `updatedAt` (DateTime).
   - **Indexes:** userId.
 
 - `DonationOffer`
@@ -303,24 +303,39 @@ components/
 
 ### 5.2 `components/ui/`
 
-**Purpose:** Reusable, low-level UI primitives with Tailwind styles. try to use shadcn/ui components whenever possible.
+**Purpose:** Reusable, low-level UI primitives with Tailwind styles. We use shadcn/ui components whenever possible.
 
-**Examples:**
+**Available Components:**
 
-- `components/ui/Button.tsx`
-- `components/ui/Input.tsx`
-- `components/ui/Textarea.tsx`
-- `components/ui/Card.tsx`
-- `components/ui/Badge.tsx`
-- `components/ui/Table.tsx`
+The following UI components are available and **must be reused** instead of creating new ones:
+
+- `components/ui/button.tsx` - **Button component** (variants: default, destructive, outline, secondary, ghost, link; sizes: default, sm, lg, icon, icon-sm, icon-lg)
+- `components/ui/input.tsx` - **Input component** for text inputs
+- `components/ui/textarea.tsx` - **Textarea component** for multi-line text
+- `components/ui/select.tsx` - **Select component** (with SelectTrigger, SelectContent, SelectItem, SelectValue)
+- `components/ui/card.tsx` - **Card components** (Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, CardAction)
+- `components/ui/table.tsx` - **Table components** (Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableCaption, TableActions, TableEmpty)
+- `components/ui/label.tsx` - **Label component** for form labels
+- `components/ui/dialog.tsx` - **Dialog component** for modals
+- `components/ui/CityAutocomplete.tsx` - **CityAutocomplete** for city selection
+- `components/ui/OpeningHoursInput.tsx` - **OpeningHoursInput** for pharmacy opening hours
+- `components/ui/LogoutButton.tsx` - **LogoutButton** for logout functionality
 
 **AI Guidelines:**
 
+- **CRITICAL: Always reuse existing UI components before creating new ones.**
+  - **DO NOT** create buttons from scratch - use `@/components/ui/button`
+  - **DO NOT** create inputs from scratch - use `@/components/ui/input`
+  - **DO NOT** create selects from scratch - use `@/components/ui/select`
+  - **DO NOT** create cards from scratch - use `@/components/ui/card`
+  - **DO NOT** create tables from scratch - use `@/components/ui/table`
+  - Check `components/ui/` directory first before creating any new UI primitive.
 - When you see repeated HTML/Tailwind patterns (buttons, form fields, cards), extract them into `components/ui/`.
 - Keep these components **dumb and reusable**:
   - Stateless where possible.
-  - Don’t hard-code domain-specific text or queries.
+  - Don't hard-code domain-specific text or queries.
 - Use these primitives inside `pages-components` and `layout` instead of re-styling from scratch.
+- Import components using the `@/components/ui/` alias (e.g., `import { Button } from "@/components/ui/button"`).
 
 ### 5.3 `components/pages-components/`
 
@@ -367,7 +382,40 @@ When adding a new component:
 3. **Is it tied to one specific page/role?** (patient search form, pharmacy inventory table, admin pharmacies table)
    → Put it in `components/pages-components/<area>/`.
 
-**Always try to reuse existing UI and layout components before creating new ones.** If you need a new generic primitive, add it in `components/ui` and keep it flexible.
+**CRITICAL: Always reuse existing UI and layout components before creating new ones. Check `components/ui/` directory first. Never create buttons, inputs, selects, cards, or tables from scratch.** If you need a new generic primitive, add it in `components/ui` and keep it flexible.
+
+### 5.5 Component Reuse Requirements
+
+**AI: Before creating any UI element, check if it already exists in `components/ui/`.**
+
+**Common mistakes to avoid:**
+
+1. ❌ Creating a `<button>` with custom classes instead of using `<Button>` from `@/components/ui/button`
+2. ❌ Creating an `<input>` with custom classes instead of using `<Input>` from `@/components/ui/input`
+3. ❌ Creating a `<select>` with custom classes instead of using `<Select>` from `@/components/ui/select`
+4. ❌ Creating custom card layouts instead of using `<Card>` components from `@/components/ui/card`
+5. ❌ Creating custom table markup instead of using `<Table>` components from `@/components/ui/table`
+
+**Correct approach:**
+
+```tsx
+// ✅ CORRECT: Use existing Button component
+import { Button } from "@/components/ui/button";
+
+<Button variant="default" size="lg" onClick={handleClick}>
+  Submit
+</Button>
+
+// ❌ WRONG: Creating button from scratch
+<button className="bg-primary text-white px-4 py-2 rounded">
+  Submit
+</button>
+```
+
+**If a component doesn't exist:**
+
+1. Check if a similar shadcn/ui component exists that can be added
+2. Only then create a new component in `components/ui/` following the same patterns
 
 ---
 
