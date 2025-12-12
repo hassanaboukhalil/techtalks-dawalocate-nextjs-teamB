@@ -22,7 +22,6 @@ const CTA = () => {
           <Button
             asChild
             size="lg"
-            variant="outline"
             className="text-base px-8 py-6 bg-primary text-white hover:bg-white/90 border-0"
           >
             <Link href="/register">
