@@ -2,15 +2,15 @@
 
 This file is for AI assistants (e.g. Cursor AI, GitHub Copilot Chat) to understand the project and follow our conventions.
 
-You are _not_ a generic boilerplate generator.  
+You are _not_ a generic boilerplate generator.
 You are a **team member** helping us build a real product.
 
 ---
 
 ## 1. Project Overview
 
-**Name:** DawaLocate  
-**Type:** Full-stack web app (monorepo)  
+**Name:** DawaLocate
+**Type:** Full-stack web app (monorepo)
 **Goal:** Help patients in Lebanon (and possibly globally) quickly find which nearby pharmacies currently have a specific medicine in stock and connect patients, donors, pharmacies, and charities around hard-to-find medicines.
 
 ### Core Use Cases
@@ -258,20 +258,105 @@ Use REST-like routes under `app/api`, **grouped by domain/role**:
 
 ### Brand & Colors
 
-- Primary brand color: class `text-primary` or `bg-primary`
-- Common usage:
-  - Primary buttons and highlights
-  - Selected states, key icons
-- Backgrounds:
-  - Main app background: class `bg-background`
-  - Cards: class `bg-card`
-- Status colors:
-  - In stock: teal
-  - Low stock: warm orange
-  - Out of stock: red/gray
-- Text:
-  - Main text: dark gray (e.g. Tailwind `gray-900`)
-  - Muted text: Tailwind `gray-500` / `gray-600`
+All colors are defined as CSS variables in `app/globals.css` and should be used via utility classes. **Never hard-code hex values directly in components**.
+
+**Available Color Variables:**
+
+- `--color-primary`: `#2699b2` - Main brand color (teal/cyan)
+- `--color-secondary`: `#b7f2ff` - Light secondary color (light cyan)
+- `--color-tertiary`: `#094A58` - Dark tertiary color (dark teal)
+- `--color-primary-hover`: `#E6F7FB` - Light hover background
+- `--color-background`: `#FFFFFF` - Main app background (white)
+- `--color-card`: `#F5F7FA` - Card/container background (light gray)
+- `--color-green`: `#22C55E` - Success/green color
+- `--color-gray`: `#bbbbbb` - Neutral gray
+- `--color-warning`: `#FF7A3C` - Warning/orange color
+- `--color-error`: `#E53935` - Error/red color
+
+**How to Use Colors:**
+
+Colors are accessed via utility classes defined in `app/globals.css`:
+
+**Background Colors:**
+
+- `bg-primary` - Primary brand background
+- `bg-secondary` - Secondary/light background (used for section backgrounds)
+- `bg-tertiary` - Dark tertiary background (used for hover effect in button and other use cases)
+- `bg-primary-hover` - Light hover background
+- `bg-background` - Main app background (white)
+- `bg-card` - Card/container background (light gray)
+- `bg-green` - Success/green background
+- `bg-gray` - Neutral gray background
+
+**Text Colors:**
+
+- `text-primary` - Primary brand text color
+- `text-secondary` - Secondary text color
+- `text-tertiary` - Dark tertiary text color
+- `text-background` - White text (for dark backgrounds)
+- `text-gray` - Neutral gray text
+- `text-green` - Success/green text
+
+**Common Usage Patterns:**
+
+1. **Primary Actions & Highlights:**
+
+   ```tsx
+   // Primary buttons
+   <Button className="bg-primary text-white hover:bg-[#094A58]!">
+     Submit
+   </Button>
+
+   // Text highlights
+   <span className="text-primary">Important Text</span>
+
+   // Icon backgrounds
+   <div className="bg-secondary p-3 rounded-lg">
+     <Icon className="text-primary" />
+   </div>
+   ```
+
+2. **Section Backgrounds:**
+
+   ```tsx
+   // Alternating section backgrounds
+   <Section className="bg-secondary">  // Light section
+   <Section className="bg-background"> // White section
+   <Section className="bg-card">        // Card section
+   ```
+
+3. **Cards & Containers:**
+
+   ```tsx
+   <div className="bg-card p-6 rounded-xl">{/* Card content */}</div>
+   ```
+
+4. **Gradients:**
+
+   ```tsx
+   <div className="bg-gradient-to-br from-primary to-secondary">
+     {/* Gradient background */}
+   </div>
+   ```
+
+5. **Status Colors:**
+
+   - In stock: Use `text-green` or `bg-green`
+   - Low stock: Use `text-warning` or `bg-warning` (orange)
+   - Out of stock: Use `text-gray` or `text-error` (red)
+
+6. **Text Hierarchy:**
+   - Main headings: `text-gray-900` (Tailwind class)
+   - Body text: `text-gray-700` or `text-gray-600` (Tailwind classes)
+   - Muted text: `text-gray-500` or `text-gray-600` (Tailwind classes)
+
+**Important Notes:**
+
+- **Always use utility classes** (`bg-primary`, `text-primary`, etc.) instead of hard-coding hex values
+- For hover states that need the tertiary color, you can use: `hover:bg-(--color-tertiary)!` (with `!` for important override)
+- For borders, use: `border-primary`, `border-secondary`, etc.
+- When using Tailwind's built-in gray scale (`gray-900`, `gray-600`, etc.), these are fine to use directly
+<!-- - The color system is designed to work with both light and dark modes (dark mode variables are defined in `globals.css`) -->
 
 ### Components
 
