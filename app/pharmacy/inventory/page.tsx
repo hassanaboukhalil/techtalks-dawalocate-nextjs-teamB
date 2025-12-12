@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Plus, X, Search, ChevronDown, PackageOpen, Pencil } from "lucide-react";
+import { Plus, X, Search, ChevronDown, PackageOpen, Pencil, Trash2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -201,6 +201,35 @@ export default function PharmacyInventoryPage() {
     } catch (error: any) {
       alert(
         error.response?.data?.error || "Failed to update medicine"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (item: InventoryItem) => {
+    // Confirm deletion
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${item.medicine.name}" from your inventory?\n\nThis action cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    setLoading(true);
+
+    try {
+      const response = await axios.delete(
+        `/api/pharmacy/inventory?inventoryId=${item.id}`
+      );
+
+      if (response.data.success) {
+        alert(response.data.message || "Medicine deleted successfully!");
+        // Refresh inventory
+        fetchInventory();
+      }
+    } catch (error: any) {
+      alert(
+        error.response?.data?.error || "Failed to delete medicine from inventory"
       );
     } finally {
       setLoading(false);
@@ -406,7 +435,7 @@ export default function PharmacyInventoryPage() {
                   <TableHead className="text-center bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">Quantity</TableHead>
                   <TableHead className="text-center bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">Status</TableHead>
                   <TableHead className="bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">Expires At</TableHead>
-                  <TableHead className="text-center w-[100px] bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">Actions</TableHead>
+                  <TableHead className="text-center w-[120px] bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -453,14 +482,25 @@ export default function PharmacyInventoryPage() {
                           : "-"}
                       </TableCell>
                       <TableCell>
-                        <button
-                          onClick={() => handleEdit(item)}
-                          className="p-2 rounded-md bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700 transition-all duration-200 transform hover:scale-110 active:scale-95"
-                          aria-label={`Edit ${item.medicine.name}`}
-                          title={`Edit ${item.medicine.name}`}
-                        >
-                          <Pencil size={18} />
-                        </button>
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => handleEdit(item)}
+                            className="p-2 rounded-md bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700 transition-all duration-200 transform hover:scale-110 active:scale-95"
+                            aria-label={`Edit ${item.medicine.name}`}
+                            title={`Edit ${item.medicine.name}`}
+                          >
+                            <Pencil size={18} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(item)}
+                            disabled={loading}
+                            className="p-2 rounded-md bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 transition-all duration-200 transform hover:scale-110 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                            aria-label={`Delete ${item.medicine.name}`}
+                            title={`Delete ${item.medicine.name}`}
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
