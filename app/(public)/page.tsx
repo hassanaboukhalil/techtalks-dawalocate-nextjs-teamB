@@ -1,33 +1,49 @@
-import Link from "next/link";
-import { Search, Heart, Building2, Users, QrCode, Package } from "lucide-react";
+import type { Metadata } from "next";
+import Header from "@/components/layout/Header";
+import Hero from "@/components/pages-components/landing/Hero";
+import TrustBadges from "@/components/pages-components/landing/TrustBadges";
+import Features from "@/components/pages-components/landing/Features";
+import HowItWorks from "@/components/pages-components/landing/HowItWorks";
+import ForPatients from "@/components/pages-components/landing/ForPatients";
+import ForPharmacies from "@/components/pages-components/landing/ForPharmacies";
+import ForCharities from "@/components/pages-components/landing/ForCharities";
+// import Testimonials from "@/components/pages-components/landing/Testimonials";
+import FAQ from "@/components/pages-components/landing/FAQ";
+import CTA from "@/components/pages-components/landing/CTA";
+import Footer from "@/components/layout/Footer";
+
+export const metadata: Metadata = {
+  title: "DawaLocate - Find Medicines, Save Lives | Lebanon's Medicine Locator",
+  description:
+    "Find nearby pharmacies with your needed medicines in stock. Connect patients, pharmacies, and charities around hard-to-find medications in Lebanon. Free, verified, and real-time.",
+  keywords:
+    "medicine finder Lebanon, pharmacy locator, find medicine, Lebanon pharmacies, medicine availability, donate medicine, medicine donation, health card Lebanon, QR health card",
+  openGraph: {
+    title: "DawaLocate - Find Medicines, Save Lives",
+    description:
+      "Quickly locate nearby pharmacies with your needed medicines in stock. Connect with donors and charities around hard-to-find medications.",
+    type: "website",
+    locale: "en_US",
+  },
+};
 
 export default function Home() {
   return (
-    <div className="text-center">
-      <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 tracking-tight">
-        Find Medicines,
-        <span className="block text-primary">Save Lives.</span>
-      </h1>
-      <p className="mt-6 text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
-        Quickly locate nearby pharmacies with your needed medicines in stock.
-        Connect patients, donors, pharmacies, and charities around hard-to-find
-        medications.
-      </p>
-      <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-        <Link
-          href="/patient/search"
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-8 py-3 text-white font-medium hover:opacity-90 transition-opacity"
-        >
-          <Search className="h-5 w-5" />
-          Search Medicines
-        </Link>
-        <Link
-          href="/campaigns"
-          className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-8 py-3 text-gray-900 font-medium hover:bg-gray-50 transition-colors"
-        >
-          View Campaigns
-        </Link>
-      </div>
-    </div>
+    <>
+      <Header />
+      <main>
+        <Hero />
+        <TrustBadges />
+        <Features />
+        <HowItWorks />
+        <ForPatients />
+        <ForPharmacies />
+        <ForCharities />
+        {/* <Testimonials /> */}
+        <FAQ />
+        <CTA />
+      </main>
+      <Footer />
+    </>
   );
 }
