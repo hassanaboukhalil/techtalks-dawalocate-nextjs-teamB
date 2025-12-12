@@ -25,12 +25,7 @@ const Navbar = () => {
           ))}
         </ul>
         <div className="w-px h-6 bg-gray-200"></div>
-        <Button
-          asChild
-          variant="outline"
-          size="sm"
-          className="text-sm border-primary bg-primary hover:bg-[#2699b2]! text-white"
-        >
+        <Button asChild size="sm" className="text-sm border-primary text-white">
           <Link href="/login">
             <LogIn className="size-4" />
             Login
