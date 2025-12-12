@@ -93,7 +93,7 @@ const FAQ = () => {
         </div>
 
         {/* Contact Support */}
-        <div className="mt-12 text-center p-8 bg-primary-hover rounded-2xl">
+        <div className="mt-12 text-center p-8 bg-secondary rounded-2xl">
           <h3 className="text-xl font-bold text-gray-900 mb-2">
             Still have questions?
           </h3>
