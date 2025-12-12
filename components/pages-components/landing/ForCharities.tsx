@@ -35,12 +35,12 @@ const charityFeatures = [
 
 const ForCharities = () => {
   return (
-    <Section className="py-20 bg-background" id="for-charities">
+    <Section className="py-20 bg-secondary" id="for-charities">
       <div className="max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left: Content */}
           <div>
-            <div className="inline-block bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-full mb-6">
+            <div className="inline-block bg-primary text-white text-sm font-semibold px-4 py-2 rounded-full mb-6">
               For Charities
             </div>
             <h2 className="text-4xl sm:text-5xl font-bold text-gray-900">
@@ -54,7 +54,7 @@ const ForCharities = () => {
             <Button
               asChild
               size="lg"
-              className="mt-8 bg-secondary hover:bg-secondary/90 text-white"
+              className="mt-8 bg-primary hover:bg-[#094A58]! text-white"
             >
               <Link href="/register">Start a Campaign</Link>
             </Button>
