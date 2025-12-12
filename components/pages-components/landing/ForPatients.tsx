@@ -36,7 +36,7 @@ const patientFeatures = [
 
 const ForPatients = () => {
   return (
-    <Section className="py-20 bg-primary-hover" id="for-patients">
+    <Section className="py-20 bg-secondary" id="for-patients">
       <div className="max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left: Content */}
@@ -56,7 +56,7 @@ const ForPatients = () => {
             <Button
               asChild
               size="lg"
-              className="mt-8 bg-primary hover:bg-primary/90 text-white"
+              className="mt-8 bg-primary hover:bg-[#094A58]! text-white"
             >
               <Link href="/register">Get Started Free</Link>
             </Button>
