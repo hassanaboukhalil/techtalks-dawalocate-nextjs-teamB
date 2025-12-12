@@ -75,9 +75,9 @@ const Features = () => {
             return (
               <div
                 key={feature.id}
-                className="bg-card p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow border border-gray-100"
+                className="bg-card p-8 rounded-2xl shadow-sm hover:shadow-2xl transition-shadow border border-gray-100 hover:border-[#2699b2]!"
               >
-                <div className="bg-primary-hover p-3 rounded-xl w-fit">
+                <div className="bg-secondary p-3 rounded-xl w-fit">
                   <Icon className="size-6 text-primary" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mt-6">
