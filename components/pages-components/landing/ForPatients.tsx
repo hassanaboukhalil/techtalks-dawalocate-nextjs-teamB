@@ -71,7 +71,7 @@ const ForPatients = () => {
                   key={feature.id}
                   className="bg-card p-6 rounded-xl shadow-sm"
                 >
-                  <div className="bg-primary-hover p-3 rounded-lg w-fit">
+                  <div className="bg-secondary p-3 rounded-lg w-fit">
                     <Icon className="size-5 text-primary" />
                   </div>
                   <h3 className="font-bold text-gray-900 mt-4">
