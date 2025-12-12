@@ -29,7 +29,7 @@ const Navbar = () => {
           asChild
           variant="outline"
           size="sm"
-          className="text-sm border-primary bg-primary hover:bg-primary-hover text-white"
+          className="text-sm border-primary bg-primary hover:bg-[#094A58]! text-white"
         >
           <Link href="/login">
             <LogIn className="size-4" />
@@ -64,7 +64,7 @@ const Navbar = () => {
               <Button
                 asChild
                 size="sm"
-                className="w-full bg-primary hover:bg-primary/90 text-white"
+                className="w-full bg-primary hover:bg-[#094A58] text-white"
               >
                 <Link href="/login">
                   <LogIn className="size-4" />
