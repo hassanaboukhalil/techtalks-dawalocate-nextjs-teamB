@@ -36,7 +36,7 @@ const pharmacyFeatures = [
 
 const ForPharmacies = () => {
   return (
-    <Section className="py-20 bg-card" id="for-pharmacies">
+    <Section className="py-20 bg-white" id="for-pharmacies">
       <div className="max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left: Features */}
@@ -64,7 +64,7 @@ const ForPharmacies = () => {
 
           {/* Right: Content */}
           <div className="order-1 lg:order-2">
-            <div className="inline-block bg-secondary text-white text-sm font-semibold px-4 py-2 rounded-full mb-6">
+            <div className="inline-block bg-primary text-white text-sm font-semibold px-4 py-2 rounded-full mb-6">
               For Pharmacies
             </div>
             <h2 className="text-4xl sm:text-5xl font-bold text-gray-900">
@@ -79,7 +79,7 @@ const ForPharmacies = () => {
             <Button
               asChild
               size="lg"
-              className="mt-8 bg-secondary hover:bg-secondary/90 text-white"
+              className="mt-8 bg-primary hover:bg-[#094A58]! text-white"
             >
               <Link href="/register">Register Your Pharmacy</Link>
             </Button>
