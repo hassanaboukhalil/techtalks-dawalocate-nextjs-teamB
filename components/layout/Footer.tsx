@@ -27,7 +27,7 @@ const Footer = () => {
                   <Mail className="size-4 text-primary" />
                   <a
                     href="mailto:info@dawalocate.com"
-                    className="hover:text-primary transition-colors"
+                    className="hover:text-(--color-primary)! transition-colors"
                   >
                     info@dawalocate.com
                   </a>
@@ -47,7 +47,7 @@ const Footer = () => {
                   <li key={item.id}>
                     <Link
                       href={item.link}
-                      className="text-gray-400 hover:text-primary transition-colors"
+                      className="text-gray-400 hover:text-(--color-primary)! transition-colors"
                     >
                       {item.label}
                     </Link>
@@ -63,7 +63,7 @@ const Footer = () => {
                 <li>
                   <Link
                     href="/login"
-                    className="text-gray-400 hover:text-primary transition-colors"
+                    className="text-gray-400 hover:text-(--color-primary)! transition-colors"
                   >
                     Sign In
                   </Link>
@@ -71,7 +71,7 @@ const Footer = () => {
                 <li>
                   <Link
                     href="/register"
-                    className="text-gray-400 hover:text-primary transition-colors"
+                    className="text-gray-400 hover:text-(--color-primary)! transition-colors"
                   >
                     Register
                   </Link>
@@ -85,7 +85,7 @@ const Footer = () => {
                   <Link
                     key={item.id}
                     href={item.link}
-                    className="p-2 bg-gray-800 rounded-lg hover:bg-primary hover:scale-105 transition-all duration-300"
+                    className="p-2 bg-gray-800 rounded-lg hover:bg-(--color-primary)! hover:scale-105 transition-all duration-300"
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={item.label}
@@ -105,13 +105,13 @@ const Footer = () => {
             <div className="flex gap-6 text-sm text-gray-400">
               <Link
                 href="/privacy"
-                className="hover:text-primary transition-colors"
+                className="hover:text-(--color-primary)! transition-colors"
               >
                 Privacy Policy
               </Link>
               <Link
                 href="/terms"
-                className="hover:text-primary transition-colors"
+                className="hover:text-(--color-primary)! transition-colors"
               >
                 Terms of Service
               </Link>
