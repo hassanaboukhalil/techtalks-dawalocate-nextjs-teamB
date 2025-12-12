@@ -32,8 +32,8 @@ const CTA = () => {
           <Button
             asChild
             size="lg"
-            variant="ghost"
-            className="text-base px-8 py-6 bg-primary text-white hover:bg-white/10"
+            variant="outline"
+            className="text-base px-8 py-6"
           >
             <Link href="/login">Already have an account? Sign in</Link>
           </Button>
