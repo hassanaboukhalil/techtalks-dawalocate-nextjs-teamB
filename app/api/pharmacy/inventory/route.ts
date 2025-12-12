@@ -6,6 +6,99 @@ import { authOptions } from "@/lib/auth";
 
 
 /**
+ * GET /api/pharmacy/inventory
+ * Fetch all medicines in pharmacy inventory
+ */
+export async function GET(request: NextRequest) {
+  try {
+    // Get authenticated user from session
+    const session = await getServerSession(authOptions);
+    
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: "Unauthorized. Please log in." 
+        },
+        { status: 401 }
+      );
+    }
+
+    // Get pharmacy ID from authenticated user
+    const pharmacyId = parseInt(session.user.id);
+
+    // Verify pharmacy exists and is a pharmacy user
+    const pharmacy = await db.user.findUnique({
+      where: { id: pharmacyId },
+      include: { userType: true }
+    });
+
+    if (!pharmacy) {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: "Pharmacy not found." 
+        },
+        { status: 404 }
+      );
+    }
+
+    if (pharmacy.userType.name !== "pharmacy") {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: "User is not a pharmacy." 
+        },
+        { status: 403 }
+      );
+    }
+
+    // Fetch all inventory items for this pharmacy
+    const inventoryItems = await db.pharmacyMedicine.findMany({
+      where: {
+        pharmacyId
+      },
+      include: {
+        medicine: {
+          select: {
+            id: true,
+            name: true,
+            genericName: true,
+            strength: true,
+            form: true,
+            imageUrl: true,
+            description: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Inventory fetched successfully.",
+        data: inventoryItems
+      },
+      { status: 200 }
+    );
+
+  } catch (error) {
+    console.error("Error fetching pharmacy inventory:", error);
+
+    return NextResponse.json(
+      { 
+        success: false,
+        error: "Internal server error. Failed to fetch inventory." 
+      },
+      { status: 500 }
+    );
+  }
+}
+
+/**
  * POST /api/pharmacy/inventory
  * Add new medicine to pharmacy inventory
  */
@@ -54,7 +147,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate status if provided
-    const validStatuses: InventoryStatus[] = ["IN_STOCK", "LOW", "OUT"];
+    const validStatuses: InventoryStatus[] = ["IN_STOCK", "LOW","OUT"];
     const inventoryStatus: InventoryStatus = status || (quantity > 0 ? "IN_STOCK" : "OUT");
     
     if (status && !validStatuses.includes(status)) {
@@ -205,6 +298,406 @@ export async function POST(request: NextRequest) {
       { 
         success: false,
         error: "Internal server error. Failed to add medicine to inventory." 
+      },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * PUT /api/pharmacy/inventory
+ * Update existing medicine in pharmacy inventory
+ */
+export async function PUT(request: NextRequest) {
+  try {
+    // Get authenticated user from session
+    const session = await getServerSession(authOptions);
+    
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: "Unauthorized. Please log in." 
+        },
+        { status: 401 }
+      );
+    }
+
+    // Get pharmacy ID from authenticated user
+    const pharmacyId = parseInt(session.user.id);
+
+    // Parse request body
+    const body = await request.json();
+
+    // Validate required fields
+    const { inventoryId, quantity, status, expiresAt } = body;
+
+    if (!inventoryId || typeof inventoryId !== "number") {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: "Invalid or missing inventoryId. Must be a number." 
+        },
+        { status: 400 }
+      );
+    }
+
+    // At least one field must be provided for update
+    if (quantity === undefined && !status && expiresAt === undefined) {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: "At least one field (quantity, status, or expiresAt) must be provided for update." 
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validate quantity if provided
+    if (quantity !== undefined && (typeof quantity !== "number" || quantity < 0)) {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: "Invalid quantity. Must be a non-negative number." 
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validate status if provided
+    const validStatuses: InventoryStatus[] = ["IN_STOCK", "LOW", "OUT"];
+    if (status && !validStatuses.includes(status)) {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: `Invalid status. Must be one of: ${validStatuses.join(", ")}` 
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validate expiresAt if provided
+    let expiryDate: Date | null | undefined;
+    if (expiresAt !== undefined) {
+      if (expiresAt === null) {
+        expiryDate = null; // Allow explicitly removing expiry date
+      } else {
+        expiryDate = new Date(expiresAt);
+        if (isNaN(expiryDate.getTime())) {
+          return NextResponse.json(
+            { 
+              success: false,
+              error: "Invalid expiresAt date format. Use ISO 8601 format or null." 
+            },
+            { status: 400 }
+          );
+        }
+      }
+    }
+
+    // Verify pharmacy exists and is a pharmacy user
+    const pharmacy = await db.user.findUnique({
+      where: { id: pharmacyId },
+      include: { userType: true }
+    });
+
+    if (!pharmacy) {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: "Pharmacy not found." 
+        },
+        { status: 404 }
+      );
+    }
+
+    if (pharmacy.userType.name !== "pharmacy") {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: "User is not a pharmacy." 
+        },
+        { status: 403 }
+      );
+    }
+
+    // Verify inventory item exists and belongs to this pharmacy
+    const existingInventory = await db.pharmacyMedicine.findUnique({
+      where: { id: inventoryId }
+    });
+
+    if (!existingInventory) {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: "Inventory item not found." 
+        },
+        { status: 404 }
+      );
+    }
+
+    if (existingInventory.pharmacyId !== pharmacyId) {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: "You do not have permission to edit this inventory item." 
+        },
+        { status: 403 }
+      );
+    }
+
+    // Build update data object dynamically
+    const updateData: {
+      quantity?: number;
+      status?: InventoryStatus;
+      expiresAt?: Date | null;
+    } = {};
+
+    if (quantity !== undefined) {
+      updateData.quantity = quantity;
+    }
+
+    if (status) {
+      updateData.status = status;
+    }
+
+    if (expiresAt !== undefined) {
+      updateData.expiresAt = expiryDate;
+    }
+
+    // If quantity is updated and status is not explicitly provided, auto-adjust status
+    if (quantity !== undefined && !status) {
+      if (quantity === 0) {
+        updateData.status = "OUT";
+      } else if (quantity > 0 && existingInventory.status === "OUT") {
+        updateData.status = "IN_STOCK";
+      }
+    }
+
+    // Update pharmacy medicine inventory entry
+    const updatedPharmacyMedicine = await db.pharmacyMedicine.update({
+      where: { id: inventoryId },
+      data: updateData,
+      include: {
+        medicine: {
+          select: {
+            id: true,
+            name: true,
+            genericName: true,
+            strength: true,
+            form: true,
+            imageUrl: true,
+            description: true
+          }
+        },
+        pharmacy: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            city: true,
+            address: true,
+            phone: true
+          }
+        }
+      }
+    });
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Medicine inventory updated successfully.",
+        data: updatedPharmacyMedicine
+      },
+      { status: 200 }
+    );
+
+  } catch (error) {
+    console.error("Error updating medicine inventory:", error);
+
+    // Handle Prisma-specific errors
+    if (error instanceof Error) {
+      // Record not found error
+      if (error.message.includes("Record to update not found")) {
+        return NextResponse.json(
+          { 
+            success: false,
+            error: "Inventory item not found." 
+          },
+          { status: 404 }
+        );
+      }
+    }
+
+    return NextResponse.json(
+      { 
+        success: false,
+        error: "Internal server error. Failed to update medicine inventory." 
+      },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * DELETE /api/pharmacy/inventory
+ * Delete medicine from pharmacy inventory
+ */
+export async function DELETE(request: NextRequest) {
+  try {
+    // Get authenticated user from session
+    const session = await getServerSession(authOptions);
+    
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: "Unauthorized. Please log in." 
+        },
+        { status: 401 }
+      );
+    }
+
+    // Get pharmacy ID from authenticated user
+    const pharmacyId = parseInt(session.user.id);
+
+    // Get inventoryId from query parameters
+    const { searchParams } = new URL(request.url);
+    const inventoryIdParam = searchParams.get("inventoryId");
+
+    // Validate inventoryId
+    if (!inventoryIdParam) {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: "Missing inventoryId parameter." 
+        },
+        { status: 400 }
+      );
+    }
+
+    const inventoryId = parseInt(inventoryIdParam);
+
+    if (isNaN(inventoryId) || inventoryId <= 0) {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: "Invalid inventoryId. Must be a positive number." 
+        },
+        { status: 400 }
+      );
+    }
+
+    // Verify pharmacy exists and is a pharmacy user
+    const pharmacy = await db.user.findUnique({
+      where: { id: pharmacyId },
+      include: { userType: true }
+    });
+
+    if (!pharmacy) {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: "Pharmacy not found." 
+        },
+        { status: 404 }
+      );
+    }
+
+    if (pharmacy.userType.name !== "pharmacy") {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: "User is not a pharmacy." 
+        },
+        { status: 403 }
+      );
+    }
+
+    // Verify inventory item exists and belongs to this pharmacy
+    const existingInventory = await db.pharmacyMedicine.findUnique({
+      where: { id: inventoryId },
+      include: {
+        medicine: {
+          select: {
+            name: true
+          }
+        }
+      }
+    });
+
+    if (!existingInventory) {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: "Inventory item not found." 
+        },
+        { status: 404 }
+      );
+    }
+
+    if (existingInventory.pharmacyId !== pharmacyId) {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: "You do not have permission to delete this inventory item." 
+        },
+        { status: 403 }
+      );
+    }
+
+    // Store medicine name for response message
+    const medicineName = existingInventory.medicine.name;
+
+    // Delete the inventory item
+    await db.pharmacyMedicine.delete({
+      where: { id: inventoryId }
+    });
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: `${medicineName} has been removed from your inventory successfully.`,
+        data: {
+          deletedId: inventoryId,
+          medicineName: medicineName
+        }
+      },
+      { status: 200 }
+    );
+
+  } catch (error) {
+    console.error("Error deleting medicine from inventory:", error);
+
+    // Handle Prisma-specific errors
+    if (error instanceof Error) {
+      // Record not found error
+      if (error.message.includes("Record to delete does not exist")) {
+        return NextResponse.json(
+          { 
+            success: false,
+            error: "Inventory item not found or already deleted." 
+          },
+          { status: 404 }
+        );
+      }
+
+      // Foreign key constraint errors (if there are related records)
+      if (error.message.includes("Foreign key constraint")) {
+        return NextResponse.json(
+          { 
+            success: false,
+            error: "Cannot delete this inventory item. It may be referenced by other records." 
+          },
+          { status: 409 }
+        );
+      }
+    }
+
+    return NextResponse.json(
+      { 
+        success: false,
+        error: "Internal server error. Failed to delete medicine from inventory." 
       },
       { status: 500 }
     );
