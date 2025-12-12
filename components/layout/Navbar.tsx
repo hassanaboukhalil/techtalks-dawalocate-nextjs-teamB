@@ -18,7 +18,7 @@ const Navbar = () => {
             <Link
               key={navItem.id}
               href={navItem.link}
-              className="text-sm font-medium text-gray-700 hover:text-primary transition-colors duration-200"
+              className="text-sm font-medium text-gray-700 hover:text-[#2699b2]! transition-colors duration-200"
             >
               {navItem.label}
             </Link>
@@ -29,7 +29,7 @@ const Navbar = () => {
           asChild
           variant="outline"
           size="sm"
-          className="text-sm border-primary bg-primary hover:bg-[#094A58]! text-white"
+          className="text-sm border-primary bg-primary hover:bg-[#2699b2]! text-white"
         >
           <Link href="/login">
             <LogIn className="size-4" />
