@@ -1,166 +1,88 @@
-import { NextResponse } from "next/server"; // NextResponse → used to return JSON responses in Next.js API routes.
-//import {authOptions, getCurrentUser, isPatient } from "@/lib/auth"; // Using your new helper , a helper that returns the currently logged-in user from authentication , isPatient(user) → a helper that checks if the user’s role is "PATIENT".
-import { db } from "@/lib/db"; // db → Prisma database instance (db.healthProfile refers to the table/model).
-//import { getServerSession } from "next-auth";
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth"; 
+import { db } from "@/lib/db";
 
-/*
+//This file handles the logic. It receives the request, translates the data, and talks to the database.
+
+
+// Helper to get user session securely , GET the currently logged-in user
+async function getAuthenticatedUser() {
+  const session = await getServerSession(authOptions);
+  //if no session exists , return null (user is not logged in)
+  return session?.user || null;
+}
+
+// ========= GET ========== Fetches the profile to display on the page
 export async function GET() {
   try {
+    // 1. Check who is knocking at the door (Auth Check)
+    const user = await getAuthenticatedUser();
 
-    
-    // 1. Authenticate the User (The Real Way)
-    const user = await getCurrentUser() as { id: number; role: string } | null; // Calls getCurrentUser() to get the logged-in user from cookies/session/JWT , If the user is not logged in, it returns null.
-
-
-    // If there is no logged-in user, stop and return: -> 401 Unauthorized : client must log in first 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // 2. Authorization Check (Using your new helper!)
-    // Even if the user is logged in, only patients are allowed to access health profiles ,If the user is NOT a patient (role = ADMIN, DOCTOR, CHARITY, etc): return 403 Forbidden
-    if (!isPatient(user)) {
-      return NextResponse.json(
-        { error: "Forbidden: Only patients can view this profile" },
-        { status: 403 }
-      );
-    }
-      
+    // Role Check (Optional but recommended)
+    // if (user.userType !== "PATIENT") {
+    //   return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    // }
 
-    // 3. Fetch Data from Database
-    // The database is checked for a health profile where: userId matches the logged-in user's ID (userId = logged in user's id) ->So it fetches that patient’s profile only.
-    const healthProfile = await db.healthProfile.findUnique({
-      where: {
-        userId: user.id,
-      },
-    });
+    //  Convert String ID to Int for Prisma
+    // 2. CONVERSION STEP: 
+    // NextAuth gives ID as "String", but Database wants "Int"
+    const userIdInt = parseInt(user.id);
 
-    // 4. Handle Case: Profile doesn't exist yet
-    // Some users will not have created a health profile yet , Instead of error, we return: message with status 200 (OK) , and profile: null (no profile found)
-    if (!healthProfile) {
-      return NextResponse.json(
-        { message: "Profile not set up", profile: null },
-        { status: 200 }
-      );
-    }
-
-    // 5. Return the Health Profile : If the profile exists → return it. ex., {"id": 1,"userId": 33,"bloodType": "O+","allergies": "Peanuts","medications": "Ibuprofen","chronicDiseases": "Asthma"}
-    return NextResponse.json(healthProfile, { status: 200 });
-
-  } catch (error) { // error handling -> If anything goes wrong in this try block, we catch it and log it to the console with status 500 (Internal Server Error)
-    console.error("[HEALTH_PROFILE_GET]", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
-  }
-}
-*/
-
-
-const TEMP_USER_ID = 9; // until real login is added
-
-// ========= GET ==========
-export async function GET() {
-  try {
+    // 3. Find the profile in the database
     const profile = await db.healthProfile.findUnique({
-      where: { userId: TEMP_USER_ID }
+      where: { userId: userIdInt }
     });
 
+    // 4. Return the profile. 
+    // If null (no profile yet), return empty object {} so frontend doesn't crash.
     return NextResponse.json(profile || {}, { status: 200 });
 
   } catch (error) {
     console.error("[HEALTH_PROFILE_GET]", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
 
-
-// ========= POST ===========
-
-
+// ========= POST ========== Saves or Updates the profile
 export async function POST(req: Request) {
   try {
-    const data = await req.json();
-
-    const saved = await db.healthProfile.upsert({
-      where: { userId: TEMP_USER_ID },
-      create: {
-        userId: TEMP_USER_ID,
-        fullName: data.fullName,
-        dob: data.dob,
-        gender: data.gender,
-        bloodType: data.bloodType,
-        height: data.height,
-        weight: data.weight,
-        conditions: data.conditions,
-        medications: data.medications,
-        emergencyName: data.contactName,
-        emergencyRelation: data.relationship,
-        emergencyPhone: data.contactNumber
-      },
-      update: {
-        fullName: data.fullName,
-        dob: data.dob,
-        gender: data.gender,
-        bloodType: data.bloodType,
-        height: data.height,
-        weight: data.weight,
-        conditions: data.conditions,
-        medications: data.medications,
-        emergencyName: data.contactName,
-        emergencyRelation: data.relationship,
-        emergencyPhone: data.contactNumber
-      }
-    });
-
-    return NextResponse.json(
-      { success: true, data: saved },
-      { status: 200 }
-    );
-
-  } catch (error) {
-    console.error("[HEALTH_PROFILE_POST]", error);
-    return NextResponse.json(
-      { error: "Failed to save profile" },
-      { status: 500 }
-    );
-  }
-}
-
-/* try-1
-export async function POST(req: Request) {
-  try {
-    const user = await getCurrentUser();
+    // 1. Auth Check
+    const user = await getAuthenticatedUser();
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (!isPatient(user)) {
-      return NextResponse.json(
-        { error: "Forbidden: Only patients can update their profile" },
-        { status: 403 }
-      );
-    }
-
+    // 2. Get the data sent from the Frontend form
     const data = await req.json();
+    
 
+    // 3. CONVERSION STEP: String ID -> Int ID
+    const userIdInt = parseInt(user.id);
+
+    //  Upsert (Create or Update)
+    // 4. UPSERT (Update if exists, Insert if new)
+    // We explicitly map Frontend names (right) to Database columns (left)
     const saved = await db.healthProfile.upsert({
-      where: { userId: user.id },
+      where: { userId: userIdInt },
       create: {
-        userId: user.id,
+        userId: userIdInt,
         fullName: data.fullName,
         dob: data.dob,
         gender: data.gender,
         bloodType: data.bloodType,
-        height: data.height,
-        weight: data.weight,
+        // Safety check: ensure we save strings, not numbers
+        height: data.height ? String(data.height) : null,
+        weight: data.weight ? String(data.weight) : null,
         conditions: data.conditions,
-        medications: data.medications,
+        medications: data.medications, // Expecting a string (joined by \n) from frontend
+        // 3. Map Frontend "contactName" -> DB "emergencyName"
+        // MAPPING FIX: databaseField: data.frontendField
         emergencyName: data.contactName,
         emergencyRelation: data.relationship,
         emergencyPhone: data.contactNumber
@@ -170,95 +92,21 @@ export async function POST(req: Request) {
         dob: data.dob,
         gender: data.gender,
         bloodType: data.bloodType,
-        height: data.height,
-        weight: data.weight,
+        height: data.height ? String(data.height) : null,
+        weight: data.weight ? String(data.weight) : null,
         conditions: data.conditions,
         medications: data.medications,
+        // MAPPING FIX FOR UPDATE AS WELL
         emergencyName: data.contactName,
         emergencyRelation: data.relationship,
         emergencyPhone: data.contactNumber
       }
     });
 
-    return NextResponse.json(
-      { success: true, data: saved },
-      { status: 200 }
-    );
+    return NextResponse.json({ success: true, data: saved }, { status: 200 });
 
   } catch (error) {
     console.error("[HEALTH_PROFILE_POST]", error);
-    return NextResponse.json(
-      { error: "Failed to save profile" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to save profile" }, { status: 500 });
   }
 }
-*/
-/*
-export async function POST(req: Request) {
-  try {
-    const session = await getServerSession(authOptions);
-
-    if (!session || !session.user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
-
-    const user = session.user;
-
-    if (!isPatient(user)) {
-      return NextResponse.json(
-        { error: "Forbidden: Only patients can update their profile" },
-        { status: 403 }
-      );
-    }
-
-    const data = await req.json();
-
-    const saved = await db.healthProfile.upsert({
-      where: { userId: user.id },
-      create: {
-        userId: user.id,
-        fullName: data.fullName,
-        dob: data.dob,
-        gender: data.gender,
-        bloodType: data.bloodType,
-        height: data.height,
-        weight: data.weight,
-        conditions: data.conditions,
-        medications: data.medications,
-        emergencyName: data.contactName,
-        emergencyRelation: data.relationship,
-        emergencyPhone: data.contactNumber,
-      },
-      update: {
-        fullName: data.fullName,
-        dob: data.dob,
-        gender: data.gender,
-        bloodType: data.bloodType,
-        height: data.height,
-        weight: data.weight,
-        conditions: data.conditions,
-        medications: data.medications,
-        emergencyName: data.contactName,
-        emergencyRelation: data.relationship,
-        emergencyPhone: data.contactNumber,
-      },
-    });
-
-    return NextResponse.json(
-      { success: true, data: saved },
-      { status: 200 }
-    );
-
-  } catch (error) {
-    console.error("[HEALTH_PROFILE_POST]", error);
-    return NextResponse.json(
-      { error: "Failed to save profile" },
-      { status: 500 }
-    );
-  }
-}
-*/
