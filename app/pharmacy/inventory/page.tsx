@@ -3,7 +3,15 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Plus, X, Search, ChevronDown, PackageOpen, Pencil, Trash2 } from "lucide-react";
+import {
+  Plus,
+  X,
+  Search,
+  ChevronDown,
+  PackageOpen,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -13,6 +21,7 @@ import {
   TableRow,
   TableEmpty,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 
 interface Medicine {
   id: number;
@@ -43,7 +52,9 @@ export default function PharmacyInventoryPage() {
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
-  const [selectedMedicine, setSelectedMedicine] = useState<Medicine | null>(null);
+  const [selectedMedicine, setSelectedMedicine] = useState<Medicine | null>(
+    null
+  );
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [formData, setFormData] = useState({
@@ -95,7 +106,10 @@ export default function PharmacyInventoryPage() {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setShowDropdown(false);
       }
     };
@@ -178,7 +192,7 @@ export default function PharmacyInventoryPage() {
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingItem) return;
-    
+
     setLoading(true);
 
     try {
@@ -199,9 +213,7 @@ export default function PharmacyInventoryPage() {
         fetchInventory();
       }
     } catch (error: any) {
-      alert(
-        error.response?.data?.error || "Failed to update medicine"
-      );
+      alert(error.response?.data?.error || "Failed to update medicine");
     } finally {
       setLoading(false);
     }
@@ -229,7 +241,8 @@ export default function PharmacyInventoryPage() {
       }
     } catch (error: any) {
       alert(
-        error.response?.data?.error || "Failed to delete medicine from inventory"
+        error.response?.data?.error ||
+          "Failed to delete medicine from inventory"
       );
     } finally {
       setLoading(false);
@@ -259,16 +272,16 @@ export default function PharmacyInventoryPage() {
   };
 
   return (
-    <div className="my-container py-8">
+    <div className="py-2">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-h2 text-primary">Pharmacy Inventory</h1>
 
         <Dialog.Root open={open} onOpenChange={setOpen}>
           <Dialog.Trigger asChild>
-            <button className="bg-primary hover:bg-secondary text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-colors">
+            <Button variant="default" size="lg">
               <Plus size={20} />
               Add Medicine
-            </button>
+            </Button>
           </Dialog.Trigger>
 
           <Dialog.Portal>
@@ -310,7 +323,7 @@ export default function PharmacyInventoryPage() {
                       <ChevronDown size={18} className="text-gray-400" />
                     </div>
                   </div>
-                  
+
                   {showDropdown && filteredMedicines.length > 0 && (
                     <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
                       {filteredMedicines.map((medicine) => (
@@ -324,13 +337,17 @@ export default function PharmacyInventoryPage() {
                               : ""
                           }`}
                         >
-                          <div className="font-medium text-gray-900">{medicine.name}</div>
+                          <div className="font-medium text-gray-900">
+                            {medicine.name}
+                          </div>
                           <div className="text-sm text-gray-600">
                             {medicine.genericName && (
                               <span>{medicine.genericName}</span>
                             )}
                             {medicine.strength && (
-                              <span className="ml-2">• {medicine.strength}</span>
+                              <span className="ml-2">
+                                • {medicine.strength}
+                              </span>
                             )}
                             {medicine.form && (
                               <span className="ml-2">• {medicine.form}</span>
@@ -340,12 +357,14 @@ export default function PharmacyInventoryPage() {
                       ))}
                     </div>
                   )}
-                  
-                  {showDropdown && searchTerm && filteredMedicines.length === 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg p-4 text-center text-gray-500">
-                      No medicines found
-                    </div>
-                  )}
+
+                  {showDropdown &&
+                    searchTerm &&
+                    filteredMedicines.length === 0 && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg p-4 text-center text-gray-500">
+                        No medicines found
+                      </div>
+                    )}
                 </div>
 
                 <div>
@@ -429,13 +448,27 @@ export default function PharmacyInventoryPage() {
             <Table>
               <TableHeader className="sticky top-0 z-10 bg-card">
                 <TableRow className="border-b-2 border-gray-300">
-                  <TableHead className="w-[250px] bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">Medicine Name</TableHead>
-                  <TableHead className="bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">Generic Name</TableHead>
-                  <TableHead className="bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">Form & Strength</TableHead>
-                  <TableHead className="text-center bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">Quantity</TableHead>
-                  <TableHead className="text-center bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">Status</TableHead>
-                  <TableHead className="bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">Expires At</TableHead>
-                  <TableHead className="text-center w-[120px] bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">Actions</TableHead>
+                  <TableHead className="w-[250px] bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
+                    Medicine Name
+                  </TableHead>
+                  <TableHead className="bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
+                    Generic Name
+                  </TableHead>
+                  <TableHead className="bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
+                    Form & Strength
+                  </TableHead>
+                  <TableHead className="text-center bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
+                    Quantity
+                  </TableHead>
+                  <TableHead className="text-center bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
+                    Status
+                  </TableHead>
+                  <TableHead className="bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
+                    Expires At
+                  </TableHead>
+                  <TableHead className="text-center w-[120px] bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
+                    Actions
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -456,14 +489,18 @@ export default function PharmacyInventoryPage() {
                       <TableCell className="text-gray-600">
                         <div className="flex flex-col">
                           {item.medicine.form && (
-                            <span className="text-sm">{item.medicine.form}</span>
+                            <span className="text-sm">
+                              {item.medicine.form}
+                            </span>
                           )}
                           {item.medicine.strength && (
                             <span className="text-xs text-gray-500">
                               {item.medicine.strength}
                             </span>
                           )}
-                          {!item.medicine.form && !item.medicine.strength && "-"}
+                          {!item.medicine.form &&
+                            !item.medicine.strength &&
+                            "-"}
                         </div>
                       </TableCell>
                       <TableCell className="text-center font-semibold text-gray-900">
@@ -474,11 +511,14 @@ export default function PharmacyInventoryPage() {
                       </TableCell>
                       <TableCell className="text-gray-600 text-sm">
                         {item.expiresAt
-                          ? new Date(item.expiresAt).toLocaleDateString("en-US", {
-                              year: "numeric",
-                              month: "short",
-                              day: "numeric",
-                            })
+                          ? new Date(item.expiresAt).toLocaleDateString(
+                              "en-US",
+                              {
+                                year: "numeric",
+                                month: "short",
+                                day: "numeric",
+                              }
+                            )
                           : "-"}
                       </TableCell>
                       <TableCell>
@@ -551,7 +591,10 @@ export default function PharmacyInventoryPage() {
                   min="0"
                   value={editFormData.quantity}
                   onChange={(e) =>
-                    setEditFormData({ ...editFormData, quantity: e.target.value })
+                    setEditFormData({
+                      ...editFormData,
+                      quantity: e.target.value,
+                    })
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                 />
@@ -585,7 +628,10 @@ export default function PharmacyInventoryPage() {
                   type="datetime-local"
                   value={editFormData.expiresAt}
                   onChange={(e) =>
-                    setEditFormData({ ...editFormData, expiresAt: e.target.value })
+                    setEditFormData({
+                      ...editFormData,
+                      expiresAt: e.target.value,
+                    })
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                 />
