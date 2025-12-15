@@ -170,27 +170,56 @@ export default function HealthProfilePage() {
     }
   };
 
-  const handleExportQR = () => {
-    const canvas = qrCodeRef.current?.querySelector("canvas");
-    if (canvas) {
-      const url = canvas.toDataURL("image/png");
-      const link = document.createElement("a");
-      link.download = `health-card-${formData.fullName.replace(/\s+/g, "-").toLowerCase()}.png`;
-      link.href = url;
-      link.click();
+  const handleExportQR = async () => {
+    if (qrCodeRef.current) {
+      try {
+        // Dynamically import dom-to-image-more only on client side
+        const domtoimage = (await import('dom-to-image-more')).default;
+        
+        // Wait for fonts and images to load
+        await document.fonts.ready;
+        await new Promise(resolve => setTimeout(resolve, 400));
+        
+        const dataUrl = await domtoimage.toPng(qrCodeRef.current, {
+          quality: 1,
+          bgcolor: '#ffffff',
+          width: qrCodeRef.current.offsetWidth * 2,
+          height: qrCodeRef.current.offsetHeight * 2,
+          style: {
+            transform: 'scale(2)',
+            transformOrigin: 'top left',
+            width: `${qrCodeRef.current.offsetWidth}px`,
+            height: `${qrCodeRef.current.offsetHeight}px`,
+            border: 'none',
+            boxShadow: 'none',
+            outline: 'none'
+          }
+        });
+        
+        const link = document.createElement("a");
+        link.download = `health-card-${formData.fullName.replace(/\s+/g, "-").toLowerCase()}.png`;
+        link.href = dataUrl;
+        link.click();
+      } catch (error) {
+        console.error("Error exporting health card:", error);
+        alert("Failed to export health card. Please try again.");
+      }
     }
   };
 
-  // Generate QR code data
-  const qrCodeData = JSON.stringify({
-    name: formData.fullName,
-    bloodType: formData.bloodType,
-    dob: formData.dob,
-    emergencyContact: formData.contactName,
-    emergencyPhone: formData.contactNumber,
-    allergies: formData.conditions,
-    medications: formData.medications.join(", "),
-  });
+  // Generate QR code URL (instead of JSON)
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+  const qrCodeUrl = `${baseUrl}/view-health-profile?` + 
+    `name=${encodeURIComponent(formData.fullName)}&` +
+    `bloodType=${encodeURIComponent(formData.bloodType)}&` +
+    `dob=${encodeURIComponent(formData.dob)}&` +
+    `gender=${encodeURIComponent(formData.gender)}&` +
+    `emergencyContact=${encodeURIComponent(formData.contactName)}&` +
+    `emergencyPhone=${encodeURIComponent(formData.contactNumber)}&` +
+    `allergies=${encodeURIComponent(formData.conditions)}&` +
+    `medications=${encodeURIComponent(formData.medications.join(", "))}&` +
+    `height=${encodeURIComponent(formData.height)}&` +
+    `weight=${encodeURIComponent(formData.weight)}`;
 
   // ---------------------------
   // LOADING SCREEN
@@ -214,7 +243,7 @@ export default function HealthProfilePage() {
         <div className="mb-10">
           <h1 className="text-4xl font-bold text-slate-900">Health Profile</h1>
           <p className="text-slate-600 text-lg">
-            Your personal medical record — always accessible and secure.
+            Your personal medical record always accessible and secure.
           </p>
         </div>
 
@@ -603,30 +632,133 @@ export default function HealthProfilePage() {
                   <p className="text-sm text-slate-700">This card contains your essential medical information for emergency situations. Keep it updated and accessible.</p>
                 </div>
 
-                <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 mb-6">
-                  <div className="space-y-3 mb-6">
-                    <div className="flex justify-between items-center pb-2 border-b border-gray-300">
-                      <span className="text-sm font-medium text-slate-600">Name:</span>
-                      <span className="text-sm font-semibold text-slate-900">{formData.fullName}</span>
-                    </div>
-                    <div className="flex justify-between items-center pb-2 border-b border-gray-300">
-                      <span className="text-sm font-medium text-slate-600">Blood type:</span>
-                      <span className="text-sm font-semibold text-red-600">{formData.bloodType || "-"}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-slate-600">Gender:</span>
-                      <span className="text-sm font-semibold text-slate-900 capitalize">{formData.gender || "-"}</span>
-                    </div>
-                  </div>
+                <div 
+                  ref={qrCodeRef} 
+                  className="bg-white p-6 rounded-lg border border-gray-200 mb-6"
+                  style={{
+                    backgroundColor: '#ffffff',
+                    padding: '40px 32px',
+                    fontFamily: 'Arial, Helvetica, sans-serif',
+                    border: 'none'
+                  }}
+                >
+                  <table style={{ 
+                    width: '100%', 
+                    borderCollapse: 'collapse', 
+                    borderSpacing: 0,
+                    border: 'none',
+                    background: 'transparent'
+                  }}>
+                    <tbody>
+                      <tr style={{ border: 'none', background: 'transparent' }}>
+                        <td style={{ 
+                          verticalAlign: 'middle',
+                          paddingRight: '40px',
+                          width: '50%',
+                          border: 'none',
+                          background: 'transparent'
+                        }}>
+                          <div style={{ 
+                            marginBottom: '16px',
+                            border: 'none',
+                            background: 'transparent'
+                          }}>
+                            <span style={{ 
+                              fontSize: '14px', 
+                              color: '#6b7280', 
+                              fontWeight: 'normal', 
+                              fontFamily: 'Arial, Helvetica, sans-serif',
+                              border: 'none',
+                              background: 'transparent',
+                              marginRight: '8px'
+                            }}>
+                              Name:
+                            </span>
+                            <span style={{ 
+                              fontSize: '18px', 
+                              fontWeight: 'bold', 
+                              color: '#000000',
+                              fontFamily: 'Arial, Helvetica, sans-serif',
+                              border: 'none',
+                              background: 'transparent'
+                            }}>
+                              {formData.fullName}
+                            </span>
+                          </div>
 
-                  <div ref={qrCodeRef} className="flex justify-center bg-white p-4 rounded border border-gray-200">
-                    <QRCodeCanvas
-                      value={qrCodeData}
-                      size={220}
-                      level="H"
-                      includeMargin={true}
-                    />
-                  </div>
+                          <div style={{ 
+                            marginBottom: '16px',
+                            border: 'none',
+                            background: 'transparent'
+                          }}>
+                            <span style={{ 
+                              fontSize: '14px', 
+                              color: '#6b7280', 
+                              fontWeight: 'normal', 
+                              fontFamily: 'Arial, Helvetica, sans-serif',
+                              border: 'none',
+                              background: 'transparent',
+                              marginRight: '8px'
+                            }}>
+                              Blood type:
+                            </span>
+                            <span style={{ 
+                              fontSize: '18px', 
+                              fontWeight: 'bold', 
+                              color: '#dc2626',
+                              fontFamily: 'Arial, Helvetica, sans-serif',
+                              border: 'none',
+                              background: 'transparent'
+                            }}>
+                              {formData.bloodType || "-"}
+                            </span>
+                          </div>
+
+                          <div style={{ 
+                            border: 'none',
+                            background: 'transparent'
+                          }}>
+                            <span style={{ 
+                              fontSize: '14px', 
+                              color: '#6b7280', 
+                              fontWeight: 'normal', 
+                              fontFamily: 'Arial, Helvetica, sans-serif',
+                              border: 'none',
+                              background: 'transparent',
+                              marginRight: '8px'
+                            }}>
+                              Gender:
+                            </span>
+                            <span style={{ 
+                              fontSize: '18px', 
+                              fontWeight: 'bold', 
+                              color: '#000000',
+                              textTransform: 'capitalize',
+                              fontFamily: 'Arial, Helvetica, sans-serif',
+                              border: 'none',
+                              background: 'transparent'
+                            }}>
+                              {formData.gender || "-"}
+                            </span>
+                          </div>
+                        </td>
+                        <td style={{ 
+                          verticalAlign: 'middle',
+                          textAlign: 'center',
+                          width: '50%',
+                          border: 'none',
+                          background: 'transparent'
+                        }}>
+                          <QRCodeCanvas
+                            value={qrCodeUrl}
+                            size={180}
+                            level="H"
+                            includeMargin={false}
+                          />
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
 
                 <Button
