@@ -272,7 +272,7 @@ export default function PharmacyInventoryPage() {
   };
 
   return (
-    <div className="py-2">
+    <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-h2 text-primary">Inventory</h1>
 
