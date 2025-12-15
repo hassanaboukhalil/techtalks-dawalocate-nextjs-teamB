@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
+import { Menu } from "lucide-react";
 import Logo from "./Logo";
 import { NavItem } from "@/constants/navigation";
 import { cn } from "@/lib/utils";
@@ -38,15 +38,17 @@ const Sidebar = ({ navItems }: SidebarProps) => {
 
   return (
     <>
-      {/* Mobile toggle button */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-background border border-gray-200 shadow-md hover:bg-gray-50 transition-colors"
-        aria-label="Toggle sidebar"
-        aria-expanded={isOpen}
-      >
-        {isOpen ? <X size={24} /> : <Menu size={24} />}
-      </button>
+      {/* Mobile toggle button - only show when sidebar is closed */}
+      {!isOpen && (
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-background border border-gray-200 shadow-md hover:bg-gray-50 transition-colors"
+          aria-label="Toggle sidebar"
+          aria-expanded={isOpen}
+        >
+          <Menu size={24} />
+        </button>
+      )}
 
       {/* Overlay for mobile */}
       {isOpen && (
