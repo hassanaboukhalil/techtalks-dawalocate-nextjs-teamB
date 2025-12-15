@@ -8,7 +8,7 @@ import { TextAlignStart } from "lucide-react";
 import { useSidebarOptional } from "./SidebarContext";
 
 const Header = () => {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const sidebarContext = useSidebarOptional();
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -22,7 +22,8 @@ const Header = () => {
   }, []);
 
   // Dashboard header (when user is logged in and sidebar context is available)
-  if (session && sidebarContext) {
+  // Also show dashboard header when loading if sidebar context exists (to prevent flash)
+  if (sidebarContext && (session || status === "loading")) {
     return (
       <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-background border-b border-gray-200 shadow-sm">
         <div className="flex items-center gap-4 px-4 py-3">
@@ -40,18 +41,23 @@ const Header = () => {
     );
   }
 
-  // Landing page header (when user is not logged in)
-  return (
-    <header
-      className={`my-container sections-max-width w-full flex justify-between items-center py-4 fixed top-0 z-50 bg-background/95 backdrop-blur-md transition-all duration-300 ${
-        isScrolled
-          ? "shadow-lg border-b border-gray-100"
-          : "border-b border-gray-100"
-      }`}
-    >
-      <Logo withTitle />
-      <Navbar />
-    </header>
-  );
+  // Landing page header (when user is not logged in and not loading)
+  if (status === "unauthenticated") {
+    return (
+      <header
+        className={`my-container sections-max-width w-full flex justify-between items-center py-4 fixed top-0 z-50 bg-background/95 backdrop-blur-md transition-all duration-300 ${
+          isScrolled
+            ? "shadow-lg border-b border-gray-100"
+            : "border-b border-gray-100"
+        }`}
+      >
+        <Logo withTitle />
+        <Navbar />
+      </header>
+    );
+  }
+
+  // Return null while loading if no sidebar context (shouldn't happen, but safe fallback)
+  return null;
 };
 export default Header;
