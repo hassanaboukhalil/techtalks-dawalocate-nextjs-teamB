@@ -15,7 +15,24 @@ import {
   Loader2,
   Edit,
   MessageCircle,
+  Save,
+  AlertCircle,
+  Check,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { CityAutocomplete } from "@/components/ui/CityAutocomplete";
+import { OpeningHoursInput } from "@/components/ui/OpeningHoursInput";
+import { Button } from "@/components/ui/button";
+import { LEBANON_CITIES } from "@/constants/lebanon-cities";
 
 interface PharmacyProfile {
   id: number;
@@ -36,6 +53,22 @@ export default function PharmacyProfilePage() {
   const [profile, setProfile] = useState<PharmacyProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Edit dialog state
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    city: "",
+    address: "",
+    openingHours: "",
+    hasDelivery: false,
+  });
+  const [editLoading, setEditLoading] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [editSuccess, setEditSuccess] = useState<string | null>(null);
+  const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
 
   useEffect(() => {
     fetchProfile();
@@ -97,6 +130,95 @@ export default function PharmacyProfilePage() {
     return `https://wa.me/${cleanNumber}`;
   };
 
+  // Edit dialog functions
+  const openEditDialog = () => {
+    if (!profile) return;
+
+    // Pre-fill form with current profile data
+    setEditForm({
+      name: profile.name,
+      email: profile.email,
+      phone: profile.phone || "",
+      city: profile.city || "",
+      address: profile.address || "",
+      openingHours: profile.openingHours || "",
+      hasDelivery: profile.hasDelivery || false,
+    });
+
+    setEditError(null);
+    setEditSuccess(null);
+    setFormErrors({});
+    setIsEditDialogOpen(true);
+  };
+
+  const closeEditDialog = () => {
+    setIsEditDialogOpen(false);
+    setEditError(null);
+    setEditSuccess(null);
+    setFormErrors({});
+  };
+
+  const validateForm = () => {
+    const errors: {[key: string]: string} = {};
+
+    if (!editForm.name.trim()) {
+      errors.name = "Pharmacy name is required";
+    }
+
+    if (!editForm.email.trim()) {
+      errors.email = "Email address is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editForm.email)) {
+      errors.email = "Please enter a valid email address";
+    }
+
+    if (editForm.phone && editForm.phone.length < 8) {
+      errors.phone = "Phone number must be at least 8 characters";
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleFormChange = (field: string, value: string | boolean) => {
+    setEditForm(prev => ({
+      ...prev,
+      [field]: value,
+    }));
+
+    // Clear field error when user starts typing
+    if (formErrors[field]) {
+      setFormErrors(prev => ({
+        ...prev,
+        [field]: "",
+      }));
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    if (!validateForm()) return;
+
+    setEditLoading(true);
+    setEditError(null);
+    setEditSuccess(null);
+
+    try {
+      const response = await axios.put("/api/pharmacy/profile", editForm);
+
+      if (response.data.success) {
+        setProfile(response.data.data);
+        setEditSuccess("Profile updated successfully!");
+        // Close dialog immediately after successful update
+        closeEditDialog();
+      }
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.error || "Failed to update profile";
+      console.error("Error updating profile:", errorMessage);
+      setEditError(errorMessage);
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -144,7 +266,10 @@ export default function PharmacyProfilePage() {
                 Manage your pharmacy information and settings
               </p>
             </div>
-            <button className="bg-primary hover:bg-secondary text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-all duration-200 transform hover:scale-105">
+            <button
+              onClick={openEditDialog}
+              className="bg-primary hover:bg-secondary text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-all duration-200 transform hover:scale-105"
+            >
               <Edit size={20} />
               Edit Profile
             </button>
@@ -410,6 +535,101 @@ export default function PharmacyProfilePage() {
             </div>
           </div>
         </div>
+
+        {/* Edit Profile Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Edit Pharmacy Profile</DialogTitle>
+            </DialogHeader>
+
+            {editError && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                <p className="text-sm text-red-600">{editError}</p>
+              </div>
+            )}
+
+            <div className="grid gap-6 py-4">
+              {/* Name */}
+              <div className="grid gap-2">
+                <Label htmlFor="name">Pharmacy Name *</Label>
+                <Input
+                  id="name"
+                  value={editForm.name}
+                  onChange={(e) => handleFormChange("name", e.target.value)}
+                  className={formErrors.name ? "border-red-500" : ""}
+                />
+                {formErrors.name && (
+                  <p className="text-sm text-red-600">{formErrors.name}</p>
+                )}
+              </div>
+
+              {/* Phone */}
+              <div className="grid gap-2">
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input
+                  id="phone"
+                  value={editForm.phone}
+                  onChange={(e) => handleFormChange("phone", e.target.value)}
+                  className={formErrors.phone ? "border-red-500" : ""}
+                />
+                {formErrors.phone && (
+                  <p className="text-sm text-red-600">{formErrors.phone}</p>
+                )}
+              </div>
+
+              {/* City */}
+              <div className="grid gap-2">
+                <Label htmlFor="city">City</Label>
+                <CityAutocomplete
+                  cities={LEBANON_CITIES}
+                  value={editForm.city}
+                  onChange={(value) => handleFormChange("city", value)}
+                />
+              </div>
+
+              {/* Address */}
+              <div className="grid gap-2">
+                <Label htmlFor="address">Full Address</Label>
+                <Input
+                  id="address"
+                  value={editForm.address}
+                  onChange={(e) => handleFormChange("address", e.target.value)}
+                />
+              </div>
+
+              {/* Opening Hours */}
+              <div className="grid gap-2">
+                <Label htmlFor="openingHours">Opening Hours</Label>
+                <OpeningHoursInput
+                  value={editForm.openingHours}
+                  onChange={(value) => handleFormChange("openingHours", value)}
+                />
+              </div>
+
+              {/* Has Delivery */}
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="hasDelivery"
+                  checked={editForm.hasDelivery}
+                  onChange={(e) => handleFormChange("hasDelivery", e.target.checked)}
+                  className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                />
+                <Label htmlFor="hasDelivery">Offers delivery service</Label>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={closeEditDialog} disabled={editLoading}>
+                Cancel
+              </Button>
+              <Button onClick={handleSaveProfile} disabled={editLoading}>
+                {editLoading ? "Saving..." : "Save Changes"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
