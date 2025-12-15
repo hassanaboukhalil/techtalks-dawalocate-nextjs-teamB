@@ -7,6 +7,7 @@ import { Menu, X } from "lucide-react";
 import Logo from "./Logo";
 import { NavItem } from "@/constants/navigation";
 import { cn } from "@/lib/utils";
+import { LogoutButton } from "@/components/ui/LogoutButton";
 
 interface SidebarProps {
   navItems: NavItem[];
@@ -108,6 +109,15 @@ const Sidebar = ({ navItems }: SidebarProps) => {
             })}
           </ul>
         </nav>
+
+        {/* Logout button section */}
+        <div className="p-4 border-t border-gray-200">
+          <LogoutButton
+            variant="ghost"
+            size="default"
+            className="w-full justify-start text-white hover:bg-gray-100 hover:text-red-600"
+          />
+        </div>
       </aside>
     </>
   );
