@@ -4,7 +4,7 @@ import Logo from "./Logo";
 import Navbar from "./Navbar";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { Menu } from "lucide-react";
+import { TextAlignStart } from "lucide-react";
 import { useSidebarOptional } from "./SidebarContext";
 
 const Header = () => {
@@ -32,7 +32,7 @@ const Header = () => {
             aria-label="Toggle sidebar"
             aria-expanded={sidebarContext.isOpen}
           >
-            <Menu size={24} className="text-gray-700" />
+            <TextAlignStart size={24} className="text-gray-700" />
           </button>
           <Logo withTitle width={32} height={32} />
         </div>
