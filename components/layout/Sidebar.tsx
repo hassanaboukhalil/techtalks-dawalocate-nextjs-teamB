@@ -55,7 +55,7 @@ const Sidebar = ({ navItems }: SidebarProps) => {
       {/* Overlay for mobile */}
       {isOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          className="lg:hidden fixed inset-0 bg-black/50 z-30"
           onClick={close}
         />
       )}
@@ -63,19 +63,23 @@ const Sidebar = ({ navItems }: SidebarProps) => {
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed lg:sticky top-0 left-0 h-screen w-64 bg-background border-r border-gray-200 z-40 transition-transform duration-300 ease-in-out",
+          "fixed lg:sticky left-0 w-64 bg-background border-r border-gray-200 z-40 transition-transform duration-300 ease-in-out",
           "flex flex-col",
+          // Start from top on both mobile and desktop
+          "top-0",
+          // Full height on both
+          "h-screen",
           isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
-        {/* Logo section */}
-        <div className="p-6 border-b border-gray-200">
+        {/* Logo section - hidden on mobile, shown on desktop */}
+        <div className="hidden lg:block p-6 border-b border-gray-200">
           <Logo withTitle width={32} height={32} />
         </div>
 
         {/* Navigation items */}
-        <nav className="flex-1 overflow-y-auto p-4">
-          <ul className="space-y-2">
+        <nav className="flex-1 overflow-y-auto p-4 pt-16 lg:pt-4">
+          <ul className="space-y-2 pt-4">
             {navItems.map((item) => {
               const Icon = item.icon;
               // Check if this is a base dashboard route (exact match only)
