@@ -538,3 +538,168 @@ export async function PUT(request: NextRequest) {
     );
   }
 }
+
+/**
+ * DELETE /api/pharmacy/inventory
+ * Delete medicine from pharmacy inventory
+ */
+export async function DELETE(request: NextRequest) {
+  try {
+    // Get authenticated user from session
+    const session = await getServerSession(authOptions);
+    
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: "Unauthorized. Please log in." 
+        },
+        { status: 401 }
+      );
+    }
+
+    // Get pharmacy ID from authenticated user
+    const pharmacyId = parseInt(session.user.id);
+
+    // Get inventoryId from query parameters
+    const { searchParams } = new URL(request.url);
+    const inventoryIdParam = searchParams.get("inventoryId");
+
+    // Validate inventoryId
+    if (!inventoryIdParam) {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: "Missing inventoryId parameter." 
+        },
+        { status: 400 }
+      );
+    }
+
+    const inventoryId = parseInt(inventoryIdParam);
+
+    if (isNaN(inventoryId) || inventoryId <= 0) {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: "Invalid inventoryId. Must be a positive number." 
+        },
+        { status: 400 }
+      );
+    }
+
+    // Verify pharmacy exists and is a pharmacy user
+    const pharmacy = await db.user.findUnique({
+      where: { id: pharmacyId },
+      include: { userType: true }
+    });
+
+    if (!pharmacy) {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: "Pharmacy not found." 
+        },
+        { status: 404 }
+      );
+    }
+
+    if (pharmacy.userType.name !== "pharmacy") {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: "User is not a pharmacy." 
+        },
+        { status: 403 }
+      );
+    }
+
+    // Verify inventory item exists and belongs to this pharmacy
+    const existingInventory = await db.pharmacyMedicine.findUnique({
+      where: { id: inventoryId },
+      include: {
+        medicine: {
+          select: {
+            name: true
+          }
+        }
+      }
+    });
+
+    if (!existingInventory) {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: "Inventory item not found." 
+        },
+        { status: 404 }
+      );
+    }
+
+    if (existingInventory.pharmacyId !== pharmacyId) {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: "You do not have permission to delete this inventory item." 
+        },
+        { status: 403 }
+      );
+    }
+
+    // Store medicine name for response message
+    const medicineName = existingInventory.medicine.name;
+
+    // Delete the inventory item
+    await db.pharmacyMedicine.delete({
+      where: { id: inventoryId }
+    });
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: `${medicineName} has been removed from your inventory successfully.`,
+        data: {
+          deletedId: inventoryId,
+          medicineName: medicineName
+        }
+      },
+      { status: 200 }
+    );
+
+  } catch (error) {
+    console.error("Error deleting medicine from inventory:", error);
+
+    // Handle Prisma-specific errors
+    if (error instanceof Error) {
+      // Record not found error
+      if (error.message.includes("Record to delete does not exist")) {
+        return NextResponse.json(
+          { 
+            success: false,
+            error: "Inventory item not found or already deleted." 
+          },
+          { status: 404 }
+        );
+      }
+
+      // Foreign key constraint errors (if there are related records)
+      if (error.message.includes("Foreign key constraint")) {
+        return NextResponse.json(
+          { 
+            success: false,
+            error: "Cannot delete this inventory item. It may be referenced by other records." 
+          },
+          { status: 409 }
+        );
+      }
+    }
+
+    return NextResponse.json(
+      { 
+        success: false,
+        error: "Internal server error. Failed to delete medicine from inventory." 
+      },
+      { status: 500 }
+    );
+  }
+}
