@@ -1,28 +1,42 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu } from "lucide-react";
 import Logo from "./Logo";
 import { NavItem } from "@/constants/navigation";
 import { cn } from "@/lib/utils";
 import { LogoutButton } from "@/components/ui/LogoutButton";
+import { useSidebar } from "./SidebarContext";
 
 interface SidebarProps {
   navItems: NavItem[];
 }
 
 const Sidebar = ({ navItems }: SidebarProps) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const { isOpen, close } = useSidebar();
   const pathname = usePathname();
+  const prevPathnameRef = useRef<string | null>(null);
 
-  // Close sidebar when route changes on mobile
+  // Close sidebar when route changes on mobile (only if pathname actually changed)
   useEffect(() => {
-    setTimeout(() => {
-      setIsOpen(false);
-    }, 100);
-  }, [pathname]);
+    // Skip on initial mount
+    if (prevPathnameRef.current === null) {
+      prevPathnameRef.current = pathname;
+      return;
+    }
+
+    // Only close if pathname actually changed
+    if (prevPathnameRef.current !== pathname) {
+      prevPathnameRef.current = pathname;
+      // Only close if we're on mobile (check sidebar state inside to avoid dependency)
+      if (typeof window !== "undefined" && window.innerWidth < 1024) {
+        setTimeout(() => {
+          close();
+        }, 100);
+      }
+    }
+  }, [pathname, close]);
 
   // Prevent body scroll when sidebar is open on mobile
   useEffect(() => {
@@ -38,23 +52,11 @@ const Sidebar = ({ navItems }: SidebarProps) => {
 
   return (
     <>
-      {/* Mobile toggle button - only show when sidebar is closed */}
-      {!isOpen && (
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-background border border-gray-200 shadow-md hover:bg-gray-50 transition-colors"
-          aria-label="Toggle sidebar"
-          aria-expanded={isOpen}
-        >
-          <Menu size={24} />
-        </button>
-      )}
-
       {/* Overlay for mobile */}
       {isOpen && (
         <div
           className="lg:hidden fixed inset-0 bg-black/50 z-40"
-          onClick={() => setIsOpen(false)}
+          onClick={close}
         />
       )}
 
