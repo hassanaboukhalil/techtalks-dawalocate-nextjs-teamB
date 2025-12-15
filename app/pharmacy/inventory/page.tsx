@@ -274,7 +274,7 @@ export default function PharmacyInventoryPage() {
   return (
     <div className="py-2">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-h2 text-primary">Pharmacy Inventory</h1>
+        <h1 className="text-h2 text-primary">Inventory</h1>
 
         <Dialog.Root open={open} onOpenChange={setOpen}>
           <Dialog.Trigger asChild>
