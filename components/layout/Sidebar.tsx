@@ -73,8 +73,21 @@ const Sidebar = ({ navItems }: SidebarProps) => {
           <ul className="space-y-2">
             {navItems.map((item) => {
               const Icon = item.icon;
-              const isActive =
-                pathname === item.link || pathname.startsWith(item.link + "/");
+              // Check if this is a base dashboard route (exact match only)
+              // Base routes: /patient, /pharmacy, /charity, /admin
+              const isBaseRoute = [
+                "/patient",
+                "/pharmacy",
+                "/charity",
+                "/admin",
+              ].includes(item.link);
+
+              // For base routes (Dashboard), only match exactly
+              // For other routes, match the route and its children
+              const isActive = isBaseRoute
+                ? pathname === item.link
+                : pathname === item.link ||
+                  pathname.startsWith(item.link + "/");
 
               return (
                 <li key={item.id}>
