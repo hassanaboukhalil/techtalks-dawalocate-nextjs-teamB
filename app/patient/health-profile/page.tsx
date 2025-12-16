@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import { QRCodeCanvas } from "qrcode.react";
 
 import {
   Dialog,
@@ -24,7 +25,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 
-import { Loader, HeartPulse, UserCircle2, Phone, Droplet, Calendar, Activity } from "lucide-react";
+import { Loader, HeartPulse, UserCircle2, Phone, Droplet, Calendar, Activity, Download } from "lucide-react";
 
 // ----------------------
 // MEDICINE TYPE
@@ -47,6 +48,8 @@ export default function HealthProfilePage() {
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [search, setSearch] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
+
+  const qrCodeRef = useRef<HTMLDivElement>(null);
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -167,6 +170,57 @@ export default function HealthProfilePage() {
     }
   };
 
+  const handleExportQR = async () => {
+    if (qrCodeRef.current) {
+      try {
+        // Dynamically import dom-to-image-more only on client side
+        const domtoimage = (await import('dom-to-image-more')).default;
+        
+        // Wait for fonts and images to load
+        await document.fonts.ready;
+        await new Promise(resolve => setTimeout(resolve, 400));
+        
+        const dataUrl = await domtoimage.toPng(qrCodeRef.current, {
+          quality: 1,
+          bgcolor: '#ffffff',
+          width: qrCodeRef.current.offsetWidth * 2,
+          height: qrCodeRef.current.offsetHeight * 2,
+          style: {
+            transform: 'scale(2)',
+            transformOrigin: 'top left',
+            width: `${qrCodeRef.current.offsetWidth}px`,
+            height: `${qrCodeRef.current.offsetHeight}px`,
+            border: 'none',
+            boxShadow: 'none',
+            outline: 'none'
+          }
+        });
+        
+        const link = document.createElement("a");
+        link.download = `health-card-${formData.fullName.replace(/\s+/g, "-").toLowerCase()}.png`;
+        link.href = dataUrl;
+        link.click();
+      } catch (error) {
+        console.error("Error exporting health card:", error);
+        alert("Failed to export health card. Please try again.");
+      }
+    }
+  };
+
+  // Generate QR code URL (instead of JSON)
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+  const qrCodeUrl = `${baseUrl}/view-health-profile?` + 
+    `name=${encodeURIComponent(formData.fullName)}&` +
+    `bloodType=${encodeURIComponent(formData.bloodType)}&` +
+    `dob=${encodeURIComponent(formData.dob)}&` +
+    `gender=${encodeURIComponent(formData.gender)}&` +
+    `emergencyContact=${encodeURIComponent(formData.contactName)}&` +
+    `emergencyPhone=${encodeURIComponent(formData.contactNumber)}&` +
+    `allergies=${encodeURIComponent(formData.conditions)}&` +
+    `medications=${encodeURIComponent(formData.medications.join(", "))}&` +
+    `height=${encodeURIComponent(formData.height)}&` +
+    `weight=${encodeURIComponent(formData.weight)}`;
+
   // ---------------------------
   // LOADING SCREEN
   // ---------------------------
@@ -189,7 +243,7 @@ export default function HealthProfilePage() {
         <div className="mb-10">
           <h1 className="text-4xl font-bold text-slate-900">Health Profile</h1>
           <p className="text-slate-600 text-lg">
-            Your personal medical record — always accessible and secure.
+            Your personal medical record always accessible and secure.
           </p>
         </div>
 
@@ -213,36 +267,86 @@ export default function HealthProfilePage() {
           </div>
         )}
 
-        {/* SHOW SUMMARY IF PROFILE EXISTS */}
+        {/* MEDICAL INFORMATION SECTION */}
         {hasProfile && (
-          <div className="bg-gray-50 border border-gray-200 rounded-xl p-8 shadow-sm mb-10">
-            <h2 className="text-2xl font-bold mb-6 text-slate-800">
-              Your Summary
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-              <div className="flex items-center gap-3">
-                <UserCircle2 className="w-8 h-8 text-slate-700" />
-                <div>
-                  <p className="text-sm text-slate-500">Full Name</p>
-                  <p className="font-semibold">{formData.fullName}</p>
+          <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-8 mb-10">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              
+              {/* LEFT COLUMN - Personal Information */}
+              <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                  <UserCircle2 className="w-5 h-5 text-blue-600" />
+                  Personal Information
+                </h3>
+                <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                  <div>
+                    <p className="text-sm text-slate-500 font-medium">Full Name</p>
+                    <p className="text-base font-semibold text-slate-900">{formData.fullName}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-500 font-medium">Date of Birth</p>
+                    <p className="text-base font-semibold text-slate-900">
+                      {formData.dob ? new Date(formData.dob).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-500 font-medium">Gender</p>
+                    <p className="text-base font-semibold text-slate-900 capitalize">{formData.gender || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-500 font-medium">Blood Type</p>
+                    <p className="text-base font-semibold text-red-600">{formData.bloodType || "-"}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-sm text-slate-500 font-medium">Emergency Contact</p>
+                    <p className="text-base font-semibold text-slate-900">
+                      {formData.contactName && formData.contactNumber 
+                        ? `${formData.contactName}${formData.relationship ? ` (${formData.relationship})` : ""} - ${formData.contactNumber}`
+                        : "-"}
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
-                <Droplet className="w-8 h-8 text-red-600" />
-                <div>
-                  <p className="text-sm text-slate-500">Blood Type</p>
-                  <p className="font-semibold">{formData.bloodType}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Phone className="w-8 h-8 text-green-600" />
-                <div>
-                  <p className="text-sm text-slate-500">Emergency Contact</p>
-                  <p className="font-semibold">{formData.contactName}</p>
+              {/* RIGHT COLUMN - Medical Information */}
+              <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                  <Activity className="w-5 h-5 text-green-600" />
+                  Medical Information
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm text-slate-500 font-medium mb-1">Allergies</p>
+                    <p className="text-base text-slate-900">{formData.conditions || "None reported"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-500 font-medium mb-1">Medications</p>
+                    {formData.medications.length > 0 ? (
+                      <ul className="list-disc list-inside space-y-1">
+                        {formData.medications.map((med, idx) => (
+                          <li key={idx} className="text-base text-slate-900">{med}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-base text-slate-900">None reported</p>
+                    )}
+                  </div>
+                  {(formData.height || formData.weight) && (
+                    <div className="flex gap-6">
+                      {formData.height && (
+                        <div>
+                          <p className="text-sm text-slate-500 font-medium">Height</p>
+                          <p className="text-base text-slate-900">{formData.height} cm</p>
+                        </div>
+                      )}
+                      {formData.weight && (
+                        <div>
+                          <p className="text-sm text-slate-500 font-medium">Weight</p>
+                          <p className="text-base text-slate-900">{formData.weight} kg</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -504,6 +608,171 @@ export default function HealthProfilePage() {
           </DialogContent>
 
         </Dialog>
+
+        {/* HEALTH CARD - QR CODE SECTION */}
+        {hasProfile && (
+          <div className="mt-10 bg-white border border-gray-200 rounded-xl shadow-lg p-8">
+            <h2 className="text-3xl font-bold text-slate-900 mb-6">Health Card</h2>
+
+            <div className="flex justify-center">
+              <div className="bg-white rounded-lg p-8 border-2 border-gray-300 shadow-md max-w-md w-full">
+                <div className="bg-gradient-to-r from-teal-50 to-blue-50 border-2 border-teal-200 rounded-lg p-4 mb-6">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="bg-white p-2 rounded-lg shadow-sm">
+                      <svg viewBox="0 0 24 24" fill="none" className="w-8 h-8">
+                        <rect x="2" y="4" width="20" height="16" rx="2" stroke="#dc2626" strokeWidth="2" fill="white"/>
+                        <path d="M12 7v10M7 12h10" stroke="#dc2626" strokeWidth="2.5" strokeLinecap="round"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-teal-800">Emergency Medical Card</h3>
+                      <p className="text-xs text-slate-600">Valid until {new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-slate-700">This card contains your essential medical information for emergency situations. Keep it updated and accessible.</p>
+                </div>
+
+                <div 
+                  ref={qrCodeRef} 
+                  className="bg-white p-6 rounded-lg border border-gray-200 mb-6"
+                  style={{
+                    backgroundColor: '#ffffff',
+                    padding: '40px 32px',
+                    fontFamily: 'Arial, Helvetica, sans-serif',
+                    border: 'none'
+                  }}
+                >
+                  <table style={{ 
+                    width: '100%', 
+                    borderCollapse: 'collapse', 
+                    borderSpacing: 0,
+                    border: 'none',
+                    background: 'transparent'
+                  }}>
+                    <tbody>
+                      <tr style={{ border: 'none', background: 'transparent' }}>
+                        <td style={{ 
+                          verticalAlign: 'middle',
+                          paddingRight: '40px',
+                          width: '50%',
+                          border: 'none',
+                          background: 'transparent'
+                        }}>
+                          <div style={{ 
+                            marginBottom: '16px',
+                            border: 'none',
+                            background: 'transparent'
+                          }}>
+                            <span style={{ 
+                              fontSize: '14px', 
+                              color: '#6b7280', 
+                              fontWeight: 'normal', 
+                              fontFamily: 'Arial, Helvetica, sans-serif',
+                              border: 'none',
+                              background: 'transparent',
+                              marginRight: '8px'
+                            }}>
+                              Name:
+                            </span>
+                            <span style={{ 
+                              fontSize: '18px', 
+                              fontWeight: 'bold', 
+                              color: '#000000',
+                              fontFamily: 'Arial, Helvetica, sans-serif',
+                              border: 'none',
+                              background: 'transparent'
+                            }}>
+                              {formData.fullName}
+                            </span>
+                          </div>
+
+                          <div style={{ 
+                            marginBottom: '16px',
+                            border: 'none',
+                            background: 'transparent'
+                          }}>
+                            <span style={{ 
+                              fontSize: '14px', 
+                              color: '#6b7280', 
+                              fontWeight: 'normal', 
+                              fontFamily: 'Arial, Helvetica, sans-serif',
+                              border: 'none',
+                              background: 'transparent',
+                              marginRight: '8px'
+                            }}>
+                              Blood type:
+                            </span>
+                            <span style={{ 
+                              fontSize: '18px', 
+                              fontWeight: 'bold', 
+                              color: '#dc2626',
+                              fontFamily: 'Arial, Helvetica, sans-serif',
+                              border: 'none',
+                              background: 'transparent'
+                            }}>
+                              {formData.bloodType || "-"}
+                            </span>
+                          </div>
+
+                          <div style={{ 
+                            border: 'none',
+                            background: 'transparent'
+                          }}>
+                            <span style={{ 
+                              fontSize: '14px', 
+                              color: '#6b7280', 
+                              fontWeight: 'normal', 
+                              fontFamily: 'Arial, Helvetica, sans-serif',
+                              border: 'none',
+                              background: 'transparent',
+                              marginRight: '8px'
+                            }}>
+                              Gender:
+                            </span>
+                            <span style={{ 
+                              fontSize: '18px', 
+                              fontWeight: 'bold', 
+                              color: '#000000',
+                              textTransform: 'capitalize',
+                              fontFamily: 'Arial, Helvetica, sans-serif',
+                              border: 'none',
+                              background: 'transparent'
+                            }}>
+                              {formData.gender || "-"}
+                            </span>
+                          </div>
+                        </td>
+                        <td style={{ 
+                          verticalAlign: 'middle',
+                          textAlign: 'center',
+                          width: '50%',
+                          border: 'none',
+                          background: 'transparent'
+                        }}>
+                          <QRCodeCanvas
+                            value={qrCodeUrl}
+                            size={180}
+                            level="H"
+                            includeMargin={false}
+                          />
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <Button
+                  onClick={handleExportQR}
+                  className="w-full bg-slate-700 hover:bg-slate-800 text-white flex items-center justify-center gap-2 py-3 text-base"
+                >
+                  <Download size={18} />
+                  Export QR Code
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
