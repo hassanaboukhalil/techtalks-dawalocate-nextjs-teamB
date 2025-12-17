@@ -2,18 +2,20 @@
 
 import { useEffect, useState, ChangeEvent, ReactNode } from "react";
 import axios from "axios";
+
 import {
   Dialog,
   DialogContent,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+
 import {
-  CheckCircle,
   Pencil,
   User,
   Mail,
@@ -21,6 +23,7 @@ import {
   MapPin,
   Lock,
   ShieldCheck,
+  Settings,
   LucideIcon,
 } from "lucide-react";
 
@@ -119,71 +122,72 @@ export default function PatientAccountPage() {
   if (!account || !form) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f6fbfc] to-[#eef6f8] px-4 py-10">
-      <div className="mx-auto max-w-5xl space-y-10">
+    <div className="min-h-screen bg-[#f6fbfc] px-4 py-8">
+      <div className="mx-auto max-w-6xl space-y-8">
 
         {/* HEADER */}
-        <div className="text-center space-y-2">
+        <div>
           <h1 className="text-3xl font-semibold text-gray-900">
             Account Settings
           </h1>
-          <p className="text-gray-600">
-            Manage your DawaLocate account securely
+          <p className="text-gray-600 mt-1">
+            Your personal account information, always secure and accessible.
           </p>
         </div>
 
-        {/* INFO */}
-        <Card className="bg-primary/5 border-primary/10 p-6">
-          <div className="flex gap-4">
-            <div className="h-12 w-12 rounded-xl bg-primary/20 flex items-center justify-center">
+        {/* INFO BANNER */}
+        <Card className="border border-primary/10 bg-primary/5 rounded-xl">
+          <div className="flex gap-4 p-6">
+            <div className="h-12 w-12 rounded-xl bg-primary/15 flex items-center justify-center">
               <ShieldCheck className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h2 className="font-semibold">Your DawaLocate Account</h2>
-              <p className="text-sm text-gray-600">
-                Your account helps personalize medicine availability, manage
-                requests, and protect your health-related data.
+              <h2 className="font-medium text-gray-800">
+                Your DawaLocate Account
+              </h2>
+              <p className="text-sm text-gray-600 mt-1 italic max-w-xl">
+                Used to personalize medicine availability and protect your data.
               </p>
             </div>
           </div>
         </Card>
 
-        {/* STATUS */}
-        {/*<div className="flex justify-center">
-          <div className="flex items-center gap-2 rounded-full bg-green-100 px-4 py-2 text-green-700 text-sm">
-            <CheckCircle className="h-4 w-4" />
-            Your information is up to date
-          </div>
-        </div>*/}
-
         {/* ACCOUNT CARD */}
-        <Card className="p-6 space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-full bg-primary/15 flex items-center justify-center">
-                <User className="h-5 w-5 text-primary" />
+        <Card className="rounded-xl border border-gray-200 shadow-sm">
+          <div className="p-6 space-y-6">
+
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="h-14 w-14 rounded-full bg-primary/15 flex items-center justify-center">
+                  <User className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <p className="text-lg italic text-slate-700">
+                    {account.name}
+                  </p>
+                  <p className="text-sm italic text-slate-500">
+                    {account.email}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="font-medium">{account.name}</p>
-                <p className="text-sm text-gray-500">{account.email}</p>
-              </div>
+
+              <Button
+                variant="outline"
+                className="border-primary/30 text-primary hover:bg-primary/10 rounded-lg"
+                onClick={() => setOpen(true)}
+              >
+                <Pencil className="h-4 w-4 mr-2" />
+                Edit Profile
+              </Button>
             </div>
 
-            <Button
-              variant="outline"
-              className="border-primary/30 text-primary hover:bg-primary/10"
-              onClick={() => setOpen(true)}
-            >
-              <Pencil className="h-4 w-4 mr-2" />
-              Edit Account
-            </Button>
-          </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Info icon={Mail} label="Email" value={account.email} />
+              <Info icon={Phone} label="Phone" value={account.phone} />
+              <Info icon={MapPin} label="City" value={account.city} />
+              <Info icon={MapPin} label="Address" value={account.address} />
+            </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Info icon={Mail} label="Email" value={account.email} />
-            <Info icon={Phone} label="Phone" value={account.phone} />
-            <Info icon={MapPin} label="City" value={account.city} />
-            <Info icon={MapPin} label="Address" value={account.address} />
           </div>
         </Card>
       </div>
@@ -192,30 +196,35 @@ export default function PatientAccountPage() {
          EDIT MODAL
       ===================== */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl p-0">
+        <DialogContent className="w-[95vw] max-w-5xl max-h-[90vh] overflow-y-auto rounded-2xl p-0 shadow-xl">
 
-          {/* HEADER */}
-          <div className="px-6 py-5 border-b bg-primary/5">
-            <DialogTitle className="text-xl font-semibold">
-              Edit Account
-            </DialogTitle>
-            <DialogDescription className="text-sm text-gray-600">
-              Update your information safely — changes apply immediately
-            </DialogDescription>
+          {/* REQUIRED FOR ACCESSIBILITY */}
+          <VisuallyHidden>
+            <DialogTitle>Edit Account</DialogTitle>
+          </VisuallyHidden>
+
+          {/* CUSTOM HEADER */}
+          <div className="px-6 py-6 bg-gradient-to-r from-primary/10 to-primary/5 border-b">
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-xl bg-primary/20 flex items-center justify-center">
+                <Settings className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-xl font-medium text-gray-800">
+                  Edit Account Information
+                </h2>
+                <p className="text-sm italic text-gray-600">
+                  Make changes carefully , they apply immediately
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* BODY */}
           <div className="px-6 py-6 space-y-8">
 
-            {/* PERSONAL INFO */}
-            <div className="rounded-xl bg-blue-50 border border-blue-200 p-5">
-              <div className="flex items-center gap-2 mb-4 font-medium">
-                <User className="h-4 w-4 text-primary" />
-                Personal Information
-              </div>
-
-              {/* RESPONSIVE GRID */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 ">
+            <Section title="Personal Information" icon={User} color="blue">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <FormField label="Full Name">
                   <SoftInput name="name" value={form.name} onChange={handleChange} />
                 </FormField>
@@ -226,15 +235,14 @@ export default function PatientAccountPage() {
 
                 <FormField label="Phone Number">
                   <div className="flex rounded-xl bg-white border border-primary/20 focus-within:ring-2 focus-within:ring-primary/30">
-                    <span className="px-4 py-2 text-sm font-medium text-primary bg-primary/10 rounded-l-xl">
+                    <span className="px-4 py-2 text-sm text-primary bg-primary/10 rounded-l-xl">
                       +961
                     </span>
                     <input
                       value={form.phoneDigits}
                       onChange={handlePhoneChange}
+                      className="w-full bg-transparent px-3 py-2 outline-none italic text-slate-600"
                       placeholder="8 digits"
-                      inputMode="numeric"
-                      className="w-full bg-transparent px-3 py-2 outline-none"
                     />
                   </div>
                 </FormField>
@@ -243,48 +251,28 @@ export default function PatientAccountPage() {
                   <SoftInput name="city" value={form.city} onChange={handleChange} />
                 </FormField>
 
-                {/* FULL WIDTH */}
                 <div className="lg:col-span-2">
                   <FormField label="Address">
                     <SoftInput name="address" value={form.address} onChange={handleChange} />
                   </FormField>
                 </div>
               </div>
-            </div>
+            </Section>
 
-            {/* SECURITY */}
-            <div className="rounded-xl bg-orange-50 border border-orange-200 p-5">
-              <div className="flex items-center gap-2 mb-2 font-medium">
-                <Lock className="h-4 w-4 text-orange-600" />
-                Security
-              </div>
-              <p className="text-sm text-gray-500 mb-4">
+            <Section title="Security" icon={Lock} color="orange">
+              <p className="text-sm italic text-gray-500 mb-4">
                 Leave empty if you don’t want to change your password
               </p>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <SoftInput
-                  type="password"
-                  name="currentPassword"
-                  placeholder="Current password"
-                  onChange={handleChange}
-                />
-                <SoftInput
-                  type="password"
-                  name="newPassword"
-                  placeholder="New password"
-                  onChange={handleChange}
-                />
+                <SoftInput type="password" name="currentPassword" placeholder="Current password" onChange={handleChange} />
+                <SoftInput type="password" name="newPassword" placeholder="New password" onChange={handleChange} />
                 <div className="lg:col-span-2">
-                  <SoftInput
-                    type="password"
-                    name="confirmPassword"
-                    placeholder="Confirm password"
-                    onChange={handleChange}
-                  />
+                  <SoftInput type="password" name="confirmPassword" placeholder="Confirm password" onChange={handleChange} />
                 </div>
               </div>
-            </div>
+            </Section>
+
           </div>
 
           {/* FOOTER */}
@@ -303,33 +291,28 @@ export default function PatientAccountPage() {
 }
 
 /* =====================
-   Helpers
+   UI Helpers
 ===================== */
 
-function Info({
-  icon: Icon,
-  label,
-  value,
-}: {
+function Info({ icon: Icon, label, value }: {
   icon: LucideIcon;
   label: string;
   value: string | null;
 }) {
   return (
-    <div className="rounded-lg bg-primary/5 border border-primary/10 p-4 text-sm">
-      <div className="flex items-center gap-2 text-primary">
+    <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+      <div className="flex items-center gap-2 text-primary text-sm font-medium">
         <Icon className="h-4 w-4" />
         {label}
       </div>
-      <p className="mt-1 font-medium text-gray-900">{value || "-"}</p>
+      <p className="mt-1 italic text-slate-600">
+        {value || "—"}
+      </p>
     </div>
   );
 }
 
-function FormField({
-  label,
-  children,
-}: {
+function FormField({ label, children }: {
   label: string;
   children: ReactNode;
 }) {
@@ -349,25 +332,40 @@ function SoftInput(props: React.ComponentProps<typeof Input>) {
         rounded-xl
         bg-white
         border border-gray-300
-        text-gray-900
-
-        transition-all duration-300 ease-out
-
-        ring-0 ring-offset-0
-        focus:ring-0 focus:ring-offset-0
-        focus-visible:ring-0 focus-visible:ring-offset-0
-
+        italic text-slate-600
+        transition-all duration-300
         hover:border-primary/50
-
         focus:border-primary
         focus:shadow-[0_0_0_3px_rgba(59,130,246,0.25)]
         focus:outline-none
-
-        focus-visible:border-primary
-        focus-visible:shadow-[0_0_0_3px_rgba(59,130,246,0.25)]
-        focus-visible:outline-none
       "
     />
   );
 }
 
+function Section({
+  title,
+  icon: Icon,
+  color,
+  children,
+}: {
+  title: string;
+  icon: LucideIcon;
+  color: "blue" | "orange";
+  children: ReactNode;
+}) {
+  const styles =
+    color === "blue"
+      ? "bg-blue-50 border-blue-200 text-primary"
+      : "bg-orange-50 border-orange-200 text-orange-600";
+
+  return (
+    <div className={`rounded-xl border p-5 ${styles}`}>
+      <div className="flex items-center gap-2 mb-4 font-medium">
+        <Icon className="h-4 w-4" />
+        {title}
+      </div>
+      {children}
+    </div>
+  );
+}
