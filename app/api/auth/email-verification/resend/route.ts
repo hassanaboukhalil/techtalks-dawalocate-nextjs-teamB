@@ -41,24 +41,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if there are any pending verifications
-    const pendingVerification = await db.emailVerification.findFirst({
+    // Check if there are any verifications (including expired ones)
+    // This allows resending even after the code expires
+    const existingVerification = await db.emailVerification.findFirst({
       where: {
         email: email.toLowerCase(),
         verified: false,
-        expiresAt: {
-          gt: new Date(),
-        },
       },
       orderBy: {
         createdAt: "desc",
       },
     });
 
-    if (!pendingVerification) {
+    // Only show error if user never initiated signup at all
+    if (!existingVerification) {
       return NextResponse.json(
         {
-          error: "No pending verification found. Please request a new verification code.",
+          error: "No verification record found. Please start the signup process first.",
         },
         { status: 404 }
       );
