@@ -34,6 +34,13 @@ import { OpeningHoursInput } from "@/components/ui/OpeningHoursInput";
 import { Button } from "@/components/ui/button";
 import { LEBANON_CITIES } from "@/constants/lebanon-cities";
 
+interface TimeSlot {
+  id: string;
+  days: string[];
+  openTime: string;
+  closeTime: string;
+}
+
 interface PharmacyProfile {
   id: number;
   name: string;
@@ -41,7 +48,7 @@ interface PharmacyProfile {
   city: string | null;
   phone: string | null;
   address: string | null;
-  openingHours: string | null;
+  openingHours: TimeSlot[] | null;
   hasDelivery: boolean | null;
   status: string;
   userType: string;
@@ -130,6 +137,29 @@ export default function PharmacyProfilePage() {
     return `https://wa.me/${cleanNumber}`;
   };
 
+  const formatOpeningHours = (openingHours: any): string => {
+    if (!openingHours || !Array.isArray(openingHours) || openingHours.length === 0) {
+      return "Not provided";
+    }
+
+    return openingHours
+      .map((slot: any) => {
+        if (!slot.days || slot.days.length === 0) return "";
+        const daysStr =
+          slot.days.length === 7
+            ? "Every day"
+            : slot.days.length === 5 &&
+              ["Mon", "Tue", "Wed", "Thu", "Fri"].every((d: string) =>
+                slot.days.includes(d)
+              )
+            ? "Mon-Fri"
+            : slot.days.join(", ");
+        return `${daysStr}: ${slot.openTime} - ${slot.closeTime}`;
+      })
+      .filter(Boolean)
+      .join(" | ");
+  };
+
   // Edit dialog functions
   const openEditDialog = () => {
     if (!profile) return;
@@ -141,7 +171,7 @@ export default function PharmacyProfilePage() {
       phone: profile.phone || "",
       city: profile.city || "",
       address: profile.address || "",
-      openingHours: profile.openingHours || "",
+      openingHours: profile.openingHours ? JSON.stringify(profile.openingHours) : "" as string,
       hasDelivery: profile.hasDelivery || false,
     });
 
@@ -358,7 +388,7 @@ export default function PharmacyProfilePage() {
                       Opening Hours
                     </p>
                     <p className="text-gray-900 font-medium">
-                      {profile.openingHours || "Not provided"}
+                      {formatOpeningHours(profile.openingHours)}
                     </p>
                   </div>
                 </div>
