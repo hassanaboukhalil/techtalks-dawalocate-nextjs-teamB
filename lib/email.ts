@@ -2,8 +2,8 @@ import nodemailer from "nodemailer";
 
 // Email transporter configuration
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "smtp.gmail.com",
-  port: parseInt(process.env.SMTP_PORT || "587"),
+  host: process.env.SMTP_HOST as string,
+  port: parseInt(process.env.SMTP_PORT as string),
   secure: false, // true for 465, false for other ports
   auth: {
     user: process.env.SMTP_USER,
@@ -122,7 +122,7 @@ export async function sendVerificationEmail(
           <body>
             <div class="container">
               <div class="header">
-                <h1>💊 DawaLocate</h1>
+                <h1>DawaLocate</h1>
               </div>
               <div class="content">
                 <h2>Verify Your Email Address</h2>
