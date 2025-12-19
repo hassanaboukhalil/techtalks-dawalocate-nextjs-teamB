@@ -379,12 +379,81 @@ components/
 - `components/layout/Footer.tsx`
 - `components/layout/Logo.tsx`
 - `components/layout/Sidebar.tsx`
+- `components/layout/PageTitle.tsx`
 
 **AI Guidelines:**
 
 - If a component is part of the overall frame of the app (nav, footer, sidebars, common shells), put it in `components/layout/`.
-- These components should be generic and not depend on a single page’s business logic.
+- These components should be generic and not depend on a single page's business logic.
 - Prefer composition: e.g. `Header` receives props (`user`, `links`) instead of hard-coding every case.
+
+#### 5.1.1 `PageTitle` Component
+
+**Purpose:** A reusable page title component that provides consistent styling for page headings across authenticated dashboard pages using the DawaLocate design system.
+
+**Props:**
+
+- `children` (ReactNode, required) - The title text
+- `className?` (string, optional) - Additional Tailwind classes to override or extend styling
+- `as?` ("h1" | "h2" | "h3", optional) - Semantic HTML heading element (default: "h1")
+
+**Usage Examples:**
+
+```tsx
+// Basic usage (renders as h1 with primary color)
+<PageTitle>Patient Dashboard</PageTitle>
+
+// With custom semantic element
+<PageTitle as="h2">Inventory Management</PageTitle>
+
+// With additional styling
+<PageTitle className="mb-8">Campaign Details</PageTitle>
+```
+
+**When to Use:**
+
+- ✅ Use for **main page headings** on authenticated dashboard pages:
+  - Patient dashboard (`/patient/*`)
+  - Pharmacy dashboard (`/pharmacy/*`)
+  - Admin dashboard (`/admin/*`)
+  - Charity dashboard (`/charity/*`)
+- ✅ Use at the **top of content sections** to establish page hierarchy
+- ✅ Use when you need a **consistent, prominent heading** with primary brand color (#0AA6C8)
+- ✅ Default renders as `<h1>` for main page titles
+- ✅ Use `as="h2"` for sub-page or section headings within a dashboard page
+- ✅ Use `as="h3"` for tertiary headings if needed
+
+**When NOT to Use:**
+
+- ❌ **DON'T use on public/landing pages** (`/(public)/*`):
+  - Landing page uses custom hero titles with `.text-h1` utility class
+  - Public pages have their own distinct visual style
+- ❌ **DON'T use on authentication pages** (`/(auth)/*`):
+  - Login/signup pages use different heading styles
+  - Authentication flows have their own design patterns
+- ❌ **DON'T use for card titles**:
+  - Use `.text-h4` or `<h3>` with custom styling instead
+  - Cards need smaller, less prominent headings
+- ❌ **DON'T use for body text or descriptions**:
+  - Use appropriate text utility classes (`.text-body`, `.text-body-secondary`)
+- ❌ **DON'T use inside small UI components**:
+  - Modals, dialogs, cards - PageTitle is too large
+  - Use smaller heading variants instead
+
+**Design System Details:**
+
+- Uses `.text-h2` typography class (4xl → 5xl responsive)
+- Uses `.text-primary` color (#0AA6C8)
+- Font: Inter (sans-serif)
+- Responsive scaling: text-4xl (mobile) → text-5xl (desktop)
+- Can be overridden with `className` prop if special cases require different styling
+
+**AI Guidelines:**
+
+- Always use `PageTitle` for dashboard page headings instead of raw `<h1>` or custom styled headings
+- Verify the page is authenticated before using PageTitle (check route is under `/patient`, `/pharmacy`, `/admin`, or `/charity`)
+- For public pages, use the appropriate design system utility classes directly (`.text-h1`, `.text-h2`, etc.)
+- When in doubt, check if the page requires authentication - if yes, use PageTitle; if no, use utility classes
 
 ### 5.2 `components/ui/`
 
