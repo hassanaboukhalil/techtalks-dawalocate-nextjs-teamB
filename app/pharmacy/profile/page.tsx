@@ -41,7 +41,7 @@ interface PharmacyProfile {
   city: string | null;
   phone: string | null;
   address: string | null;
-  openingHours: any | null; // Can be object, array, or null after API parsing
+  openingHours: string | null;
   hasDelivery: boolean | null;
   status: string;
   userType: string;
@@ -130,36 +130,6 @@ export default function PharmacyProfilePage() {
     return `https://wa.me/${cleanNumber}`;
   };
 
-  const formatOpeningHours = (openingHours: any): string => {
-    if (!openingHours) return "Not provided";
-
-    try {
-      // If it's already a string, try to parse it
-      const timeSlots = typeof openingHours === 'string' ? JSON.parse(openingHours) : openingHours;
-
-      if (!Array.isArray(timeSlots) || timeSlots.length === 0) return "Not provided";
-
-      return timeSlots
-        .map((slot: any) => {
-          if (!slot.days || slot.days.length === 0) return "";
-          const daysStr =
-            slot.days.length === 7
-              ? "Every day"
-              : slot.days.length === 5 &&
-                ["Mon", "Tue", "Wed", "Thu", "Fri"].every((d: string) =>
-                  slot.days.includes(d)
-                )
-              ? "Mon-Fri"
-              : slot.days.join(", ");
-          return `${daysStr}: ${slot.openTime} - ${slot.closeTime}`;
-        })
-        .filter(Boolean)
-        .join(" | ");
-    } catch {
-      return "Not provided";
-    }
-  };
-
   // Edit dialog functions
   const openEditDialog = () => {
     if (!profile) return;
@@ -171,7 +141,7 @@ export default function PharmacyProfilePage() {
       phone: profile.phone || "",
       city: profile.city || "",
       address: profile.address || "",
-      openingHours: profile.openingHours ? JSON.stringify(profile.openingHours) : "",
+      openingHours: profile.openingHours || "",
       hasDelivery: profile.hasDelivery || false,
     });
 
@@ -232,7 +202,6 @@ export default function PharmacyProfilePage() {
     setEditSuccess(null);
 
     try {
-      console.log("Sending update data:", editForm);
       const response = await axios.put("/api/pharmacy/profile", editForm);
 
       if (response.data.success) {
@@ -243,11 +212,7 @@ export default function PharmacyProfilePage() {
       }
     } catch (err: any) {
       const errorMessage = err.response?.data?.error || "Failed to update profile";
-      const errorDetails = err.response?.data?.details;
       console.error("Error updating profile:", errorMessage);
-      if (errorDetails) {
-        console.error("Validation details:", errorDetails);
-      }
       setEditError(errorMessage);
     } finally {
       setEditLoading(false);
@@ -393,7 +358,7 @@ export default function PharmacyProfilePage() {
                       Opening Hours
                     </p>
                     <p className="text-gray-900 font-medium">
-                      {formatOpeningHours(profile.openingHours)}
+                      {profile.openingHours || "Not provided"}
                     </p>
                   </div>
                 </div>
