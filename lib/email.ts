@@ -52,7 +52,7 @@ export async function sendVerificationEmail(
                 box-shadow: 0 2px 4px rgba(0,0,0,0.1);
               }
               .header {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                background: linear-gradient(135deg, #0AA6C8 0%, #0886A2 100%);
                 padding: 40px 20px;
                 text-align: center;
                 color: white;
@@ -67,7 +67,7 @@ export async function sendVerificationEmail(
                 color: #333333;
               }
               .content h2 {
-                color: #667eea;
+                color: #0AA6C8;
                 margin-top: 0;
                 font-size: 24px;
               }
@@ -78,7 +78,7 @@ export async function sendVerificationEmail(
               }
               .code-container {
                 background-color: #f8f9fa;
-                border: 2px dashed #667eea;
+                border: 2px dashed #0AA6C8;
                 border-radius: 8px;
                 padding: 30px;
                 text-align: center;
@@ -87,7 +87,7 @@ export async function sendVerificationEmail(
               .code {
                 font-size: 36px;
                 font-weight: bold;
-                color: #667eea;
+                color: #0AA6C8;
                 letter-spacing: 8px;
                 font-family: 'Courier New', monospace;
               }
@@ -122,7 +122,7 @@ export async function sendVerificationEmail(
           <body>
             <div class="container">
               <div class="header">
-                <h1>🏥 DawaLocate</h1>
+                <h1>💊 DawaLocate</h1>
               </div>
               <div class="content">
                 <h2>Verify Your Email Address</h2>
