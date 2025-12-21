@@ -28,7 +28,8 @@ async function seed() {
       strength: "500mg",
       form: "Tablet",
       synonyms: "Tylenol, Panadol, Calpol",
-      description: "Pain reliever and fever reducer. Used for headaches, muscle aches, arthritis, backache, toothaches, colds, and fevers.",
+      description:
+        "Pain reliever and fever reducer. Used for headaches, muscle aches, arthritis, backache, toothaches, colds, and fevers.",
     },
     {
       name: "Paracetamol",
@@ -36,7 +37,8 @@ async function seed() {
       strength: "1000mg",
       form: "Tablet",
       synonyms: "Tylenol Extra Strength",
-      description: "Extra strength pain reliever and fever reducer for moderate to severe pain.",
+      description:
+        "Extra strength pain reliever and fever reducer for moderate to severe pain.",
     },
     {
       name: "Paracetamol",
@@ -52,7 +54,8 @@ async function seed() {
       strength: "200mg",
       form: "Tablet",
       synonyms: "Advil, Motrin, Nurofen",
-      description: "Non-steroidal anti-inflammatory drug (NSAID) for pain, fever, and inflammation.",
+      description:
+        "Non-steroidal anti-inflammatory drug (NSAID) for pain, fever, and inflammation.",
     },
     {
       name: "Ibuprofen",
@@ -126,7 +129,8 @@ async function seed() {
       strength: "500mg",
       form: "Capsule",
       synonyms: "Amoxil, Trimox",
-      description: "Penicillin-type antibiotic for bacterial infections including respiratory, ear, nose, throat, skin, and urinary tract infections.",
+      description:
+        "Penicillin-type antibiotic for bacterial infections including respiratory, ear, nose, throat, skin, and urinary tract infections.",
     },
     {
       name: "Amoxicillin",
@@ -150,7 +154,8 @@ async function seed() {
       strength: "625mg",
       form: "Tablet",
       synonyms: "Augmentin, Co-amoxiclav",
-      description: "Combination antibiotic effective against resistant bacteria.",
+      description:
+        "Combination antibiotic effective against resistant bacteria.",
     },
     {
       name: "Azithromycin",
@@ -158,7 +163,8 @@ async function seed() {
       strength: "250mg",
       form: "Tablet",
       synonyms: "Zithromax, Z-Pack",
-      description: "Macrolide antibiotic for respiratory infections, skin infections, and STIs.",
+      description:
+        "Macrolide antibiotic for respiratory infections, skin infections, and STIs.",
     },
     {
       name: "Azithromycin",
@@ -174,7 +180,8 @@ async function seed() {
       strength: "500mg",
       form: "Tablet",
       synonyms: "Cipro",
-      description: "Fluoroquinolone antibiotic for urinary tract, respiratory, and gastrointestinal infections.",
+      description:
+        "Fluoroquinolone antibiotic for urinary tract, respiratory, and gastrointestinal infections.",
     },
     {
       name: "Levofloxacin",
@@ -190,7 +197,8 @@ async function seed() {
       strength: "400mg",
       form: "Tablet",
       synonyms: "Flagyl",
-      description: "Antibiotic and antiprotozoal for anaerobic bacterial infections and parasites.",
+      description:
+        "Antibiotic and antiprotozoal for anaerobic bacterial infections and parasites.",
     },
     {
       name: "Doxycycline",
@@ -198,7 +206,8 @@ async function seed() {
       strength: "100mg",
       form: "Capsule",
       synonyms: "Vibramycin, Doryx",
-      description: "Tetracycline antibiotic for acne, respiratory infections, and Lyme disease.",
+      description:
+        "Tetracycline antibiotic for acne, respiratory infections, and Lyme disease.",
     },
     {
       name: "Cephalexin",
@@ -206,7 +215,8 @@ async function seed() {
       strength: "500mg",
       form: "Capsule",
       synonyms: "Keflex",
-      description: "Cephalosporin antibiotic for skin, bone, and respiratory infections.",
+      description:
+        "Cephalosporin antibiotic for skin, bone, and respiratory infections.",
     },
     {
       name: "Clarithromycin",
@@ -224,7 +234,8 @@ async function seed() {
       strength: "20mg",
       form: "Capsule",
       synonyms: "Prilosec, Losec",
-      description: "Proton pump inhibitor for acid reflux, GERD, and stomach ulcers.",
+      description:
+        "Proton pump inhibitor for acid reflux, GERD, and stomach ulcers.",
     },
     {
       name: "Omeprazole",
@@ -314,7 +325,8 @@ async function seed() {
       strength: "5mg",
       form: "Tablet",
       synonyms: "Norvasc",
-      description: "Calcium channel blocker for high blood pressure and angina.",
+      description:
+        "Calcium channel blocker for high blood pressure and angina.",
     },
     {
       name: "Amlodipine",
@@ -574,7 +586,8 @@ async function seed() {
       strength: "25mg",
       form: "Capsule",
       synonyms: "Benadryl",
-      description: "First-generation antihistamine for allergies and sleep aid.",
+      description:
+        "First-generation antihistamine for allergies and sleep aid.",
     },
     {
       name: "Pseudoephedrine",
@@ -1073,7 +1086,9 @@ async function seed() {
       await db.medicine.create({ data: med });
       console.log(`✅ Created: ${med.name} ${med.strength} ${med.form}`);
     } else {
-      console.log(`⏭️  Skipped (exists): ${med.name} ${med.strength} ${med.form}`);
+      console.log(
+        `⏭️  Skipped (exists): ${med.name} ${med.strength} ${med.form}`
+      );
     }
   }
 
@@ -1083,19 +1098,22 @@ async function seed() {
   console.log("\n👤 Creating sample users...");
 
   const userTypes = await db.userType.findMany();
-  const adminType = userTypes.find(t => t.name === "admin");
-  const pharmacyType = userTypes.find(t => t.name === "pharmacy");
-  const charityType = userTypes.find(t => t.name === "charity");
-  const patientType = userTypes.find(t => t.name === "patient");
+  const adminType = userTypes.find((t) => t.name === "admin");
+  const pharmacyType = userTypes.find((t) => t.name === "pharmacy");
+  const charityType = userTypes.find((t) => t.name === "charity");
+  const patientType = userTypes.find((t) => t.name === "patient");
 
   // Sample Admin
-  const existingAdmin = await db.user.findUnique({ where: { email: "admin@dawalocate.com" } });
+  const existingAdmin = await db.user.findUnique({
+    where: { email: "admin@dawalocate.com" },
+  });
   if (!existingAdmin && adminType) {
     await db.user.create({
       data: {
         name: "System Admin",
         email: "admin@dawalocate.com",
-        passwordHash: "$2b$10$placeholder_hash_for_testing", // Replace with actual hash
+        passwordHash:
+          "$2b$10$YD5P6LvE8p6JkA17CogCd.XIsBw1vKqN26aZcVAbQB6jve/LZ8Y5G",
         userTypeId: adminType.id,
         city: "Beirut",
         phone: "+961 1 234 567",
@@ -1146,17 +1164,50 @@ async function seed() {
       hasDelivery: true,
       status: "APPROVED" as const,
     },
+    {
+      name: "Pharmacy 1",
+      email: "pharmacy1@gmail.com",
+      city: "Beirut",
+      address: "Verdun Street, Beirut",
+      phone: "+961 1 111 111",
+      openingHours: "9:00 AM - 8:00 PM",
+      hasDelivery: true,
+      status: "APPROVED" as const,
+    },
+    {
+      name: "Pharmacy 2",
+      email: "pharmacy2@gmail.com",
+      city: "Tripoli",
+      address: "Abdul Hamid Karami Square, Tripoli",
+      phone: "+961 6 222 222",
+      openingHours: "8:00 AM - 9:00 PM",
+      hasDelivery: true,
+      status: "APPROVED" as const,
+    },
+    {
+      name: "Pharmacy 3",
+      email: "pharmacy3@gmail.com",
+      city: "Sidon",
+      address: "Sea Road, Sidon",
+      phone: "+961 7 333 333",
+      openingHours: "9:00 AM - 10:00 PM",
+      hasDelivery: false,
+      status: "APPROVED" as const,
+    },
   ];
 
   if (pharmacyType) {
     for (const pharm of pharmacies) {
-      const existing = await db.user.findUnique({ where: { email: pharm.email } });
+      const existing = await db.user.findUnique({
+        where: { email: pharm.email },
+      });
       if (!existing) {
         await db.user.create({
           data: {
             name: pharm.name,
             email: pharm.email,
-            passwordHash: "$2b$10$placeholder_hash_for_testing",
+            passwordHash:
+              "$2b$10$YD5P6LvE8p6JkA17CogCd.XIsBw1vKqN26aZcVAbQB6jve/LZ8Y5G",
             userTypeId: pharmacyType.id,
             city: pharm.city,
             address: pharm.address,
@@ -1171,22 +1222,64 @@ async function seed() {
     }
   }
 
-  // Sample Charity
-  const existingCharity = await db.user.findUnique({ where: { email: "redcross@charity.org" } });
-  if (!existingCharity && charityType) {
-    await db.user.create({
-      data: {
-        name: "Lebanese Red Cross",
-        email: "redcross@charity.org",
-        passwordHash: "$2b$10$placeholder_hash_for_testing",
-        userTypeId: charityType.id,
-        city: "Beirut",
-        address: "Spears Street, Beirut",
-        phone: "+961 1 372 802",
-        status: "APPROVED",
-      },
-    });
-    console.log("✅ Created charity user");
+  // Sample Charities
+  const charities = [
+    {
+      name: "Lebanese Red Cross",
+      email: "redcross@charity.org",
+      city: "Beirut",
+      address: "Spears Street, Beirut",
+      phone: "+961 1 372 802",
+      status: "APPROVED" as const,
+    },
+    {
+      name: "Charity 1",
+      email: "charity1@gmail.com",
+      city: "Beirut",
+      address: "Downtown, Beirut",
+      phone: "+961 1 444 444",
+      status: "APPROVED" as const,
+    },
+    {
+      name: "Charity 2",
+      email: "charity2@gmail.com",
+      city: "Tripoli",
+      address: "Al-Tall, Tripoli",
+      phone: "+961 6 555 555",
+      status: "APPROVED" as const,
+    },
+    {
+      name: "Charity 3",
+      email: "charity3@gmail.com",
+      city: "Sidon",
+      address: "Old Souk, Sidon",
+      phone: "+961 7 666 666",
+      status: "APPROVED" as const,
+    },
+  ];
+
+  if (charityType) {
+    for (const charity of charities) {
+      const existing = await db.user.findUnique({
+        where: { email: charity.email },
+      });
+      if (!existing) {
+        await db.user.create({
+          data: {
+            name: charity.name,
+            email: charity.email,
+            passwordHash:
+              "$2b$10$YD5P6LvE8p6JkA17CogCd.XIsBw1vKqN26aZcVAbQB6jve/LZ8Y5G",
+            userTypeId: charityType.id,
+            city: charity.city,
+            address: charity.address,
+            phone: charity.phone,
+            status: charity.status,
+          },
+        });
+        console.log(`✅ Created charity: ${charity.name}`);
+      }
+    }
   }
 
   // Sample Patients
@@ -1194,17 +1287,23 @@ async function seed() {
     { name: "Ahmad Hassan", email: "ahmad@patient.com", city: "Beirut" },
     { name: "Sara Khoury", email: "sara@patient.com", city: "Tripoli" },
     { name: "Michel Haddad", email: "michel@patient.com", city: "Jounieh" },
+    { name: "Patient 1", email: "patient1@gmail.com", city: "Beirut" },
+    { name: "Patient 2", email: "patient2@gmail.com", city: "Tripoli" },
+    { name: "Patient 3", email: "patient3@gmail.com", city: "Sidon" },
   ];
 
   if (patientType) {
     for (const patient of patients) {
-      const existing = await db.user.findUnique({ where: { email: patient.email } });
+      const existing = await db.user.findUnique({
+        where: { email: patient.email },
+      });
       if (!existing) {
         await db.user.create({
           data: {
             name: patient.name,
             email: patient.email,
-            passwordHash: "$2b$10$placeholder_hash_for_testing",
+            passwordHash:
+              "$2b$10$YD5P6LvE8p6JkA17CogCd.XIsBw1vKqN26aZcVAbQB6jve/LZ8Y5G",
             userTypeId: patientType.id,
             city: patient.city,
           },
@@ -1299,7 +1398,9 @@ async function seed() {
             status: "OPEN",
           },
         });
-        console.log(`✅ Created donation offer: ${medicine.name} by ${patient.name}`);
+        console.log(
+          `✅ Created donation offer: ${medicine.name} by ${patient.name}`
+        );
       }
     }
   }
@@ -1314,7 +1415,8 @@ async function seed() {
   });
 
   for (const patient of requestingPatients) {
-    const requestMedicine = donationMedicines[Math.floor(Math.random() * donationMedicines.length)];
+    const requestMedicine =
+      donationMedicines[Math.floor(Math.random() * donationMedicines.length)];
 
     const existing = await db.donationRequest.findFirst({
       where: {
@@ -1332,7 +1434,9 @@ async function seed() {
           status: "OPEN",
         },
       });
-      console.log(`✅ Created donation request: ${requestMedicine.name} for ${patient.name}`);
+      console.log(
+        `✅ Created donation request: ${requestMedicine.name} for ${patient.name}`
+      );
     }
   }
 
@@ -1355,7 +1459,8 @@ async function seed() {
         data: {
           charityUserId: charity.id,
           title: "Free Medicine Distribution - Beirut",
-          description: "Monthly distribution of essential medicines to families in need. Bring your ID and prescription.",
+          description:
+            "Monthly distribution of essential medicines to families in need. Bring your ID and prescription.",
           targetAreas: "Beirut, Dahieh, Bourj Hammoud",
           startDate: new Date(),
           endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
