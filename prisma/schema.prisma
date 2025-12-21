@@ -37,6 +37,22 @@ enum DonationRequestStatus {
   FULFILLED
 }
 
+model EmailVerification {
+  id        Int      @id @default(autoincrement())
+  email     String
+  code      String
+  expiresAt DateTime
+  verified  Boolean  @default(false)  // Track if code has been used
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Performance indexes
+  @@index([email])                    // Fast lookup by email
+  @@index([code])                     // Fast verification check
+  @@index([expiresAt])                // Efficient cleanup of expired codes
+  @@index([email, verified])          // Composite index for checking active codes
+}
+
 model UserType {
   id        Int   @id @default(autoincrement())
   name      String   @unique // "admin" | "pharmacy" | "charity" | "patient"
