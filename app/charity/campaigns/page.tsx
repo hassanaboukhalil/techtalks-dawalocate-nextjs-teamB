@@ -17,10 +17,19 @@ import {
   CheckCircle2,
   Clock,
   Sparkles,
+  Edit,
+  X,
+  Save,
+  FileText,
+  Phone,
+  Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Campaign {
   id: number;
@@ -53,6 +62,21 @@ export default function CampaignsPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [totalCount, setTotalCount] = useState(0);
+
+  // Edit dialog state
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
+  const [editLoading, setEditLoading] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [editValidationErrors, setEditValidationErrors] = useState<string[]>([]);
+  const [editFormData, setEditFormData] = useState({
+    title: "",
+    description: "",
+    targetAreas: "",
+    startDate: "",
+    endDate: "",
+    contactInfo: "",
+  });
 
   useEffect(() => {
     fetchCampaigns();
@@ -148,6 +172,91 @@ export default function CampaignsPage() {
   const getFilterCount = (filter: StatusFilter) => {
     if (filter === "all") return totalCount;
     return campaigns.filter((c) => getCampaignStatus(c) === filter).length;
+  };
+
+  // Edit dialog functions
+  const openEditDialog = (campaign: Campaign, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingCampaign(campaign);
+    
+    // Format dates for datetime-local input
+    const formatDateForInput = (dateString: string) => {
+      const date = new Date(dateString);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
+
+    setEditFormData({
+      title: campaign.title,
+      description: campaign.description,
+      targetAreas: campaign.targetAreas,
+      startDate: formatDateForInput(campaign.startDate),
+      endDate: campaign.endDate ? formatDateForInput(campaign.endDate) : "",
+      contactInfo: campaign.contactInfo,
+    });
+    
+    setEditError(null);
+    setEditValidationErrors([]);
+    setEditDialogOpen(true);
+  };
+
+  const closeEditDialog = () => {
+    setEditDialogOpen(false);
+    setEditingCampaign(null);
+    setEditError(null);
+    setEditValidationErrors([]);
+  };
+
+  const handleEditInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setEditFormData((prev) => ({ ...prev, [name]: value }));
+    setEditError(null);
+    setEditValidationErrors([]);
+  };
+
+  const handleUpdateCampaign = async () => {
+    if (!editingCampaign) return;
+
+    setEditLoading(true);
+    setEditError(null);
+    setEditValidationErrors([]);
+
+    try {
+      const response = await axios.put(
+        `/api/charity/campaigns/${editingCampaign.id}`,
+        editFormData
+      );
+
+      if (response.data.success) {
+        // Update the campaign in the list
+        setCampaigns((prev) =>
+          prev.map((c) =>
+            c.id === editingCampaign.id ? { ...c, ...response.data.data } : c
+          )
+        );
+        
+        closeEditDialog();
+        
+        // Optionally refresh the list to get latest data
+        fetchCampaigns();
+      }
+    } catch (err: any) {
+      const errorData = err.response?.data;
+      
+      if (errorData?.details && Array.isArray(errorData.details)) {
+        setEditValidationErrors(errorData.details);
+      }
+      
+      setEditError(errorData?.error || "Failed to update campaign. Please try again.");
+    } finally {
+      setEditLoading(false);
+    }
   };
 
   return (
@@ -347,7 +456,16 @@ export default function CampaignsPage() {
                       <h3 className="font-bold text-lg text-gray-900 line-clamp-2 flex-1">
                         {campaign.title}
                       </h3>
-                      {getStatusBadge(status)}
+                      <div className="flex flex-col items-end gap-2">
+                        {getStatusBadge(status)}
+                        <button
+                          onClick={(e) => openEditDialog(campaign, e)}
+                          className="flex items-center gap-1 px-3 py-1 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-full transition-colors"
+                        >
+                          <Edit className="h-3 w-3" />
+                          Edit
+                        </button>
+                      </div>
                     </div>
 
                     {/* Description */}
@@ -440,6 +558,194 @@ export default function CampaignsPage() {
           </div>
         )}
       </div>
+
+      {/* Edit Campaign Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+              <Edit className="h-6 w-6 text-primary" />
+              Edit Campaign
+            </DialogTitle>
+          </DialogHeader>
+
+          {/* Error Display */}
+          {editError && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <div className="flex gap-2">
+                <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-red-900">Error</p>
+                  <p className="text-sm text-red-700">{editError}</p>
+                  {editValidationErrors.length > 0 && (
+                    <ul className="mt-2 space-y-1">
+                      {editValidationErrors.map((err, idx) => (
+                        <li key={idx} className="text-sm text-red-600">• {err}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Info Banner */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <div className="flex gap-2">
+              <Info className="h-5 w-5 text-blue-600 flex-shrink-0" />
+              <p className="text-sm text-blue-800">
+                Update your campaign information. All fields are required unless marked optional.
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-6 py-4">
+            {/* Campaign Title */}
+            <div className="space-y-2">
+              <Label htmlFor="edit-title" className="flex items-center gap-2 text-gray-700 font-medium">
+                <FileText className="h-4 w-4 text-gray-500" />
+                Campaign Title <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="edit-title"
+                name="title"
+                value={editFormData.title}
+                onChange={handleEditInputChange}
+                placeholder="e.g., Winter Medicine Relief Drive 2024"
+                maxLength={200}
+                className="rounded-lg"
+              />
+              <p className="text-xs text-gray-500">
+                {editFormData.title.length}/200 characters
+              </p>
+            </div>
+
+            {/* Description */}
+            <div className="space-y-2">
+              <Label htmlFor="edit-description" className="flex items-center gap-2 text-gray-700 font-medium">
+                <FileText className="h-4 w-4 text-gray-500" />
+                Description <span className="text-red-500">*</span>
+              </Label>
+              <Textarea
+                id="edit-description"
+                name="description"
+                value={editFormData.description}
+                onChange={handleEditInputChange}
+                placeholder="Describe your campaign goals and impact..."
+                rows={5}
+                maxLength={2000}
+                className="rounded-lg resize-none"
+              />
+              <p className="text-xs text-gray-500">
+                {editFormData.description.length}/2000 characters (minimum 20)
+              </p>
+            </div>
+
+            {/* Target Areas */}
+            <div className="space-y-2">
+              <Label htmlFor="edit-targetAreas" className="flex items-center gap-2 text-gray-700 font-medium">
+                <MapPin className="h-4 w-4 text-gray-500" />
+                Target Areas <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="edit-targetAreas"
+                name="targetAreas"
+                value={editFormData.targetAreas}
+                onChange={handleEditInputChange}
+                placeholder="e.g., Beirut, Tripoli, Sidon"
+                className="rounded-lg"
+              />
+              <p className="text-xs text-gray-500">
+                Enter comma-separated city names
+              </p>
+            </div>
+
+            {/* Dates */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-startDate" className="flex items-center gap-2 text-gray-700 font-medium">
+                  <Calendar className="h-4 w-4 text-gray-500" />
+                  Start Date <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="edit-startDate"
+                  name="startDate"
+                  type="datetime-local"
+                  value={editFormData.startDate}
+                  onChange={handleEditInputChange}
+                  className="rounded-lg"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-endDate" className="flex items-center gap-2 text-gray-700 font-medium">
+                  <Calendar className="h-4 w-4 text-gray-500" />
+                  End Date <span className="text-gray-500">(Optional)</span>
+                </Label>
+                <Input
+                  id="edit-endDate"
+                  name="endDate"
+                  type="datetime-local"
+                  value={editFormData.endDate}
+                  onChange={handleEditInputChange}
+                  className="rounded-lg"
+                />
+              </div>
+            </div>
+
+            {/* Contact Information */}
+            <div className="space-y-2">
+              <Label htmlFor="edit-contactInfo" className="flex items-center gap-2 text-gray-700 font-medium">
+                <Phone className="h-4 w-4 text-gray-500" />
+                Contact Information <span className="text-red-500">*</span>
+              </Label>
+              <Textarea
+                id="edit-contactInfo"
+                name="contactInfo"
+                value={editFormData.contactInfo}
+                onChange={handleEditInputChange}
+                placeholder="Email: contact@charity.org&#10;Phone: +961 1 234 567"
+                rows={3}
+                className="rounded-lg resize-none"
+              />
+              <p className="text-xs text-gray-500">
+                Provide multiple contact methods
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={closeEditDialog}
+              disabled={editLoading}
+              className="rounded-lg"
+            >
+              <X className="h-4 w-4 mr-2" />
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleUpdateCampaign}
+              disabled={editLoading}
+              className="rounded-lg bg-primary hover:bg-secondary"
+            >
+              {editLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Changes
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
