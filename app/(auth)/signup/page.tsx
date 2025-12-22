@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Link from "next/link";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Check, X } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { CityAutocomplete } from "@/components/ui/CityAutocomplete";
 import { LEBANON_CITIES } from "@/constants/lebanon-cities";
@@ -39,9 +39,23 @@ export default function SignupPage() {
     hasDelivery: false,
   });
 
+  const passwordCriteria = [
+    { label: "At least 8 characters", valid: formData.password.length >= 8 },
+    { label: "One uppercase letter", valid: /[A-Z]/.test(formData.password) },
+    { label: "One lowercase letter", valid: /[a-z]/.test(formData.password) },
+    { label: "One special character", valid: /[^A-Za-z0-9]/.test(formData.password) },
+  ];
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    // Validate password strength
+    if (!passwordCriteria.every((c) => c.valid)) {
+      setError("Please meet all password requirements");
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
 
     // Validate city and phone
@@ -228,6 +242,34 @@ export default function SignupPage() {
                       <Eye className="w-5 h-5" />
                     )}
                   </button>
+                </div>
+                <div className="space-y-1 mt-2">
+                  {passwordCriteria.map((item, index) => {
+                    const isTyped = formData.password.length > 0;
+                    const isMet = item.valid;
+
+                    let colorClass = "text-gray-500";
+                    let icon = <div className="w-3 h-3 rounded-full border border-gray-400" />;
+
+                    if (isTyped) {
+                      if (isMet) {
+                        colorClass = "text-green-600";
+                        icon = <Check className="w-3 h-3 text-green-600" />;
+                      } else {
+                        colorClass = "text-red-500";
+                        icon = <X className="w-3 h-3 text-red-500" />;
+                      }
+                    }
+
+                    return (
+                      <div key={index} className="flex items-center gap-2 text-xs">
+                        {icon}
+                        <span className={colorClass}>
+                          {item.label}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
