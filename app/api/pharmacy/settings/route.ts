@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs";
 import { Prisma } from "@/lib/generated/prisma";
 
 /**
- * PATCH /api/pharmacy/profile/credentials
+ * PATCH /api/pharmacy/settings
  * Update pharmacy email, phone, and password ONLY
  */
 export async function PATCH(req: Request) {

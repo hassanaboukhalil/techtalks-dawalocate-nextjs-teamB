@@ -137,7 +137,7 @@ export default function PharmacyProfilePage() {
       if (form.password.trim()) payload.password = form.password.trim();
 
       const res = await axios.patch(
-        "/api/pharmacy/profile/credentials",
+        "/api/pharmacy/settings",
         payload
       );
 
