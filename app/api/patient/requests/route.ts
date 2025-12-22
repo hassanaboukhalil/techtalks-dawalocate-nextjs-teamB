@@ -39,7 +39,7 @@ export async function GET() {
           },
         },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: "asc" },
     });
 
     return NextResponse.json({
@@ -128,8 +128,8 @@ export async function POST(request: NextRequest) {
         const medicineRecord = await tx.medicine.findFirst({
           where: {
             OR: [
-              { name: { equals: medicine.name, mode: "insensitive" } },
-              { genericName: { equals: medicine.name, mode: "insensitive" } },
+              { name: { contains: medicine.name, mode: "insensitive" } },
+              { genericName: { contains: medicine.name, mode: "insensitive" } },
               { synonyms: { contains: medicine.name, mode: "insensitive" } },
             ],
           },
@@ -158,6 +158,7 @@ export async function POST(request: NextRequest) {
             userId,
             medicineId: medicineRecord.id,
             city: user.city,
+            quantity: medicine.quantity,
             status: "OPEN",
           },
           include: {

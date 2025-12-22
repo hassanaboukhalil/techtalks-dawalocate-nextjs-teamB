@@ -30,7 +30,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
 
     // Get request ID from params
-    const requestId = params.id;
+    const resolvedParams = await Promise.resolve(params);
+    const requestId = resolvedParams.id;
     if (!requestId || isNaN(Number(requestId))) {
       return NextResponse.json(
         { success: false, error: "Invalid request ID" },
@@ -61,6 +62,14 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     if (typeof medicine.quantity !== "number" || medicine.quantity <= 0) {
       return NextResponse.json(
         { error: "Medicine must have a valid quantity greater than 0" },
+        { status: 400 }
+      );
+    }
+
+    // Validate city if provided
+    if (medicine.city && typeof medicine.city !== "string") {
+      return NextResponse.json(
+        { error: "City must be a valid string" },
         { status: 400 }
       );
     }
@@ -104,8 +113,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const newMedicine = await db.medicine.findFirst({
       where: {
         OR: [
-          { name: { equals: medicine.name, mode: "insensitive" } },
-          { genericName: { equals: medicine.name, mode: "insensitive" } },
+          { name: { contains: medicine.name, mode: "insensitive" } },
+          { genericName: { contains: medicine.name, mode: "insensitive" } },
           { synonyms: { contains: medicine.name, mode: "insensitive" } },
         ],
       },
@@ -138,13 +147,21 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
 
     // Update the request
+    const updateData: any = {
+      medicine: {
+        connect: { id: newMedicine.id }
+      },
+      quantity: medicine.quantity,
+    };
+
+    // Allow updating city if provided
+    if (medicine.city) {
+      updateData.city = medicine.city;
+    }
+
     const updatedRequest = await db.donationRequest.update({
       where: { id: requestIdNum },
-      data: {
-        medicineId: newMedicine.id,
-        // Note: city is not updated, keeps the original city
-        // Note: quantity is not stored in donationRequest, only used for validation
-      },
+      data: updateData,
       include: {
         medicine: {
           select: {
@@ -166,21 +183,17 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       },
     });
 
-    // Add requested quantity to response (not stored in DB)
-    const responseData = {
-      ...updatedRequest,
-      requestedQuantity: medicine.quantity,
-    };
-
     return NextResponse.json(
-      { success: true, data: responseData },
+      { success: true, data: updatedRequest },
       { status: 200 }
     );
 
   } catch (error) {
     console.error("[PATIENT_REQUEST_PUT]", error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("[PATIENT_REQUEST_PUT] Error details:", errorMessage);
     return NextResponse.json(
-      { error: "Failed to update medicine request" },
+      { error: "Failed to update medicine request", details: errorMessage },
       { status: 500 }
     );
   }
@@ -207,7 +220,8 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     }
 
     // Get request ID from params
-    const requestId = params.id;
+    const resolvedParams = await Promise.resolve(params);
+    const requestId = resolvedParams.id;
     if (!requestId || isNaN(Number(requestId))) {
       return NextResponse.json(
         { success: false, error: "Invalid request ID" },

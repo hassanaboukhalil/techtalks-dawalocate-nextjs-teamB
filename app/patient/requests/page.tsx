@@ -25,8 +25,10 @@ interface Medicine {
 interface Request {
   id: number;
   city: string;
+  quantity: number;
   status: "OPEN" | "IN_PROGRESS" | "FULFILLED";
   createdAt: string;
+  updatedAt?: string;
   medicine: Medicine;
 }
 
@@ -53,6 +55,7 @@ export default function PatientRequestsPage() {
     medicine: "",
     city: "",
     quantity: 1,
+    note: "",
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -124,9 +127,14 @@ export default function PatientRequestsPage() {
         medicines: [{
           name: formData.medicine,
           quantity: formData.quantity,
+          city: formData.city,
         }],
-        notes: "",
+        notes: formData.note,
       };
+
+      console.log("Request method:", method);
+      console.log("Request URL:", url);
+      console.log("Request body:", JSON.stringify(body));
 
       const response = await fetch(url, {
         method,
@@ -136,19 +144,27 @@ export default function PatientRequestsPage() {
         body: JSON.stringify(body),
       });
 
+      console.log("Response status:", response.status);
       const data = await response.json();
+      console.log("Form submission response:", data);
+      console.log("Response full object:", JSON.stringify(data, null, 2));
+      console.log("Is edit operation:", editingRequestId !== null);
 
       if (data.success) {
+        console.log("Success! Refreshing requests...");
         await fetchRequests(); // Refresh the list
         setIsNewDialogOpen(false);
         setIsEditDialogOpen(false);
         setEditingRequestId(null);
-        setFormData({ medicine: "", city: "", quantity: 1 });
+        setFormData({ medicine: "", city: "", quantity: 1, note: "" });
         setError(null); // Clear any error banner
       } else {
+        console.error("Request failed:", data.error);
+        console.error("Error details:", data.details);
         setError(data.error || `Failed to ${editingRequestId ? "update" : "create"} request`);
       }
-    } catch {
+    } catch (error) {
+      console.error("Network/Parse error:", error);
       setError("Network error occurred");
     } finally {
       setSubmitting(false);
@@ -161,7 +177,7 @@ export default function PatientRequestsPage() {
     setFormData({
       medicine: request.medicine.name,
       city: request.city,
-      quantity: 1, // Default since quantity isn't stored
+      quantity: request.quantity,
     });
     setIsEditDialogOpen(true);
   };
@@ -225,7 +241,7 @@ export default function PatientRequestsPage() {
 
   // Reset form when dialogs close
   const resetForm = () => {
-    setFormData({ medicine: "", city: "", quantity: 1 });
+    setFormData({ medicine: "", city: "", quantity: 1, note: "" });
     setEditingRequestId(null);
   };
 
@@ -264,28 +280,57 @@ export default function PatientRequestsPage() {
           <p className="text-gray-600 mt-4">Loading requests...</p>
         </div>
       ) : requests.length === 0 ? (
-        <Card className="text-center py-12">
-          <CardContent>
-            <Pill className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              No requests yet
-            </h3>
-            <p className="text-gray-600 mb-6">
-              Create your first medicine request to get started
-            </p>
-            <Button onClick={() => setIsNewDialogOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Create Request
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="flex justify-center items-center min-h-96">
+          <Card className="text-center py-16 max-w-md w-full relative overflow-hidden">
+            {/* Animated background elements */}
+            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+              <div className="absolute top-8 left-10 w-8 h-8 bg-blue-100 rounded-full animate-float opacity-50"></div>
+              <div className="absolute top-20 right-12 w-6 h-6 bg-green-100 rounded-full animate-float-delayed opacity-50"></div>
+              <div className="absolute bottom-20 left-1/4 w-5 h-5 bg-pink-100 rounded-full animate-float-slow opacity-50"></div>
+            </div>
+
+            <CardContent className="relative z-10">
+              <div className="flex justify-center mb-6">
+                <div className="relative">
+                  <div className="animate-spin-slow absolute inset-0 border-2 border-transparent border-t-blue-300 border-r-blue-300 rounded-full"></div>
+                  <Pill className="h-16 w-16 text-gray-400 animate-bounce relative" />
+                </div>
+              </div>
+
+              <h3 className="text-xl font-semibold text-gray-900 mb-2 animate-fade-in">
+                No requests yet
+              </h3>
+              <p className="text-gray-600 mb-2 animate-fade-in">
+                Your medicine cabinet is feeling lonely...
+              </p>
+              <p className="text-gray-500 mb-8 animate-fade-in text-sm">
+                Let's change that!
+              </p>
+
+              <Button 
+                onClick={() => setIsNewDialogOpen(true)}
+                className="animate-pulse-soft hover:animate-pulse-faster relative overflow-hidden group"
+              >
+                <Plus className="h-4 w-4 mr-2 group-hover:rotate-90 transition-transform" />
+                Create Request
+              </Button>
+
+              <p className="text-xs text-gray-400 mt-6 animate-blink">✨ Click here to get started ✨</p>
+            </CardContent>
+          </Card>
+        </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {requests.map((request) => (
             <Card key={request.id} className="hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
-                  <CardTitle className="text-lg">{request.medicine.name}</CardTitle>
+                  <div>
+                    <CardTitle className="text-lg">{request.medicine.name}</CardTitle>
+                    {request.medicine.genericName && (
+                      <p className="text-xs text-gray-500 mt-1">({request.medicine.genericName})</p>
+                    )}
+                  </div>
                   {getStatusBadge(request.status)}
                 </div>
               </CardHeader>
@@ -294,6 +339,10 @@ export default function PatientRequestsPage() {
                   <div className="flex items-center text-sm text-gray-600">
                     <MapPin className="h-4 w-4 mr-2" />
                     {request.city}
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Pill className="h-4 w-4 mr-2" />
+                    Quantity: {request.quantity}
                   </div>
                   <div className="flex items-center text-sm text-gray-600">
                     <Calendar className="h-4 w-4 mr-2" />
@@ -359,7 +408,7 @@ export default function PatientRequestsPage() {
                 <Input
                   id="medicine"
                   placeholder="e.g., Paracetamol, Ibuprofen"
-                  value={formData.medicine}
+                  value={formData.medicine ?? ""}
                   onChange={(e) =>
                     setFormData({ ...formData, medicine: e.target.value })
                   }
@@ -371,7 +420,7 @@ export default function PatientRequestsPage() {
                 <Input
                   id="city"
                   placeholder="Your city"
-                  value={formData.city}
+                  value={formData.city ?? ""}
                   onChange={(e) =>
                     setFormData({ ...formData, city: e.target.value })
                   }
@@ -384,13 +433,36 @@ export default function PatientRequestsPage() {
                   id="quantity"
                   type="number"
                   min="1"
-                  value={formData.quantity}
+                  value={formData.quantity ?? 1}
                   onChange={(e) =>
                     setFormData({ ...formData, quantity: parseInt(e.target.value) || 1 })
                   }
                   required
                 />
               </div>
+
+              {/* Note field for quantities > 5 */}
+              {(formData.quantity ?? 1) > 5 && (
+                <div className="col-span-full">
+                  <Label htmlFor="note" className="text-amber-700 font-semibold">
+                    ⚠️ High Quantity Note (Required for quantities over 5)
+                  </Label>
+                  <p className="text-xs text-amber-600 mb-2">
+                    Please explain the reason for requesting a large quantity of this medicine.
+                  </p>
+                  <textarea
+                    id="note"
+                    placeholder="e.g., For an institution, long-term treatment plan, multiple patients, etc."
+                    value={formData.note ?? ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, note: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    rows={3}
+                    required
+                  />
+                </div>
+              )}
             </div>
             <DialogFooter className="mt-6">
               <Button
@@ -420,14 +492,29 @@ export default function PatientRequestsPage() {
           <DialogHeader>
             <DialogTitle>Edit Medicine Request</DialogTitle>
           </DialogHeader>
+          {editingRequestId && (
+            <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-4">
+              <p className="text-sm text-blue-700">
+                <Calendar className="inline h-4 w-4 mr-1" />
+                Created: {requests.find(r => r.id === editingRequestId) && 
+                  new Date(requests.find(r => r.id === editingRequestId)!.createdAt).toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+              </p>
+            </div>
+          )}
           <form onSubmit={handleSubmit}>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="edit-medicine">Medicine Name</Label>
+                <Label htmlFor="edit-medicine">Medicine Name <span className="text-red-500">*</span></Label>
                 <Input
                   id="edit-medicine"
                   placeholder="e.g., Paracetamol, Ibuprofen"
-                  value={formData.medicine}
+                  value={formData.medicine ?? ""}
                   onChange={(e) =>
                     setFormData({ ...formData, medicine: e.target.value })
                   }
@@ -439,26 +526,48 @@ export default function PatientRequestsPage() {
                 <Input
                   id="edit-city"
                   placeholder="Your city"
-                  value={formData.city}
+                  value={formData.city ?? ""}
                   onChange={(e) =>
                     setFormData({ ...formData, city: e.target.value })
                   }
-                  required
                 />
               </div>
               <div>
-                <Label htmlFor="edit-quantity">Quantity Needed</Label>
+                <Label htmlFor="edit-quantity">Quantity Needed <span className="text-red-500">*</span></Label>
                 <Input
                   id="edit-quantity"
                   type="number"
                   min="1"
-                  value={formData.quantity}
+                  value={formData.quantity ?? 1}
                   onChange={(e) =>
                     setFormData({ ...formData, quantity: parseInt(e.target.value) || 1 })
                   }
                   required
                 />
               </div>
+
+              {/* Note field for quantities > 5 */}
+              {(formData.quantity ?? 1) > 5 && (
+                <div className="col-span-full">
+                  <Label htmlFor="edit-note" className="text-amber-700 font-semibold">
+                    ⚠️ High Quantity Note (Required for quantities over 5)
+                  </Label>
+                  <p className="text-xs text-amber-600 mb-2">
+                    Please explain the reason for requesting a large quantity of this medicine.
+                  </p>
+                  <textarea
+                    id="edit-note"
+                    placeholder="e.g., For an institution, long-term treatment plan, multiple patients, etc."
+                    value={formData.note ?? ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, note: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    rows={3}
+                    required
+                  />
+                </div>
+              )}
             </div>
             <DialogFooter className="mt-6">
               <Button
