@@ -5,6 +5,9 @@ import { Plus, Edit, Trash2, Pill, MapPin, Calendar, AlertCircle } from "lucide-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { CityAutocomplete } from "@/components/ui/CityAutocomplete";
+import { MedicineAutocomplete } from "@/components/ui/MedicineAutocomplete";
+import { LEBANON_CITIES } from "@/constants/lebanon-cities";
 import {
   Dialog,
   DialogContent,
@@ -43,6 +46,10 @@ export default function PatientRequestsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Autocomplete data
+  const [medicines, setMedicines] = useState<any[]>([]);
+  const [cities, setCities] = useState<string[]>([]);
+
   // Dialog states
   const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -80,7 +87,25 @@ export default function PatientRequestsPage() {
 
   useEffect(() => {
     fetchRequests();
+    fetchMedicinesAndCities();
   }, []);
+
+  // Fetch medicines and cities
+  const fetchMedicinesAndCities = async () => {
+    try {
+      // Fetch medicines
+      const medicineRes = await fetch("/api/global/medicines");
+      const medicineData = await medicineRes.json();
+      if (medicineData.success) {
+        setMedicines(medicineData.data);
+      }
+
+      // Set cities from constant
+      setCities(LEBANON_CITIES);
+    } catch (err) {
+      console.error("Failed to load autocomplete data:", err);
+    }
+  };
 
   // Status badge helper
   const getStatusBadge = (status: string) => {
@@ -178,6 +203,7 @@ export default function PatientRequestsPage() {
       medicine: request.medicine.name,
       city: request.city,
       quantity: request.quantity,
+      note: "",
     });
     setIsEditDialogOpen(true);
   };
@@ -405,26 +431,24 @@ export default function PatientRequestsPage() {
             <div className="space-y-4">
               <div>
                 <Label htmlFor="medicine">Medicine Name</Label>
-                <Input
-                  id="medicine"
-                  placeholder="e.g., Paracetamol, Ibuprofen"
+                <MedicineAutocomplete
+                  medicines={medicines}
                   value={formData.medicine ?? ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, medicine: e.target.value })
+                  onChange={(value) =>
+                    setFormData({ ...formData, medicine: value })
                   }
-                  required
+                  placeholder="Search medicine by name..."
                 />
               </div>
               <div>
                 <Label htmlFor="city">City</Label>
-                <Input
-                  id="city"
-                  placeholder="Your city"
+                <CityAutocomplete
+                  cities={cities}
                   value={formData.city ?? ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, city: e.target.value })
+                  onChange={(value) =>
+                    setFormData({ ...formData, city: value })
                   }
-                  required
+                  placeholder="Select your city..."
                 />
               </div>
               <div>
@@ -511,25 +535,24 @@ export default function PatientRequestsPage() {
             <div className="space-y-4">
               <div>
                 <Label htmlFor="edit-medicine">Medicine Name <span className="text-red-500">*</span></Label>
-                <Input
-                  id="edit-medicine"
-                  placeholder="e.g., Paracetamol, Ibuprofen"
+                <MedicineAutocomplete
+                  medicines={medicines}
                   value={formData.medicine ?? ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, medicine: e.target.value })
+                  onChange={(value) =>
+                    setFormData({ ...formData, medicine: value })
                   }
-                  required
+                  placeholder="Search medicine by name..."
                 />
               </div>
               <div>
                 <Label htmlFor="edit-city">City</Label>
-                <Input
-                  id="edit-city"
-                  placeholder="Your city"
+                <CityAutocomplete
+                  cities={cities}
                   value={formData.city ?? ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, city: e.target.value })
+                  onChange={(value) =>
+                    setFormData({ ...formData, city: value })
                   }
+                  placeholder="Select your city..."
                 />
               </div>
               <div>
@@ -593,12 +616,6 @@ export default function PatientRequestsPage() {
         setIsDeleteDialogOpen(open);
         if (!open) setSelectedRequestId(null);
       }}>
-        {isDeleteDialogOpen && (
-          <div style={{ display: 'none' }}>
-            {/* Debug: Log selectedRequestId when dialog opens */}
-            {console.log("Delete dialog opened with selectedRequestId:", selectedRequestId)}
-          </div>
-        )}
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete Request</DialogTitle>
