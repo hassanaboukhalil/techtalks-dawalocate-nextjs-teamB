@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Link from "next/link";
-import { Eye, EyeOff, Mail, Clock, CheckCircle2, ArrowRight } from "lucide-react";
+import { Eye, EyeOff, Mail, Clock, Check, X } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { CityAutocomplete } from "@/components/ui/CityAutocomplete";
 import { LEBANON_CITIES } from "@/constants/lebanon-cities";
@@ -36,7 +36,7 @@ export default function SignupPage() {
   const [canResend, setCanResend] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
   const [isVerifying, setIsVerifying] = useState(false); // Prevent duplicate verifications
-  
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -52,7 +52,7 @@ export default function SignupPage() {
   // Timer countdown
   useEffect(() => {
     if (currentStep !== "verify" || timeLeft <= 0) return;
-    
+
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
@@ -69,7 +69,7 @@ export default function SignupPage() {
   // Resend cooldown
   useEffect(() => {
     if (resendCooldown <= 0) return;
-    
+
     const timer = setInterval(() => {
       setResendCooldown((prev) => (prev <= 1 ? 0 : prev - 1));
     }, 1000);
@@ -81,7 +81,7 @@ export default function SignupPage() {
   useEffect(() => {
     // Clear error when entering any new step
     setError("");
-    
+
     // Additional cleanup when entering verify step
     if (currentStep === "verify") {
       setVerificationCode("");
@@ -112,11 +112,14 @@ export default function SignupPage() {
 
     try {
       // First verify the code
-      const verifyResponse = await fetch("/api/auth/email-verification/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: formData.email, code }),
-      });
+      const verifyResponse = await fetch(
+        "/api/auth/email-verification/verify",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: formData.email, code }),
+        }
+      );
 
       const verifyData = await verifyResponse.json();
 
@@ -176,7 +179,7 @@ export default function SignupPage() {
 
   const handleResendCode = async () => {
     if (resendCooldown > 0) return;
-    
+
     setError("");
     setLoading(true);
 
@@ -204,10 +207,26 @@ export default function SignupPage() {
       setLoading(false);
     }
   };
+  const passwordCriteria = [
+    { label: "At least 8 characters", valid: formData.password.length >= 8 },
+    { label: "One uppercase letter", valid: /[A-Z]/.test(formData.password) },
+    { label: "One lowercase letter", valid: /[a-z]/.test(formData.password) },
+    {
+      label: "One special character",
+      valid: /[^A-Za-z0-9]/.test(formData.password),
+    },
+  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    // Validate password strength
+    if (!passwordCriteria.every((c) => c.valid)) {
+      setError("Please meet all password requirements");
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
 
     // Validate city and phone
@@ -290,7 +309,8 @@ export default function SignupPage() {
                   <h1 className="text-4xl font-bold mb-4">Check Your Email</h1>
                 </div>
                 <p className="text-lg text-white/90 leading-relaxed">
-                  We've sent a 6-digit verification code to your email address. Enter it to continue.
+                  We&apos;ve sent a 6-digit verification code to your email
+                  address. Enter it to continue.
                 </p>
               </div>
             </div>
@@ -302,13 +322,21 @@ export default function SignupPage() {
               <div className="mb-8 text-center">
                 <div className="flex items-center justify-center gap-3 mb-4">
                   <Logo withTitle={false} width={28} height={28} />
-                  <h2 className="text-2xl font-bold text-gray-900">Verify Your Email</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    Verify Your Email
+                  </h2>
                 </div>
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-                  <p className="text-sm text-blue-900 font-medium">Code sent to</p>
-                  <p className="text-sm text-blue-700 font-mono">{formData.email}</p>
+                  <p className="text-sm text-blue-900 font-medium">
+                    Code sent to
+                  </p>
+                  <p className="text-sm text-blue-700 font-mono">
+                    {formData.email}
+                  </p>
                 </div>
-                <p className="text-gray-600 text-sm">Step 2 of 2: Enter the 6-digit code from your email</p>
+                <p className="text-gray-600 text-sm">
+                  Step 2 of 2: Enter the 6-digit code from your email
+                </p>
               </div>
 
               {error && (
@@ -330,8 +358,14 @@ export default function SignupPage() {
               <div className="mb-6 text-center">
                 <div className="inline-flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-full">
                   <Clock className="w-4 h-4 text-gray-600" />
-                  <span className={`text-sm font-medium ${timeLeft < 60 ? "text-red-600" : "text-gray-700"}`}>
-                    {timeLeft > 0 ? `Expires in ${formatTime(timeLeft)}` : "Code expired"}
+                  <span
+                    className={`text-sm font-medium ${
+                      timeLeft < 60 ? "text-red-600" : "text-gray-700"
+                    }`}
+                  >
+                    {timeLeft > 0
+                      ? `Expires in ${formatTime(timeLeft)}`
+                      : "Code expired"}
                   </span>
                 </div>
               </div>
@@ -339,7 +373,9 @@ export default function SignupPage() {
               <Button
                 onClick={() => handleVerifyCode(verificationCode)}
                 className="w-full h-11 bg-primary hover:bg-secondary text-white rounded-lg font-medium transition-all duration-200 shadow-sm hover:shadow-md mb-4"
-                disabled={loading || isVerifying || verificationCode.length !== 6}
+                disabled={
+                  loading || isVerifying || verificationCode.length !== 6
+                }
               >
                 {loading || isVerifying ? (
                   <div className="flex items-center gap-2">
@@ -352,13 +388,17 @@ export default function SignupPage() {
               </Button>
 
               <div className="text-center">
-                <p className="text-sm text-gray-600 mb-2">Didn't receive the code?</p>
+                <p className="text-sm text-gray-600 mb-2">
+                  Didn&apos;t receive the code?
+                </p>
                 <button
                   onClick={handleResendCode}
                   disabled={loading || resendCooldown > 0}
                   className="text-sm text-primary hover:text-secondary font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend code"}
+                  {resendCooldown > 0
+                    ? `Resend in ${resendCooldown}s`
+                    : "Resend code"}
                 </button>
               </div>
             </div>
@@ -474,6 +514,37 @@ export default function SignupPage() {
                       <Eye className="w-5 h-5" />
                     )}
                   </button>
+                </div>
+                <div className="space-y-1 mt-2">
+                  {passwordCriteria.map((item, index) => {
+                    const isTyped = formData.password.length > 0;
+                    const isMet = item.valid;
+
+                    let colorClass = "text-gray-500";
+                    let icon = (
+                      <div className="w-3 h-3 rounded-full border border-gray-400" />
+                    );
+
+                    if (isTyped) {
+                      if (isMet) {
+                        colorClass = "text-green-600";
+                        icon = <Check className="w-3 h-3 text-green-600" />;
+                      } else {
+                        colorClass = "text-red-500";
+                        icon = <X className="w-3 h-3 text-red-500" />;
+                      }
+                    }
+
+                    return (
+                      <div
+                        key={index}
+                        className="flex items-center gap-2 text-xs"
+                      >
+                        {icon}
+                        <span className={colorClass}>{item.label}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
