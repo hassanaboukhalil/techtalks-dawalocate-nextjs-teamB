@@ -1,6 +1,5 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -9,46 +8,36 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search } from "lucide-react";
+import { CityAutocomplete } from "@/components/ui/CityAutocomplete";
+import { LEBANON_CITIES } from "@/constants/lebanon-cities";
 
 interface PharmacyFiltersProps {
   statusFilter: string;
-  searchQuery: string;
   cityFilter: string;
   deliveryFilter: string;
   onStatusFilterChange: (status: string) => void;
-  onSearchChange: (search: string) => void;
   onCityFilterChange: (city: string) => void;
   onDeliveryFilterChange: (delivery: string) => void;
 }
 
 export function PharmacyFilters({
   statusFilter,
-  searchQuery,
   cityFilter,
   deliveryFilter,
   onStatusFilterChange,
-  onSearchChange,
   onCityFilterChange,
   onDeliveryFilterChange,
 }: PharmacyFiltersProps) {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      {/* Search */}
-      <div className="space-y-2">
-        <Label htmlFor="search">Search</Label>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            id="search"
-            placeholder="Name, email, city, phone..."
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-9"
-          />
-        </div>
-      </div>
+  // Add "All cities" option to the cities list
+  const citiesWithAll = ["All cities", ...LEBANON_CITIES];
 
+  const handleCityChange = (city: string) => {
+    // If "All cities" is selected, pass empty string to clear the filter
+    onCityFilterChange(city === "All cities" ? "" : city);
+  };
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {/* Status Filter */}
       <div className="space-y-2">
         <Label htmlFor="status">Status</Label>
@@ -65,14 +54,15 @@ export function PharmacyFilters({
         </Select>
       </div>
 
-      {/* City Filter */}
+      {/* City Filter - Now with Autocomplete */}
       <div className="space-y-2">
         <Label htmlFor="city">City</Label>
-        <Input
-          id="city"
+        <CityAutocomplete
+          cities={citiesWithAll}
+          value={cityFilter || "All cities"}
+          onChange={handleCityChange}
           placeholder="Filter by city..."
-          value={cityFilter}
-          onChange={(e) => onCityFilterChange(e.target.value)}
+          className="border-gray-300 focus:border-primary focus:ring-primary"
         />
       </div>
 
