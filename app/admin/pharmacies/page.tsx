@@ -6,7 +6,9 @@ import { PharmacyFilters } from "@/components/admin/PharmacyFilters";
 import { PharmacyStats } from "@/components/admin/PharmacyStats";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RefreshCw } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RefreshCw, User, Phone, Mail } from "lucide-react";
 
 interface Pharmacy {
   id: number;
@@ -54,9 +56,11 @@ export default function AdminPharmaciesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Filter states
+  // Filter states - THREE SEPARATE SEARCH FIELDS
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchName, setSearchName] = useState("");
+  const [searchPhone, setSearchPhone] = useState("");
+  const [searchEmail, setSearchEmail] = useState("");
   const [cityFilter, setCityFilter] = useState("");
   const [deliveryFilter, setDeliveryFilter] = useState<string>("all");
 
@@ -68,7 +72,13 @@ export default function AdminPharmaciesPage() {
       // Build query params
       const params = new URLSearchParams();
       if (statusFilter !== "all") params.append("status", statusFilter);
-      if (searchQuery) params.append("search", searchQuery);
+      
+      // Combine the three search fields
+      const searchTerms = [searchName, searchPhone, searchEmail]
+        .filter(term => term.trim().length > 0)
+        .join(" ");
+      if (searchTerms) params.append("search", searchTerms);
+      
       if (cityFilter) params.append("city", cityFilter);
       if (deliveryFilter !== "all")
         params.append("hasDelivery", deliveryFilter);
@@ -101,7 +111,7 @@ export default function AdminPharmaciesPage() {
 
   useEffect(() => {
     fetchPharmacies();
-  }, [statusFilter, searchQuery, cityFilter, deliveryFilter, pagination.offset]);
+  }, [statusFilter, searchName, searchPhone, searchEmail, cityFilter, deliveryFilter, pagination.offset]);
 
   const handleRefresh = () => {
     fetchPharmacies();
@@ -113,11 +123,6 @@ export default function AdminPharmaciesPage() {
 
   const handleStatusFilterChange = (status: string) => {
     setStatusFilter(status);
-    setPagination((prev) => ({ ...prev, offset: 0 }));
-  };
-
-  const handleSearchChange = (search: string) => {
-    setSearchQuery(search);
     setPagination((prev) => ({ ...prev, offset: 0 }));
   };
 
@@ -162,16 +167,65 @@ export default function AdminPharmaciesPage() {
           <CardTitle>Filters</CardTitle>
         </CardHeader>
         <CardContent>
-          <PharmacyFilters
-            statusFilter={statusFilter}
-            searchQuery={searchQuery}
-            cityFilter={cityFilter}
-            deliveryFilter={deliveryFilter}
-            onStatusFilterChange={handleStatusFilterChange}
-            onSearchChange={handleSearchChange}
-            onCityFilterChange={handleCityFilterChange}
-            onDeliveryFilterChange={handleDeliveryFilterChange}
-          />
+          <div className="space-y-4">
+            {/* Three Search Fields Row */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Search by Name */}
+              <div className="space-y-2">
+                <Label htmlFor="search-name">Search by Name</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="search-name"
+                    placeholder="Enter name..."
+                    value={searchName}
+                    onChange={(e) => setSearchName(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+              </div>
+
+              {/* Search by Phone */}
+              <div className="space-y-2">
+                <Label htmlFor="search-phone">Search by Phone</Label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="search-phone"
+                    placeholder="Enter phone..."
+                    value={searchPhone}
+                    onChange={(e) => setSearchPhone(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+              </div>
+
+              {/* Search by Email */}
+              <div className="space-y-2">
+                <Label htmlFor="search-email">Search by Email</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="search-email"
+                    placeholder="Enter email..."
+                    value={searchEmail}
+                    onChange={(e) => setSearchEmail(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Other Filters */}
+            <PharmacyFilters
+              statusFilter={statusFilter}
+              cityFilter={cityFilter}
+              deliveryFilter={deliveryFilter}
+              onStatusFilterChange={handleStatusFilterChange}
+              onCityFilterChange={handleCityFilterChange}
+              onDeliveryFilterChange={handleDeliveryFilterChange}
+            />
+          </div>
         </CardContent>
       </Card>
 
