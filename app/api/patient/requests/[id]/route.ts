@@ -59,13 +59,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    if (typeof medicine.quantity !== "number" || medicine.quantity <= 0) {
-      return NextResponse.json(
-        { success: false, error: "Medicine must have a valid quantity greater than 0", details: "Medicine must have a valid quantity greater than 0" },
-        { status: 400 }
-      );
-    }
-
     // Validate city if provided
     if (medicine.city && typeof medicine.city !== "string") {
       return NextResponse.json(
@@ -151,7 +144,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       medicine: {
         connect: { id: newMedicine.id }
       },
-      quantity: medicine.quantity,
+      quantity: medicine.quantity || 1,
     };
 
     // Allow updating city if provided

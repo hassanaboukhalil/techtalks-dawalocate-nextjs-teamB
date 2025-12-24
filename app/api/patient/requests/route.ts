@@ -96,12 +96,6 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-      if (typeof medicine.quantity !== "number" || medicine.quantity <= 0) {
-        return NextResponse.json(
-          { success: false, error: "Each medicine must have a valid quantity greater than 0", details: "Each medicine must have a valid quantity greater than 0" },
-          { status: 400 }
-        );
-      }
     }
 
     const userId = Number(session.user.id);
@@ -158,7 +152,7 @@ export async function POST(request: NextRequest) {
             userId,
             medicineId: medicineRecord.id,
             city: user.city,
-            quantity: medicine.quantity,
+            quantity: medicine.quantity || 1,
             status: "OPEN",
           },
           include: {

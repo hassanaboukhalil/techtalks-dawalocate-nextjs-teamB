@@ -94,7 +94,7 @@ export default function PatientSearchPage() {
                 <div key={m.id} className="flex justify-between bg-muted p-3 rounded mb-2">
                   <div>
                     <p className="font-medium">{m.medicine.name}</p>
-                    <p className="text-xs text-muted-foreground">Qty: {m.quantity} • Expires: {formatDate(m.expiresAt)}</p>
+                    <p className="text-xs text-muted-foreground">Expires: {formatDate(m.expiresAt)}</p>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-xs ${statusBadge(m.status)}`}>{m.status}</span>
                 </div>
