@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useSession } from "next-auth/react";
 import axios from "axios";
 import * as Dialog from "@radix-ui/react-dialog";
 import {
@@ -11,6 +12,9 @@ import {
   PackageOpen,
   Pencil,
   Trash2,
+  Loader2,
+  AlertCircle,
+  XCircle,
 } from "lucide-react";
 import {
   Table,
@@ -44,6 +48,7 @@ interface InventoryItem {
 }
 
 export default function PharmacyInventoryPage() {
+  const { data: session, status: sessionStatus } = useSession();
   const [open, setOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -68,6 +73,71 @@ export default function PharmacyInventoryPage() {
     status: "IN_STOCK" as "IN_STOCK" | "LOW" | "OUT",
     expiresAt: "",
   });
+
+  // Show loading state while checking session
+  if (sessionStatus === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+          <p className="mt-2 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const userStatus = session?.user?.status;
+
+  // PENDING status - Show waiting for approval message
+  if (userStatus === "PENDING") {
+    return (
+      <div className="max-w-2xl mx-auto mt-16">
+        <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-8 text-center">
+          <AlertCircle className="h-16 w-16 text-yellow-600 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-3">
+            Account Pending Approval
+          </h2>
+          <p className="text-gray-700 mb-4">
+            Your pharmacy account is currently under review by our administrators.
+          </p>
+          <p className="text-gray-600 text-sm">
+            You'll be able to manage your inventory once your account has been approved.
+            This usually takes 24-48 hours.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // REJECTED status - Show rejection message
+  if (userStatus === "REJECTED") {
+    return (
+      <div className="max-w-2xl mx-auto mt-16">
+        <div className="bg-red-50 border-2 border-red-200 rounded-lg p-8 text-center">
+          <XCircle className="h-16 w-16 text-red-600 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-3">
+            Access Restricted
+          </h2>
+          <p className="text-gray-700 mb-4">
+            Your pharmacy account was not approved and you cannot access the inventory management system.
+          </p>
+          <p className="text-gray-600 text-sm mb-6">
+            If you believe this is an error, please contact our support team for assistance.
+          </p>
+          <div className="flex justify-center">
+            <a
+              href="https://mail.google.com/mail/?view=cm&fs=1&to=dawalocate@gmail.com&su=Support%20Request%20-%20Pharmacy%20Account"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-6 py-2 bg-primary text-white rounded-md hover:bg-secondary transition-colors"
+            >
+              Contact Support
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Fetch all medicines for dropdown
   useEffect(() => {
