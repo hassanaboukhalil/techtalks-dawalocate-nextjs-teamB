@@ -355,18 +355,20 @@ export function PharmaciesTable({
             onOpenChange={setViewDialogOpen}
           />
           <ApproveRejectDialog
-            pharmacy={selectedPharmacy}
+            item={selectedPharmacy}
             open={approveDialogOpen}
             onOpenChange={setApproveDialogOpen}
             onConfirm={handleApproveConfirm}
             action="approve"
+            type="pharmacy"
           />
           <ApproveRejectDialog
-            pharmacy={selectedPharmacy}
+            item={selectedPharmacy}
             open={rejectDialogOpen}
             onOpenChange={setRejectDialogOpen}
             onConfirm={handleRejectConfirm}
             action="reject"
+            type="pharmacy"
           />
         </>
       )}
