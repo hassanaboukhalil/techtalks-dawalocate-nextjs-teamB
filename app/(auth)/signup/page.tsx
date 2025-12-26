@@ -482,17 +482,16 @@ export default function SignupPage() {
                     )}
                   </button>
                 </div>
-                <div className="space-y-1 mt-2">
-                  {passwordCriteria.map((item, index) => {
-                    const isTyped = formData.password.length > 0;
-                    const isMet = item.valid;
+                {formData.password.length > 0 && (
+                  <div className="space-y-1 mt-2">
+                    {passwordCriteria.map((item, index) => {
+                      const isMet = item.valid;
 
-                    let colorClass = "text-gray-500";
-                    let icon = (
-                      <div className="w-3 h-3 rounded-full border border-gray-400" />
-                    );
+                      let colorClass = "text-gray-500";
+                      let icon = (
+                        <div className="w-3 h-3 rounded-full border border-gray-400" />
+                      );
 
-                    if (isTyped) {
                       if (isMet) {
                         colorClass = "text-green-600";
                         icon = <Check className="w-3 h-3 text-green-600" />;
@@ -500,19 +499,19 @@ export default function SignupPage() {
                         colorClass = "text-red-500";
                         icon = <X className="w-3 h-3 text-red-500" />;
                       }
-                    }
 
-                    return (
-                      <div
-                        key={index}
-                        className="flex items-center gap-2 text-xs"
-                      >
-                        {icon}
-                        <span className={colorClass}>{item.label}</span>
-                      </div>
-                    );
-                  })}
-                </div>
+                      return (
+                        <div
+                          key={index}
+                          className="flex items-center gap-2 text-xs"
+                        >
+                          {icon}
+                          <span className={colorClass}>{item.label}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
