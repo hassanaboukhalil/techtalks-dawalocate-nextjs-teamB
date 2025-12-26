@@ -4,20 +4,25 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
 // Helper function to safely parse opening hours
-const parseOpeningHours = (openingHours: string | null) => {
+const parseOpeningHours = (openingHours: unknown) => {
   if (!openingHours) return null;
 
   // If it's already parsed (object/array), return as is
   if (typeof openingHours === "object") return openingHours;
 
-  // Try to parse JSON string
-  try {
-    return JSON.parse(openingHours);
-  } catch (error) {
-    // If parsing fails, return null (treat as invalid)
-    console.warn("Failed to parse openingHours JSON:", error);
-    return null;
+  // If it's a string, try to parse as JSON
+  if (typeof openingHours === "string") {
+    try {
+      return JSON.parse(openingHours);
+    } catch (error) {
+      // If parsing fails, return the string as-is
+      console.warn("Failed to parse openingHours JSON, returning as string:", error);
+      return openingHours;
+    }
   }
+
+  // For any other type, return as string
+  return String(openingHours);
 };
 
 /**
@@ -41,8 +46,19 @@ export async function GET(request: NextRequest) {
     // Load the user with its userType
     const pharmacy = await db.user.findUnique({
       where: { id: pharmacyId },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        city: true,
+        address: true,
+        openingHours: true,
+        hasDelivery: true,
+        status: true,
         userType: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
 
@@ -116,8 +132,19 @@ export async function PUT(request: NextRequest) {
     // Load the user with its userType
     const pharmacy = await db.user.findUnique({
       where: { id: pharmacyId },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        city: true,
+        address: true,
+        openingHours: true,
+        hasDelivery: true,
+        status: true,
         userType: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
 
@@ -176,13 +203,22 @@ export async function PUT(request: NextRequest) {
     }
 
     // Prepare update data
+    let processedOpeningHours: string | null = null;
+    if (openingHours === "") {
+      processedOpeningHours = null;
+    } else if (typeof openingHours === "object" && openingHours !== null) {
+      processedOpeningHours = JSON.stringify(openingHours);
+    } else if (typeof openingHours === "string") {
+      processedOpeningHours = openingHours;
+    }
+
     const updateData: any = {
       name: name.trim(),
       email: email.trim().toLowerCase(),
       phone: phone || null,
       city: city || null,
       address: address || null,
-      openingHours: openingHours || null,
+      openingHours: processedOpeningHours,
       hasDelivery: hasDelivery || false,
       updatedAt: new Date(),
     };

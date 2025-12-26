@@ -14,7 +14,6 @@ import {
   XCircle,
   Loader2,
   Edit,
-  MessageCircle,
   Save,
   AlertCircle,
   Check,
@@ -48,7 +47,7 @@ interface PharmacyProfile {
   city: string | null;
   phone: string | null;
   address: string | null;
-  openingHours: TimeSlot[] | null;
+  openingHours: TimeSlot[] | string | null;
   hasDelivery: boolean | null;
   status: string;
   userType: string;
@@ -99,24 +98,25 @@ export default function PharmacyProfilePage() {
   };
 
   const getStatusBadge = (status: string) => {
-    const isActive = status?.toLowerCase() === "active";
+    const statusLower = status?.toLowerCase();
+
+    if (statusLower === "approved") {
+      return (
+        <div className="flex items-center gap-2">
+          <CheckCircle2 className="h-5 w-5 text-green-600" />
+          <span className="px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800 border border-green-200">
+            Approved
+          </span>
+        </div>
+      );
+    }
+
     return (
       <div className="flex items-center gap-2">
-        {isActive ? (
-          <>
-            <CheckCircle2 className="h-5 w-5 text-green-600" />
-            <span className="px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800 border border-green-200">
-              Active
-            </span>
-          </>
-        ) : (
-          <>
-            <XCircle className="h-5 w-5 text-red-600" />
-            <span className="px-3 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-800 border border-red-200">
-              {status || "Inactive"}
-            </span>
-          </>
-        )}
+        <XCircle className="h-5 w-5 text-red-600" />
+        <span className="px-3 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-800 border border-red-200">
+          {status || "Inactive"}
+        </span>
       </div>
     );
   };
@@ -129,15 +129,14 @@ export default function PharmacyProfilePage() {
     });
   };
 
-  const getWhatsAppLink = (phoneNumber: string | null) => {
-    if (!phoneNumber) return null;
-    // Remove all non-numeric characters
-    const cleanNumber = phoneNumber.replace(/\D/g, "");
-    // WhatsApp link format
-    return `https://wa.me/${cleanNumber}`;
-  };
 
   const formatOpeningHours = (openingHours: any): string => {
+    // If it's a string, return it directly (could be status or simple hours)
+    if (typeof openingHours === "string") {
+      return openingHours || "Not provided";
+    }
+
+    // If it's null, undefined, or empty array
     if (!openingHours || !Array.isArray(openingHours) || openingHours.length === 0) {
       return "Not provided";
     }
@@ -165,13 +164,20 @@ export default function PharmacyProfilePage() {
     if (!profile) return;
 
     // Pre-fill form with current profile data
+    let openingHoursValue = "";
+    if (Array.isArray(profile.openingHours)) {
+      openingHoursValue = JSON.stringify(profile.openingHours);
+    } else if (typeof profile.openingHours === "string") {
+      openingHoursValue = profile.openingHours;
+    }
+
     setEditForm({
       name: profile.name,
       email: profile.email,
       phone: profile.phone || "",
       city: profile.city || "",
       address: profile.address || "",
-      openingHours: profile.openingHours ? JSON.stringify(profile.openingHours) : "" as string,
+      openingHours: openingHoursValue,
       hasDelivery: profile.hasDelivery || false,
     });
 
@@ -465,104 +471,6 @@ export default function PharmacyProfilePage() {
               </div>
             </div>
 
-            {/* WhatsApp Contact Card */}
-            <div className="bg-gradient-to-br from-green-400 to-green-600 rounded-xl shadow-lg p-8 animate-scale-in text-white relative overflow-hidden">
-              {/* Decorative circles */}
-              <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full"></div>
-              <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-white/10 rounded-full"></div>
-              
-              <div className="relative z-10">
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="bg-white rounded-full p-6 shadow-2xl transform hover:scale-110 transition-transform duration-300">
-                    <svg 
-                      className="h-12 w-12" 
-                      viewBox="0 0 24 24" 
-                      fill="none" 
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path 
-                        d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" 
-                        fill="#25D366"
-                      />
-                    </svg>
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-xl font-bold mb-2">
-                      Contact Us on WhatsApp
-                    </h3>
-                    <p className="text-white/90 text-sm mb-4">
-                      Chat with us directly for quick support
-                    </p>
-                  </div>
-
-                  {profile.phone ? (
-                    <>
-                      <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2 mb-2">
-                        <p className="font-semibold text-lg">{profile.phone}</p>
-                      </div>
-                      
-                      <a
-                        href={getWhatsAppLink(profile.phone) || "#"}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full bg-white text-green-600 hover:bg-green-50 font-bold py-3 px-6 rounded-full transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-lg flex items-center justify-center gap-2 group"
-                      >
-                        <MessageCircle className="h-5 w-5 group-hover:animate-bounce" />
-                        Open WhatsApp
-                      </a>
-                    </>
-                  ) : (
-                    <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-3 w-full">
-                      <p className="text-sm text-white/90">
-                        Phone number not available
-                      </p>
-                    </div>
-                  )}
-
-                  <p className="text-xs text-white/70 mt-2">
-                    Available during opening hours
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Stats Card */}
-            <div className="bg-gradient-to-br from-primary to-secondary rounded-xl shadow-lg p-6 text-white animate-scale-in">
-              <h3 className="text-lg font-bold mb-4">Quick Stats</h3>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-white/90">Profile Completion</span>
-                  <span className="font-bold text-xl">
-                    {[
-                      profile.name,
-                      profile.email,
-                      profile.phone,
-                      profile.city,
-                      profile.address,
-                      profile.openingHours,
-                    ].filter(Boolean).length * 16.67}%
-                  </span>
-                </div>
-                <div className="w-full bg-white/20 rounded-full h-2">
-                  <div
-                    className="bg-white rounded-full h-2 transition-all duration-500"
-                    style={{
-                      width: `${
-                        [
-                          profile.name,
-                          profile.email,
-                          profile.phone,
-                          profile.city,
-                          profile.address,
-                          profile.openingHours,
-                        ].filter(Boolean).length * 16.67
-                      }%`,
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
