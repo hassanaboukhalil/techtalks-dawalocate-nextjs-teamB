@@ -28,7 +28,6 @@ interface Medicine {
 interface Request {
   id: number;
   city: string;
-  quantity: number;
   status: "OPEN" | "IN_PROGRESS" | "FULFILLED";
   createdAt: string;
   updatedAt?: string;
@@ -61,7 +60,6 @@ export default function PatientRequestsPage() {
   const [formData, setFormData] = useState({
     medicine: "",
     city: "",
-    quantity: 1,
     note: "",
   });
   const [submitting, setSubmitting] = useState(false);
@@ -151,7 +149,6 @@ export default function PatientRequestsPage() {
       const body = {
         medicines: [{
           name: formData.medicine,
-          quantity: formData.quantity,
           city: formData.city,
         }],
         notes: formData.note,
@@ -170,6 +167,15 @@ export default function PatientRequestsPage() {
       });
 
       console.log("Response status:", response.status);
+      
+      if (!response.ok) {
+        const text = await response.text();
+        console.error("Response not OK. Status:", response.status, "Body:", text);
+        setError(`Request failed with status ${response.status}`);
+        setSubmitting(false);
+        return;
+      }
+
       const data = await response.json();
       console.log("Form submission response:", data);
       console.log("Response full object:", JSON.stringify(data, null, 2));
@@ -181,7 +187,7 @@ export default function PatientRequestsPage() {
         setIsNewDialogOpen(false);
         setIsEditDialogOpen(false);
         setEditingRequestId(null);
-        setFormData({ medicine: "", city: "", quantity: 1, note: "" });
+        setFormData({ medicine: "", city: "", note: "" });
         setError(null); // Clear any error banner
       } else {
         console.error("Request failed:", data.error);
@@ -202,7 +208,6 @@ export default function PatientRequestsPage() {
     setFormData({
       medicine: request.medicine.name,
       city: request.city,
-      quantity: request.quantity,
       note: "",
     });
     setIsEditDialogOpen(true);
@@ -245,6 +250,15 @@ export default function PatientRequestsPage() {
       });
 
       console.log("DELETE response status:", response.status);
+      
+      if (!response.ok) {
+        const text = await response.text();
+        console.error("DELETE Response not OK. Status:", response.status, "Body:", text);
+        setError(`Delete failed with status ${response.status}`);
+        setSubmitting(false);
+        return;
+      }
+
       const data = await response.json();
       console.log("DELETE response data:", data);
 
@@ -267,7 +281,7 @@ export default function PatientRequestsPage() {
 
   // Reset form when dialogs close
   const resetForm = () => {
-    setFormData({ medicine: "", city: "", quantity: 1, note: "" });
+    setFormData({ medicine: "", city: "", note: "" });
     setEditingRequestId(null);
   };
 
@@ -367,10 +381,6 @@ export default function PatientRequestsPage() {
                     {request.city}
                   </div>
                   <div className="flex items-center text-sm text-gray-600">
-                    <Pill className="h-4 w-4 mr-2" />
-                    Quantity: {request.quantity}
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600">
                     <Calendar className="h-4 w-4 mr-2" />
                     {new Date(request.createdAt).toLocaleDateString()}
                   </div>
@@ -451,42 +461,7 @@ export default function PatientRequestsPage() {
                   placeholder="Select your city..."
                 />
               </div>
-              <div>
-                <Label htmlFor="quantity">Quantity Needed</Label>
-                <Input
-                  id="quantity"
-                  type="number"
-                  min="1"
-                  value={formData.quantity ?? 1}
-                  onChange={(e) =>
-                    setFormData({ ...formData, quantity: parseInt(e.target.value) || 1 })
-                  }
-                  required
-                />
-              </div>
 
-              {/* Note field for quantities > 5 */}
-              {(formData.quantity ?? 1) > 5 && (
-                <div className="col-span-full">
-                  <Label htmlFor="note" className="text-amber-700 font-semibold">
-                    ⚠️ High Quantity Note (Required for quantities over 5)
-                  </Label>
-                  <p className="text-xs text-amber-600 mb-2">
-                    Please explain the reason for requesting a large quantity of this medicine.
-                  </p>
-                  <textarea
-                    id="note"
-                    placeholder="e.g., For an institution, long-term treatment plan, multiple patients, etc."
-                    value={formData.note ?? ""}
-                    onChange={(e) =>
-                      setFormData({ ...formData, note: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    rows={3}
-                    required
-                  />
-                </div>
-              )}
             </div>
             <DialogFooter className="mt-6">
               <Button
@@ -555,42 +530,7 @@ export default function PatientRequestsPage() {
                   placeholder="Select your city..."
                 />
               </div>
-              <div>
-                <Label htmlFor="edit-quantity">Quantity Needed <span className="text-red-500">*</span></Label>
-                <Input
-                  id="edit-quantity"
-                  type="number"
-                  min="1"
-                  value={formData.quantity ?? 1}
-                  onChange={(e) =>
-                    setFormData({ ...formData, quantity: parseInt(e.target.value) || 1 })
-                  }
-                  required
-                />
-              </div>
 
-              {/* Note field for quantities > 5 */}
-              {(formData.quantity ?? 1) > 5 && (
-                <div className="col-span-full">
-                  <Label htmlFor="edit-note" className="text-amber-700 font-semibold">
-                    ⚠️ High Quantity Note (Required for quantities over 5)
-                  </Label>
-                  <p className="text-xs text-amber-600 mb-2">
-                    Please explain the reason for requesting a large quantity of this medicine.
-                  </p>
-                  <textarea
-                    id="edit-note"
-                    placeholder="e.g., For an institution, long-term treatment plan, multiple patients, etc."
-                    value={formData.note ?? ""}
-                    onChange={(e) =>
-                      setFormData({ ...formData, note: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    rows={3}
-                    required
-                  />
-                </div>
-              )}
             </div>
             <DialogFooter className="mt-6">
               <Button

@@ -16,7 +16,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     if (!session?.user?.id) {
       return NextResponse.json(
-        { error: "Unauthorized" },
+        { success: false, error: "Unauthorized", details: "Unauthorized" },
         { status: 401 }
       );
     }
@@ -24,7 +24,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     // Verify user type is patient
     if (session.user.userType !== "patient") {
       return NextResponse.json(
-        { error: "Forbidden" },
+        { success: false, error: "Forbidden", details: "Forbidden" },
         { status: 403 }
       );
     }
@@ -46,7 +46,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     // Validate medicines array
     if (!medicines || !Array.isArray(medicines) || medicines.length !== 1) {
       return NextResponse.json(
-        { error: "Exactly one medicine must be provided for updating a request" },
+        { success: false, error: "Exactly one medicine must be provided for updating a request", details: "Exactly one medicine must be provided for updating a request" },
         { status: 400 }
       );
     }
@@ -54,14 +54,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const medicine = medicines[0];
     if (!medicine.name || typeof medicine.name !== "string") {
       return NextResponse.json(
-        { error: "Medicine must have a valid name" },
-        { status: 400 }
-      );
-    }
-
-    if (typeof medicine.quantity !== "number" || medicine.quantity <= 0) {
-      return NextResponse.json(
-        { error: "Medicine must have a valid quantity greater than 0" },
+        { success: false, error: "Medicine must have a valid name", details: "Medicine must have a valid name" },
         { status: 400 }
       );
     }
@@ -69,7 +62,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     // Validate city if provided
     if (medicine.city && typeof medicine.city !== "string") {
       return NextResponse.json(
-        { error: "City must be a valid string" },
+        { success: false, error: "City must be a valid string", details: "City must be a valid string" },
         { status: 400 }
       );
     }
@@ -96,7 +89,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     // Check ownership
     if (existingRequest.userId !== userId) {
       return NextResponse.json(
-        { error: "You can only edit your own requests" },
+        { success: false, error: "You can only edit your own requests", details: "You can only edit your own requests" },
         { status: 403 }
       );
     }
@@ -104,7 +97,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     // Check if request can be edited (not fulfilled)
     if (existingRequest.status === "FULFILLED") {
       return NextResponse.json(
-        { error: "Cannot edit a fulfilled request" },
+        { success: false, error: "Cannot edit a fulfilled request", details: "Cannot edit a fulfilled request" },
         { status: 400 }
       );
     }
@@ -122,7 +115,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     if (!newMedicine) {
       return NextResponse.json(
-        { error: `Medicine "${medicine.name}" not found` },
+        { success: false, error: `Medicine "${medicine.name}" not found`, details: `Medicine "${medicine.name}" not found` },
         { status: 400 }
       );
     }
@@ -140,7 +133,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
       if (duplicateRequest) {
         return NextResponse.json(
-          { error: `You already have a pending request for "${medicine.name}"` },
+          { success: false, error: `You already have a pending request for "${medicine.name}"`, details: `You already have a pending request for "${medicine.name}"` },
           { status: 400 }
         );
       }
@@ -151,7 +144,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       medicine: {
         connect: { id: newMedicine.id }
       },
-      quantity: medicine.quantity,
+      quantity: medicine.quantity || 1,
     };
 
     // Allow updating city if provided
@@ -193,7 +186,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error("[PATIENT_REQUEST_PUT] Error details:", errorMessage);
     return NextResponse.json(
-      { error: "Failed to update medicine request", details: errorMessage },
+      { success: false, error: "Failed to update medicine request", details: errorMessage },
       { status: 500 }
     );
   }
@@ -206,7 +199,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     if (!session?.user?.id) {
       return NextResponse.json(
-        { error: "Unauthorized" },
+        { success: false, error: "Unauthorized", details: "Unauthorized" },
         { status: 401 }
       );
     }
@@ -214,7 +207,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     // Verify user role is patient
     if (session.user.userType !== "patient") {
       return NextResponse.json(
-        { error: "Forbidden" },
+        { success: false, error: "Forbidden", details: "Forbidden" },
         { status: 403 }
       );
     }
@@ -257,7 +250,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     // Check ownership
     if (existingRequest.userId !== userId) {
       return NextResponse.json(
-        { error: "You can only delete your own requests" },
+        { success: false, error: "You can only delete your own requests", details: "You can only delete your own requests" },
         { status: 403 }
       );
     }
@@ -265,7 +258,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     // Check if request can be deleted (must be OPEN)
     if (existingRequest.status !== "OPEN") {
       return NextResponse.json(
-        { error: `Cannot delete a ${existingRequest.status.toLowerCase()} request` },
+        { success: false, error: `Cannot delete a ${existingRequest.status.toLowerCase()} request`, details: `Cannot delete a ${existingRequest.status.toLowerCase()} request` },
         { status: 400 }
       );
     }
@@ -282,8 +275,9 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
   } catch (error) {
     console.error("[PATIENT_REQUEST_DELETE]", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Failed to delete medicine request" },
+      { success: false, error: "Failed to delete medicine request", details: errorMessage },
       { status: 500 }
     );
   }
