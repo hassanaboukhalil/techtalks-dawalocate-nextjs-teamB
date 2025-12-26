@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { AlertCircle, CheckCircle } from "lucide-react";
 
-interface Pharmacy {
+interface Item {
   id: number;
   name: string;
   email: string;
@@ -20,19 +20,21 @@ interface Pharmacy {
 }
 
 interface ApproveRejectDialogProps {
-  pharmacy: Pharmacy;
+  item: Item;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: (reason?: string) => Promise<void>;
   action: "approve" | "reject";
+  type: "pharmacy" | "charity";
 }
 
 export function ApproveRejectDialog({
-  pharmacy,
+  item,
   open,
   onOpenChange,
   onConfirm,
   action,
+  type,
 }: ApproveRejectDialogProps) {
   const [loading, setLoading] = useState(false);
 
@@ -46,6 +48,7 @@ export function ApproveRejectDialog({
   };
 
   const isApprove = action === "approve";
+  const typeLabel = type === "pharmacy" ? "Pharmacy" : "Charity";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -63,10 +66,10 @@ export function ApproveRejectDialog({
             )}
             <div>
               <DialogTitle className="text-lg">
-                {isApprove ? "Approve" : "Reject"} Pharmacy
+                {isApprove ? "Approve" : "Reject"} {typeLabel}
               </DialogTitle>
               <DialogDescription className="mt-1">
-                {pharmacy.name}
+                {item.name}
               </DialogDescription>
             </div>
           </div>
@@ -75,30 +78,40 @@ export function ApproveRejectDialog({
         <div className="space-y-4 py-4">
           <div className="rounded-lg bg-gray-50 border border-gray-200 p-4 space-y-2">
             <p className="text-sm font-semibold text-gray-900">
-              {pharmacy.name}
+              {item.name}
             </p>
-            <p className="text-sm text-gray-600">{pharmacy.email}</p>
+            <p className="text-sm text-gray-600">{item.email}</p>
             <p className="text-xs text-gray-500">
-              Current Status: <span className="font-medium">{pharmacy.status}</span>
+              Current Status: <span className="font-medium">{item.status}</span>
             </p>
           </div>
 
           {isApprove ? (
             <div className="space-y-3">
               <p className="text-sm font-medium text-gray-900">
-                This pharmacy will be approved and will be able to:
+                This {type.toLowerCase()} will be approved and will be able to:
               </p>
               <ul className="text-sm text-gray-600 space-y-2 ml-4 list-disc">
-                <li>Manage their inventory</li>
-                <li>View patient requests</li>
-                <li>Create donation offers</li>
+                {type === "pharmacy" ? (
+                  <>
+                    <li>Manage their inventory</li>
+                    <li>View patient requests</li>
+                    <li>Create donation offers</li>
+                  </>
+                ) : (
+                  <>
+                    <li>Create and manage campaigns</li>
+                    <li>Request donations</li>
+                    <li>View available medicine offers</li>
+                  </>
+                )}
                 <li>Interact with the platform</li>
               </ul>
             </div>
           ) : (
             <div className="rounded-lg bg-red-50 border border-red-200 p-4">
               <p className="text-sm text-red-800">
-                <strong>Warning:</strong> This pharmacy will be rejected and
+                <strong>Warning:</strong> This {type.toLowerCase()} will be rejected and
                 will not be able to access platform features.
               </p>
             </div>
@@ -121,7 +134,7 @@ export function ApproveRejectDialog({
           >
             {loading
               ? `${isApprove ? "Approving" : "Rejecting"}...`
-              : `${isApprove ? "Approve" : "Reject"} Pharmacy`}
+              : `${isApprove ? "Approve" : "Reject"} ${typeLabel}`}
           </Button>
         </DialogFooter>
       </DialogContent>
