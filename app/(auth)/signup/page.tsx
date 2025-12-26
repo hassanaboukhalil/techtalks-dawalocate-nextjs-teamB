@@ -483,34 +483,45 @@ export default function SignupPage() {
                   </button>
                 </div>
                 {formData.password.length > 0 && (
-                  <div className="space-y-1 mt-2">
-                    {passwordCriteria.map((item, index) => {
-                      const isMet = item.valid;
+                  <>
+                    {passwordCriteria.every((c) => c.valid) ? (
+                      <div className="mt-2 flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg p-2">
+                        <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                        <span className="text-xs text-green-700 font-medium">
+                          Strong password! All requirements met.
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="space-y-1 mt-2">
+                        {passwordCriteria.map((item, index) => {
+                          const isMet = item.valid;
 
-                      let colorClass = "text-gray-500";
-                      let icon = (
-                        <div className="w-3 h-3 rounded-full border border-gray-400" />
-                      );
+                          let colorClass = "text-gray-500";
+                          let icon = (
+                            <div className="w-3 h-3 rounded-full border border-gray-400" />
+                          );
 
-                      if (isMet) {
-                        colorClass = "text-green-600";
-                        icon = <Check className="w-3 h-3 text-green-600" />;
-                      } else {
-                        colorClass = "text-red-500";
-                        icon = <X className="w-3 h-3 text-red-500" />;
-                      }
+                          if (isMet) {
+                            colorClass = "text-green-600";
+                            icon = <Check className="w-3 h-3 text-green-600" />;
+                          } else {
+                            colorClass = "text-red-500";
+                            icon = <X className="w-3 h-3 text-red-500" />;
+                          }
 
-                      return (
-                        <div
-                          key={index}
-                          className="flex items-center gap-2 text-xs"
-                        >
-                          {icon}
-                          <span className={colorClass}>{item.label}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
+                          return (
+                            <div
+                              key={index}
+                              className="flex items-center gap-2 text-xs"
+                            >
+                              {icon}
+                              <span className={colorClass}>{item.label}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
 
