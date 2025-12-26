@@ -34,6 +34,10 @@ export function MedicineAutocomplete({
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    setSearchTerm(value);
+  }, [value]);
+
   const filteredMedicines = medicines.filter((medicine) =>
     medicine.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (medicine.genericName?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false)
