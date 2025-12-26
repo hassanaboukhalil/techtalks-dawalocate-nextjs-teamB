@@ -20,6 +20,7 @@ import {
   ArrowRight,
   Filter,
   X,
+  RotateCcw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -69,7 +70,6 @@ export default function PublicCampaignsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [searchCity, setSearchCity] = useState("");
   const [searchMedicine, setSearchMedicine] = useState("");
   const [searchCharity, setSearchCharity] = useState("");
   const [totalCount, setTotalCount] = useState(0);
@@ -86,7 +86,6 @@ export default function PublicCampaignsPage() {
       const params = new URLSearchParams();
       params.append("status", statusFilter);
       params.append("limit", "50");
-      if (searchCity) params.append("city", searchCity);
       if (searchMedicine) params.append("medicine", searchMedicine);
       if (searchCharity) params.append("charity", searchCharity);
 
@@ -109,11 +108,11 @@ export default function PublicCampaignsPage() {
     fetchCampaigns();
   };
 
-  const handleClearSearch = () => {
-    setSearchCity("");
+  const handleReturnToAll = () => {
     setSearchMedicine("");
     setSearchCharity("");
-    fetchCampaigns();
+    setStatusFilter("all");
+    // fetchCampaigns will be triggered by useEffect when statusFilter changes
   };
 
   const getCampaignStatus = (campaign: Campaign): string => {
@@ -206,99 +205,130 @@ export default function PublicCampaignsPage() {
             </p>
           </div>
 
+          {/* Stats Banner */}
+          {!loading && !error && (
+            <div className="mb-8 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl p-6 border border-primary/20 animate-scale-in">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 text-center">
+                <div>
+                  <p className="text-3xl font-bold text-primary">
+                    {totalCount}
+                  </p>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Total Campaigns
+                  </p>
+                </div>
+                <div>
+                  <p className="text-3xl font-bold text-primary">
+                    {
+                      campaigns.filter((c) => getCampaignStatus(c) === "active")
+                        .length
+                    }
+                  </p>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Active Campaigns
+                  </p>
+                </div>
+                <div>
+                  <p className="text-3xl font-bold text-primary">
+                    {
+                      campaigns.filter((c) => getCampaignStatus(c) === "upcoming")
+                        .length
+                    }
+                  </p>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Upcoming Campaigns
+                  </p>
+                </div>
+                <div>
+                  <p className="text-3xl font-bold text-primary">
+                    {campaigns.reduce(
+                      (acc, c) => acc + (c.campaignMedicines?.length || 0),
+                      0
+                    )}
+                  </p>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Medicines Needed
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Search and Filter Bar */}
           <div className="mb-8 space-y-4 animate-scale-in">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {/* City Search */}
-              <div className="relative">
-                <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <Input
-                  value={searchCity}
-                  onChange={(e) => setSearchCity(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                  placeholder="Search by city..."
-                  className="pl-12 h-12 rounded-xl border-gray-300 focus:border-primary focus:ring-primary shadow-sm"
-                />
-                {searchCity && (
-                  <button
-                    onClick={() => {
-                      setSearchCity("");
-                      fetchCampaigns();
-                    }}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
-                )}
+            {/* Search Fields and Button Row */}
+            <div className="flex flex-col md:flex-row gap-3 items-start md:items-center">
+              <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3">
+                {/* Medicine Search */}
+                <div className="relative">
+                  <Package className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    value={searchMedicine}
+                    onChange={(e) => setSearchMedicine(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                    placeholder="Search by medicine..."
+                    className="pl-10 h-10 text-sm rounded-lg border-gray-300 focus:border-primary focus:ring-primary shadow-sm"
+                  />
+                  {searchMedicine && (
+                    <button
+                      onClick={() => {
+                        setSearchMedicine("");
+                        fetchCampaigns();
+                      }}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Charity Name Search */}
+                <div className="relative">
+                  <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    value={searchCharity}
+                    onChange={(e) => setSearchCharity(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                    placeholder="Search by charity name..."
+                    className="pl-10 h-10 text-sm rounded-lg border-gray-300 focus:border-primary focus:ring-primary shadow-sm"
+                  />
+                  {searchCharity && (
+                    <button
+                      onClick={() => {
+                        setSearchCharity("");
+                        fetchCampaigns();
+                      }}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
               </div>
 
-              {/* Medicine Search */}
-              <div className="relative">
-                <Package className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <Input
-                  value={searchMedicine}
-                  onChange={(e) => setSearchMedicine(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                  placeholder="Search by medicine..."
-                  className="pl-12 h-12 rounded-xl border-gray-300 focus:border-primary focus:ring-primary shadow-sm"
-                />
-                {searchMedicine && (
-                  <button
-                    onClick={() => {
-                      setSearchMedicine("");
-                      fetchCampaigns();
-                    }}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
-                )}
-              </div>
-
-              {/* Charity Name Search */}
-              <div className="relative">
-                <Building2 className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <Input
-                  value={searchCharity}
-                  onChange={(e) => setSearchCharity(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                  placeholder="Search by charity name..."
-                  className="pl-12 h-12 rounded-xl border-gray-300 focus:border-primary focus:ring-primary shadow-sm"
-                />
-                {searchCharity && (
-                  <button
-                    onClick={() => {
-                      setSearchCharity("");
-                      fetchCampaigns();
-                    }}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Search Button and Clear Button - Centered */}
-            <div className="flex justify-center gap-3">
+              {/* Search Button */}
               <Button
                 onClick={handleSearch}
-                className="h-12 px-8 rounded-xl bg-primary hover:bg-secondary transition-all duration-200"
+                className="h-10 px-6 rounded-lg bg-primary hover:bg-secondary transition-all duration-200 whitespace-nowrap"
               >
-                <Search className="h-5 w-5 mr-2" />
+                <Search className="h-4 w-4 mr-2" />
                 Search
               </Button>
-              {(searchCity || searchMedicine || searchCharity) && (
-                <Button
-                  onClick={handleClearSearch}
-                  variant="outline"
-                  className="h-12 px-6 rounded-xl border-gray-300 hover:bg-gray-50"
-                >
-                  <X className="h-5 w-5 mr-2" />
-                  Clear Filters
-                </Button>
-              )}
             </div>
+
+            {/* Return to All Campaigns Button */}
+            {(searchMedicine || searchCharity || statusFilter !== "all") && (
+              <div className="flex justify-end">
+                <Button
+                  onClick={handleReturnToAll}
+                  variant="outline"
+                  className="h-9 px-4 rounded-lg border-gray-300 hover:bg-gray-50 text-sm"
+                >
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Return to All Campaigns
+                </Button>
+              </div>
+            )}
 
             {/* Filter Tabs */}
             <div className="flex items-center gap-2 border-b border-gray-200 overflow-x-auto">
@@ -323,44 +353,6 @@ export default function PublicCampaignsPage() {
               )}
             </div>
           </div>
-
-          {/* Stats Banner */}
-          {!loading && !error && (
-            <div className="mb-8 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl p-6 border border-primary/20">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-                <div>
-                  <p className="text-3xl font-bold text-primary">
-                    {totalCount}
-                  </p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Active Campaigns
-                  </p>
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-primary">
-                    {
-                      campaigns.filter((c) => getCampaignStatus(c) === "active")
-                        .length
-                    }
-                  </p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Accepting Donations
-                  </p>
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-primary">
-                    {campaigns.reduce(
-                      (acc, c) => acc + (c.campaignMedicines?.length || 0),
-                      0
-                    )}
-                  </p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Medicines Needed
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Loading State */}
           {loading && (
@@ -403,16 +395,16 @@ export default function PublicCampaignsPage() {
                   No campaigns found
                 </h3>
                 <p className="text-gray-600 mb-6">
-                  {(searchCity || searchMedicine || searchCharity)
+                  {(searchMedicine || searchCharity || statusFilter !== "all")
                     ? "Try adjusting your search terms or filters"
                     : "Check back soon for new campaigns from charities"}
                 </p>
-                {(searchCity || searchMedicine || searchCharity) && (
+                {(searchMedicine || searchCharity || statusFilter !== "all") && (
                   <Button
-                    onClick={handleClearSearch}
+                    onClick={handleReturnToAll}
                     className="rounded-xl px-6"
                   >
-                    Clear Filters
+                    Return to All Campaigns
                   </Button>
                 )}
               </div>
@@ -574,11 +566,10 @@ export default function PublicCampaignsPage() {
                 </span>{" "}
                 of <span className="font-semibold">{totalCount}</span>{" "}
                 campaign(s)
-                {(searchCity || searchMedicine || searchCharity) && (
+                {(searchMedicine || searchCharity) && (
                   <>
                     {" "}matching{" "}
                     {[
-                      searchCity && `city: "${searchCity}"`,
                       searchMedicine && `medicine: "${searchMedicine}"`,
                       searchCharity && `charity: "${searchCharity}"`,
                     ]
