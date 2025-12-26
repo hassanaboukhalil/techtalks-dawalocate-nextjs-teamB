@@ -4,25 +4,55 @@ import { db } from "@/lib/db";
 export async function GET() {
   try {
     const [
+      // 1. PATIENTS (Just count)
       patientsCount,
-      pharmaciesCount,
-      charitiesCount,
+      
+      // 2. PHARMACIES (Detailed Breakdown)
+      pharmaciesTotal,
+      pharmaciesPending,
+      pharmaciesApproved,
+      
+      // 3. CHARITIES (Detailed Breakdown)
+      charitiesTotal,
+      charitiesPending,
+      charitiesApproved,
+      
+      // 4. CAMPAIGNS
       campaignsCount,
-      donationOffersCount,
-      donationRequestsCount,
+      
+      // 5. DONATIONS
+      activeOffersCount,
+      activeRequestsCount,
+      fulfilledRequestsCount, 
+      
       medicinesCount,
-      // 1. NEW: Fetch Recent Activity
       recentActivity
     ] = await db.$transaction([
+      // Patients
       db.user.count({ where: { userType: { name: "patient" } } }),
+
+      // Pharmacies
       db.user.count({ where: { userType: { name: "pharmacy" } } }),
+      db.user.count({ where: { userType: { name: "pharmacy" }, status: "PENDING" } }),
+      db.user.count({ where: { userType: { name: "pharmacy" }, status: "APPROVED" } }),
+
+      // Charities
       db.user.count({ where: { userType: { name: "charity" } } }),
+      db.user.count({ where: { userType: { name: "charity" }, status: "PENDING" } }),
+      db.user.count({ where: { userType: { name: "charity" }, status: "APPROVED" } }),
+
+      // Campaigns
       db.campaign.count(),
+
+      // Donations
       db.donationOffer.count({ where: { status: "OPEN" } }),
       db.donationRequest.count({ where: { status: "OPEN" } }),
+      db.donationRequest.count({ where: { status: "FULFILLED" } }), // Matches your Schema!
+
+      // Medicines
       db.medicine.count(),
 
-      // 2. NEW: Get the last 5 requests
+      // Recent Activity
       db.donationRequest.findMany({
         take: 5,
         orderBy: { createdAt: 'desc' },
@@ -33,22 +63,31 @@ export async function GET() {
       })
     ]);
 
+    // --- CONSTRUCT THE ADVANCED JSON RESPONSE ---
     return NextResponse.json({
       users: {
         patients: patientsCount,
-        pharmacies: pharmaciesCount,
-        charities: charitiesCount,
-        total: patientsCount + pharmaciesCount + charitiesCount
+        pharmacies: {
+            total: pharmaciesTotal,
+            pending: pharmaciesPending,
+            approved: pharmaciesApproved,
+            rejected: pharmaciesTotal - (pharmaciesPending + pharmaciesApproved) 
+        },
+        charities: {
+            total: charitiesTotal,
+            pending: charitiesPending,
+            approved: charitiesApproved,
+            rejected: charitiesTotal - (charitiesPending + charitiesApproved)
+        }
       },
       campaigns: campaignsCount,
       donations: {
-        offers: donationOffersCount,
-        requests: donationRequestsCount,
-        completed: 0, // Placeholder for success count
+        offers: activeOffersCount,
+        requests: activeRequestsCount,
+        fulfilled: fulfilledRequestsCount,
       },
       medicines: medicinesCount,
-      // 3. NEW: Send the list to frontend
-      recentActivity: recentActivity 
+      recentActivity
     }, { status: 200 });
 
   } catch (error) {
