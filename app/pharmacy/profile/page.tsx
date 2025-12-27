@@ -12,6 +12,7 @@ import {
   XCircle,
   Loader2,
   Edit,
+  User,
 } from "lucide-react";
 import {
   Dialog,
@@ -34,11 +35,11 @@ interface ServiceChipProps {
 }
 const ServiceChip = ({ icon: Icon, label, available }: ServiceChipProps) => {
   return (
-    <div className="flex items-center gap-2 rounded-full border px-3 py-1.5 bg-white shadow-sm">
-      <Icon className="h-4 w-4 text-gray-700" />
-      <span className="text-sm font-medium text-gray-800">{label}</span>
+    <div className="flex items-center gap-3 rounded-xl bg-white shadow-lg border border-gray-100 px-4 py-3 hover:shadow-xl transition-all duration-300">
+      <Icon className="h-5 w-5 text-gray-700" />
+      <span className="text-sm font-semibold text-gray-800">{label}</span>
       <span
-        className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+        className={`text-xs font-bold px-3 py-1 rounded-full ${
           available
             ? "bg-green-100 text-green-700"
             : "bg-gray-200 text-gray-600"
@@ -295,21 +296,21 @@ export default function PharmacyProfilePage() {
   if (!profile) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-6">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb + Header */}
-        <div className="mb-6">
-          <div className="text-sm text-gray-500 mb-2">Dashboard / <span className="text-gray-900 font-medium">Profile</span></div>
+        <div className="mb-8">
+          <div className="text-sm text-gray-500 mb-4">Dashboard / <span className="text-gray-900 font-medium">Profile</span></div>
 
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Your Profile</h1>
-              <p className="text-gray-600 mt-1">
+              <h1 className="text-4xl font-bold text-gray-900">Your Profile</h1>
+              <p className="text-gray-600 mt-2">
                 Manage your pharmacy information and settings to provide better service to your patients.
               </p>
             </div>
 
-            <Button onClick={openEditDialog} className="rounded-lg px-4">
+            <Button onClick={openEditDialog} className="bg-primary text-white rounded-xl px-6 py-3 shadow-md hover:shadow-lg hover:scale-[1.02] transition-all duration-300">
               <Edit className="h-4 w-4 mr-2" />
               Edit Profile
             </Button>
@@ -317,16 +318,19 @@ export default function PharmacyProfilePage() {
         </div>
 
         {/* Top Pharmacy Summary Card */}
-        <div className="bg-white rounded-2xl border shadow-sm p-5 mb-6">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-gray-100 border flex items-center justify-center">
-                <CheckCircle2 className="h-5 w-5 text-gray-500" />
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 p-6 mb-8">
+          <div className="flex items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-md">
+                  <User className="h-7 w-7 text-white" />
+                </div>
+                <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-green-400 rounded-full border-2 border-white shadow-sm"></div>
               </div>
 
               <div>
-                <div className="text-lg font-semibold text-gray-900">{profile.name}</div>
-                <div className="mt-1">{getStatusPill(profile.status)}</div>
+                <div className="text-xl font-bold text-gray-900">{profile.name}</div>
+                <div className="mt-2">{getStatusPill(profile.status)}</div>
               </div>
             </div>
 
@@ -335,9 +339,9 @@ export default function PharmacyProfilePage() {
         </div>
 
         {/* Main Grid: Contact Info (left) + Quick Info (right) */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Contact Information */}
-          <div className="lg:col-span-2 bg-white rounded-2xl border shadow-sm p-6">
+          <div className="lg:col-span-2 bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 p-6">
             <h3 className="text-sm font-semibold text-gray-800 mb-4">
               Contact Information
             </h3>
@@ -345,16 +349,16 @@ export default function PharmacyProfilePage() {
             {/* 2x2 tiles like screenshot */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Email */}
-              <div className="rounded-xl border bg-blue-50/50 p-4">
+              <div className="rounded-xl bg-blue-50/50 border border-blue-100 p-4">
                 <div className="flex items-start gap-3">
                   <div className="h-9 w-9 rounded-lg bg-blue-600 flex items-center justify-center">
                     <Mail className="h-4 w-4 text-white" />
                   </div>
                   <div className="min-w-0">
-                    <div className="text-xs font-semibold text-blue-700 uppercase">
+                    <div className="text-xs font-semibold text-blue-700 uppercase tracking-wider">
                       Email Address
                     </div>
-                    <div className="text-sm font-semibold text-gray-900 break-words mt-1">
+                    <div className="text-base font-semibold text-gray-900 break-words mt-1">
                       {profile.email}
                     </div>
                   </div>
@@ -362,16 +366,16 @@ export default function PharmacyProfilePage() {
               </div>
 
               {/* Phone */}
-              <div className="rounded-xl border bg-green-50/50 p-4">
+              <div className="rounded-xl bg-green-50/50 border border-green-100 p-4">
                 <div className="flex items-start gap-3">
                   <div className="h-9 w-9 rounded-lg bg-green-600 flex items-center justify-center">
                     <Phone className="h-4 w-4 text-white" />
                   </div>
                   <div className="min-w-0">
-                    <div className="text-xs font-semibold text-green-700 uppercase">
+                    <div className="text-xs font-semibold text-green-700 uppercase tracking-wider">
                       Phone Number
                     </div>
-                    <div className="text-sm font-semibold text-gray-900 mt-1">
+                    <div className="text-base font-semibold text-gray-900 mt-1">
                       {profile.phone || "Not provided"}
                     </div>
                   </div>
@@ -379,16 +383,16 @@ export default function PharmacyProfilePage() {
               </div>
 
               {/* City */}
-              <div className="rounded-xl border bg-purple-50/50 p-4">
+              <div className="rounded-xl bg-purple-50/50 border border-purple-100 p-4">
                 <div className="flex items-start gap-3">
                   <div className="h-9 w-9 rounded-lg bg-purple-600 flex items-center justify-center">
                     <MapPin className="h-4 w-4 text-white" />
                   </div>
                   <div className="min-w-0">
-                    <div className="text-xs font-semibold text-purple-700 uppercase">
+                    <div className="text-xs font-semibold text-purple-700 uppercase tracking-wider">
                       City
                     </div>
-                    <div className="text-sm font-semibold text-gray-900 mt-1">
+                    <div className="text-base font-semibold text-gray-900 mt-1">
                       {profile.city || "Not provided"}
                     </div>
                   </div>
@@ -396,13 +400,13 @@ export default function PharmacyProfilePage() {
               </div>
 
               {/* Opening Hours */}
-              <div className="rounded-xl border bg-orange-50/50 p-4">
+              <div className="rounded-xl bg-orange-50/50 border border-orange-100 p-4">
                 <div className="flex items-start gap-3">
                   <div className="h-9 w-9 rounded-lg bg-orange-600 flex items-center justify-center">
                     <Clock className="h-4 w-4 text-white" />
                   </div>
                   <div className="min-w-0">
-                    <div className="text-xs font-semibold text-orange-700 uppercase">
+                    <div className="text-xs font-semibold text-orange-700 uppercase tracking-wider">
                       Opening Hours
                     </div>
                     <div className="text-gray-900 mt-2">
@@ -414,16 +418,16 @@ export default function PharmacyProfilePage() {
             </div>
 
             {/* Full Address full width */}
-            <div className="mt-4 rounded-xl border bg-indigo-50/50 p-4">
-              <div className="flex items-start gap-3">
-                <div className="h-9 w-9 rounded-lg bg-indigo-600 flex items-center justify-center">
-                  <MapPin className="h-4 w-4 text-white" />
+            <div className="mt-6 bg-indigo-50 border border-indigo-200 rounded-2xl p-6">
+              <div className="flex items-center justify-center gap-4">
+                <div className="h-12 w-12 rounded-xl bg-indigo-600 flex items-center justify-center shadow-md">
+                  <MapPin className="h-6 w-6 text-white" />
                 </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-xs font-semibold text-indigo-700 uppercase">
+                <div className="text-center">
+                  <div className="text-xs font-semibold text-indigo-700 uppercase tracking-wider mb-2">
                     Full Address
                   </div>
-                  <div className="text-sm font-semibold text-gray-900 break-words mt-1">
+                  <div className="text-lg font-bold text-gray-900">
                     {profile.address || "Not provided"}
                   </div>
                 </div>
@@ -432,7 +436,7 @@ export default function PharmacyProfilePage() {
           </div>
 
           {/* Quick Info */}
-          <div className="bg-white rounded-2xl border shadow-sm p-6 h-fit">
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 p-6 h-fit">
             <h3 className="text-sm font-semibold text-gray-800 mb-4">
               Quick Info
             </h3>
