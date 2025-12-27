@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +22,7 @@ export function CityAutocomplete({
 }: CityAutocompleteProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -28,11 +30,24 @@ export function CityAutocomplete({
     city.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Update dropdown position when opened
+  useEffect(() => {
+    if (isOpen && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY + 4,
+        left: rect.left + window.scrollX,
+        width: rect.width,
+      });
+    }
+  }, [isOpen]);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
+        !containerRef.current.contains(event.target as Node) &&
+        !(event.target as Element).closest('[data-city-dropdown]')
       ) {
         setIsOpen(false);
         setSearchTerm("");
@@ -70,9 +85,17 @@ export function CityAutocomplete({
         <ChevronDown className="h-4 w-4 opacity-50" />
       </button>
 
-      {/* Dropdown */}
-      {isOpen && (
-        <div className="absolute z-50 mt-1 w-full rounded-lg border border-gray-200 bg-white shadow-lg">
+      {/* Dropdown - rendered in portal to avoid overflow clipping */}
+      {isOpen && typeof document !== 'undefined' && createPortal(
+        <div
+          data-city-dropdown
+          className="fixed z-[9999] rounded-lg border border-gray-200 bg-white shadow-lg"
+          style={{
+            top: dropdownPosition.top,
+            left: dropdownPosition.left,
+            width: dropdownPosition.width,
+          }}
+        >
           {/* Search Input */}
           <div className="border-b border-gray-200 p-2">
             <input
@@ -113,7 +136,8 @@ export function CityAutocomplete({
               ))
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
