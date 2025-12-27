@@ -105,9 +105,10 @@ export default function CampaignDetailPage() {
       if (response.data.success) {
         setCampaign(response.data.data);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: string } } };
       setError(
-        err.response?.data?.error || "Failed to fetch campaign details"
+        error.response?.data?.error || "Failed to fetch campaign details"
       );
     } finally {
       setLoading(false);
