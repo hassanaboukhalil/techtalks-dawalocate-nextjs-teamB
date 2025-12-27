@@ -7,20 +7,27 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get("q") || "";
 
     const medicines = await db.medicine.findMany({
-      where: {
-        OR: [
-          { name: { contains: search, mode: "insensitive" } },
-          { genericName: { contains: search, mode: "insensitive" } },
-        ],
-      },
+      where: search
+        ? {
+            OR: [
+              { name: { contains: search, mode: "insensitive" } },
+              { genericName: { contains: search, mode: "insensitive" } },
+              { synonyms: { contains: search, mode: "insensitive" } },
+            ],
+          }
+        : undefined, // No filter when no search term - return all medicines
       select: {
         id: true,
         name: true,
         genericName: true,
         strength: true,
         form: true,
+        synonyms: true,
       },
-      take: 20,
+      orderBy: {
+        name: "asc", // Order alphabetically for better UX
+      },
+      // Removed take: 20 to return all medicines
     });
 
     return NextResponse.json({
