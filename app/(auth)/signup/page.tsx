@@ -457,21 +457,6 @@ export default function SignupPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">
-                  City
-                </label>
-                <CityAutocomplete
-                  cities={LEBANON_CITIES}
-                  value={formData.city}
-                  onChange={(value) =>
-                    setFormData({ ...formData, city: value })
-                  }
-                  placeholder="Select your city"
-                  className="border-gray-300 focus:border-primary focus:ring-primary"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
                   I am a
                 </label>
                 <Select
@@ -496,6 +481,21 @@ export default function SignupPage() {
                     </SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  City
+                </label>
+                <CityAutocomplete
+                  cities={LEBANON_CITIES}
+                  value={formData.city}
+                  onChange={(value) =>
+                    setFormData({ ...formData, city: value })
+                  }
+                  placeholder="Select your city"
+                  className="border-gray-300 focus:border-primary focus:ring-primary"
+                />
               </div>
             </div>
 
