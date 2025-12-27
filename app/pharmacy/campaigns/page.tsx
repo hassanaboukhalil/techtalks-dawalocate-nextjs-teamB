@@ -95,8 +95,9 @@ export default function PharmacyCampaignsPage() {
         setCampaigns(response.data.data || []);
         setTotalCount(response.data.pagination?.total || 0);
       }
-    } catch (err: any) {
-      setError(err.response?.data?.error || "Failed to fetch campaigns");
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: string } } };
+      setError(error.response?.data?.error || "Failed to fetch campaigns");
     } finally {
       setLoading(false);
     }
@@ -399,7 +400,7 @@ export default function PharmacyCampaignsPage() {
                 key={campaign.id}
                 className="group relative rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-2xl transition-all duration-500 ease-out overflow-hidden cursor-pointer animate-scale-in"
                 style={{ animationDelay: `${index * 50}ms` }}
-                onClick={() => router.push(`/campaigns/${campaign.id}`)}
+                onClick={() => router.push(`/pharmacy/campaigns/${campaign.id}`)}
               >
                 {/* Status Badge - Top Right Corner */}
                 <div className="absolute top-3 right-3 z-10">
@@ -540,7 +541,7 @@ export default function PharmacyCampaignsPage() {
                     className="w-full rounded-xl bg-primary hover:bg-primary/90 shadow-md hover:shadow-lg text-white font-semibold py-2 group-hover:scale-[1.02] transition-all duration-300 border-0"
                     onClick={(e) => {
                       e.stopPropagation();
-                      router.push(`/campaigns/${campaign.id}`);
+                      router.push(`/pharmacy/campaigns/${campaign.id}`);
                     }}
                   >
                     <span>View Full Details</span>
