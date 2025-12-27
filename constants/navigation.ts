@@ -53,7 +53,7 @@ export const PHARMACY_NAV_ITEMS: NavItem[] = [
   { id: 1, label: "Dashboard", link: "/pharmacy", icon: LayoutDashboard },
   { id: 2, label: "Inventory", link: "/pharmacy/inventory", icon: Pill },
   { id: 3, label: "Requests", link: "/pharmacy/requests", icon: Inbox },
-  { id: 4, label: "Campaigns", link: "/campaigns", icon: Megaphone },
+  { id: 4, label: "Campaigns", link: "/pharmacy/campaigns", icon: Megaphone },
   { id: 5, label: "Profile", link: "/pharmacy/profile", icon: User },
   { id: 6, label: "Settings", link: "/pharmacy/settings", icon: Settings },
 ];
