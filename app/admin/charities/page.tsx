@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RefreshCw, User, Phone, Mail, Heart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useSearchParams } from "next/navigation";
 
 interface Charity {
     id: number;
@@ -61,6 +62,18 @@ export default function AdminCharitiesPage() {
     const [searchPhone, setSearchPhone] = useState("");
     const [searchEmail, setSearchEmail] = useState("");
     const [cityFilter, setCityFilter] = useState("");
+
+
+    // 👇👇👇 PASTE THIS BLOCK HERE 👇👇👇
+    const searchParams = useSearchParams();
+
+    useEffect(() => {
+        const query = searchParams.get("search");
+        if (query) {
+            setSearchName(query); // 👈 This puts "Charity 1" into the Name box
+        }
+    }, [searchParams]);
+    // 👆👆👆 END OF NEW BLOCK 👆👆👆
 
     const fetchCharities = async () => {
         try {
