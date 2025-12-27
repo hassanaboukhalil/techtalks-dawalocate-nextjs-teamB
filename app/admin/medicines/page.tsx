@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import { useSearchParams } from "next/navigation";
 import {
   Plus,
   Search,
@@ -104,6 +105,17 @@ export default function MedicinesManagementPage() {
   const [search, setSearch] = useState("");
   const [genericFilter, setGenericFilter] = useState("ALL");
   const [formFilter, setFormFilter] = useState("ALL");
+
+  // 👇👇👇 PASTE THIS BLOCK HERE 👇👇👇
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const query = searchParams.get("search"); // Reads ?search=Panadol
+    if (query) {
+      setSearch(query); // Types it into the search box for you
+    }
+  }, [searchParams]);
+  // 👆👆👆 END OF NEW BLOCK 👆👆👆
 
   /* Dialog */
   const [dialogOpen, setDialogOpen] = useState(false);
