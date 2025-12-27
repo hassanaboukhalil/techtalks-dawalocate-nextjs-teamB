@@ -11,10 +11,25 @@ const DASHBOARD_ROUTES = {
 } as const;
 
 // Public routes that don't require authentication
-const PUBLIC_ROUTES = ["/", "/login", "/signup"];
+const PUBLIC_ROUTES = ["/", "/login", "/signup", "/campaigns", "/view-health-profile"];
 
 // Auth routes that authenticated users shouldn't access
 const AUTH_ROUTES = ["/login", "/signup"];
+
+// Helper function to check if a route is public
+function isPublicRoute(pathname: string): boolean {
+  // Check exact matches
+  if (PUBLIC_ROUTES.includes(pathname)) {
+    return true;
+  }
+  
+  // Check if it's a campaign detail page (e.g., /campaigns/123)
+  if (pathname.startsWith("/campaigns/")) {
+    return true;
+  }
+  
+  return false;
+}
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -39,7 +54,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Protect dashboard routes - redirect to login if not authenticated
-  if (!isAuthenticated && !PUBLIC_ROUTES.includes(pathname)) {
+  if (!isAuthenticated && !isPublicRoute(pathname)) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);

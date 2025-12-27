@@ -37,37 +37,47 @@ export const PUBLIC_NAV_ITEMS: NavItem[] = [
 export const PATIENT_NAV_ITEMS: NavItem[] = [
   { id: 1, label: "Dashboard", link: "/patient", icon: LayoutDashboard },
   { id: 2, label: "Find Medicine", link: "/patient/search", icon: Search },
-  { id: 3, label: "Pharmacy Offers", link: "/patient/offers", icon: Tag }, // New: View Offers
-  { id: 4, label: "Donate Medicine", link: "/patient/donations", icon: Gift },
-  { id: 5, label: "My Requests", link: "/patient/requests", icon: FileText },
-  { id: 6, label: "Health Card", link: "/patient/health-card", icon: QrCode },
-  { id: 7, label: "Profile", link: "/patient/profile", icon: User },
+  { id: 3, label: "Donate Medicine", link: "/patient/donations", icon: Gift },
+  { id: 4, label: "My Requests", link: "/patient/requests", icon: FileText },
+  {
+    id: 5,
+    label: "Health Profile",
+    link: "/patient/health-profile",
+    icon: QrCode,
+  },
+  { id: 6, label: "Account", link: "/patient/account", icon: Settings },
 ];
 
 // 3. PHARMACY Navigation
 export const PHARMACY_NAV_ITEMS: NavItem[] = [
   { id: 1, label: "Dashboard", link: "/pharmacy", icon: LayoutDashboard },
   { id: 2, label: "Inventory", link: "/pharmacy/inventory", icon: Pill },
-  { id: 3, label: "My Offers", link: "/pharmacy/offers", icon: Tag }, // New: Create/Manage public offers
-  { id: 4, label: "Local Requests", link: "/pharmacy/requests", icon: Inbox }, //"A list of patients in my city/area who are looking for a specific medicine."
+  { id: 3, label: "Requests", link: "/pharmacy/requests", icon: Inbox },
+  { id: 4, label: "Campaigns", link: "/campaigns", icon: Megaphone },
   { id: 5, label: "Profile", link: "/pharmacy/profile", icon: User },
+  { id: 6, label: "Settings", link: "/pharmacy/settings", icon: Settings },
 ];
 
 // 4. CHARITY Navigation
 export const CHARITY_NAV_ITEMS: NavItem[] = [
   { id: 1, label: "Dashboard", link: "/charity", icon: LayoutDashboard },
-  { id: 2, label: "Donations", link: "/charity/donations", icon: Gift },
-  { id: 3, label: "Campaigns", link: "/charity/campaigns", icon: Megaphone },
-  { id: 4, label: "Profile", link: "/charity/profile", icon: User },
+  { id: 2, label: "Campaigns", link: "/charity/campaigns", icon: Megaphone },
+  { id: 3, label: "Medicine Requests", link: "/charity/requests", icon: Inbox },
+  {
+    id: 4,
+    label: "Donation Offers",
+    link: "/charity/donation-offers",
+    icon: Gift,
+  },
+  { id: 5, label: "Account", link: "/charity/account", icon: Settings },
 ];
 
 // 5. ADMIN Navigation
-// Updated to show specific dashboards for each user type as you requested
 export const ADMIN_NAV_ITEMS: NavItem[] = [
   { id: 1, label: "Dashboard", link: "/admin", icon: LayoutDashboard },
-  { id: 2, label: "Pharmacies", link: "/admin/pharmacies", icon: Building2 }, // Monitor Pharmacy actions/approvals
-  { id: 3, label: "Charities", link: "/admin/charities", icon: Heart }, // Monitor Charity actions/approvals
-  { id: 4, label: "Patients", link: "/admin/patients", icon: Users }, // Monitor Patient actions
-  { id: 5, label: "Medicines", link: "/admin/medicines", icon: Pill }, // Master Catalog
-  { id: 6, label: "System Settings", link: "/admin/settings", icon: Settings },
+  { id: 2, label: "Pharmacies", link: "/admin/pharmacies", icon: Building2 },
+  { id: 3, label: "Charities", link: "/admin/charities", icon: Heart },
+  { id: 4, label: "Patients", link: "/admin/patients", icon: Users },
+  { id: 5, label: "Medicines", link: "/admin/medicines", icon: Pill },
+  { id: 6, label: "Account", link: "/admin/account", icon: Settings },
 ];
