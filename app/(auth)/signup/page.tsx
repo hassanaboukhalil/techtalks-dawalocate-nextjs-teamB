@@ -20,6 +20,7 @@ import { OpeningHoursInput } from "@/components/ui/OpeningHoursInput";
 import { VerificationCodeInput } from "@/components/ui/VerificationCodeInput";
 import Logo from "@/components/layout/Logo";
 import Image from "next/image";
+import AuthLeftPanel from "@/components/pages-components/auth/AuthLeftPanel";
 
 import lebanonFlag from "@/public/images/Lebanon.jpeg";
 
@@ -299,23 +300,7 @@ export default function SignupPage() {
     return (
       <div className="min-h-screen w-full flex items-center justify-center bg-[#F5F7FA] lg:bg-[#F5F7FA] xl:bg-white">
         <div className="flex items-center justify-center md:w-screen bg-[#F5F7FA] lg:bg-transparent h-3/4 overflow-y-auto">
-          {/* Left Panel */}
-          <div className="hidden xl:flex justify-center items-center md:w-1/2 bg-linear-to-br from-[#0AA6C8] via-[#0886A2] to-[#6366f1] relative h-screen">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE2YzAgMTEuMDUtOC45NSAyMC0yMCAyMHMtMjAtOC45NS0yMC0yMCA4Ljk1LTIwIDIwLTIwIDIwIDguOTUgMjAgMjB6bS0yMC0yYzYuNjI3IDAgMTItNS4zNzMgMTItMTJzLTUuMzczLTEyLTEyLTEyUzQgNS4zNzMgNCAxMnM1LjM3MyAxMiAxMiAxMnoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-30"></div>
-            <div className="relative z-10 flex flex-col items-center py-32 text-white px-12 w-full">
-              <div className="max-w-md">
-                <div className="mb-8">
-                  <Mail className="w-20 h-20 mb-6" />
-                  <h1 className="text-4xl font-bold mb-4">Check Your Email</h1>
-                </div>
-                <p className="text-lg text-white/90 leading-relaxed">
-                  We&apos;ve sent a 6-digit verification code to your email
-                  address. Enter it to continue.
-                </p>
-              </div>
-            </div>
-          </div>
-
+          <AuthLeftPanel variant="verify" />
           {/* Right Panel */}
           <div className="md:w-[62%] lg:w-1/2 flex flex-col items-center justify-center bg-white p-8 md:p-10">
             <div className="w-full max-w-md">
@@ -412,25 +397,7 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-[#F5F7FA] lg:#F5F7FA xl:bg-white">
       <div className="flex items-center justify-center md:w-screen bg-[#F5F7FA] lg:bg-transparent h-3/4 overflow-y-auto">
-        {/* Left Panel - Hidden on mobile */}
-        <div className="hidden xl:flex justify-center items-center md:w-1/2 bg-linear-to-br from-[#0AA6C8] via-[#0886A2] to-[#6366f1] relative h-screen">
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE2YzAgMTEuMDUtOC45NSAyMC0yMCAyMHMtMjAtOC45NS0yMC0yMCA4Ljk1LTIwIDIwLTIwIDIwIDguOTUgMjAgMjB6bS0yMC0yYzYuNjI3IDAgMTItNS4zNzMgMTItMTJzLTUuMzczLTEyLTEyLTEyUzQgNS4zNzMgNCAxMnM1LjM3MyAxMiAxMiAxMnoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-30"></div>
-
-          <div className="relative z-10 flex flex-col items-center py-32 text-white px-12 w-full">
-            <div className="max-w-md">
-              <div className="mb-8">
-                <h1 className="text-4xl font-bold mb-4">
-                  Welcome to DawaLocate
-                </h1>
-              </div>
-              <p className="text-lg text-white/90 leading-relaxed">
-                Your personal hub for finding medicines, managing your health
-                profile, and connecting with pharmacies and charities in your
-                area.
-              </p>
-            </div>
-          </div>
-        </div>
+        <AuthLeftPanel variant="welcome" />
 
         {/* Right Panel - Form */}
         <div className="md:w-[62%] lg:w-1/2 flex flex-col items-center bg-white p-8 md:p-10 md:max-h-screen lg:overflow-y-auto md:my-16 lg:my-0">
@@ -515,37 +482,47 @@ export default function SignupPage() {
                     )}
                   </button>
                 </div>
-                <div className="space-y-1 mt-2">
-                  {passwordCriteria.map((item, index) => {
-                    const isTyped = formData.password.length > 0;
-                    const isMet = item.valid;
-
-                    let colorClass = "text-gray-500";
-                    let icon = (
-                      <div className="w-3 h-3 rounded-full border border-gray-400" />
-                    );
-
-                    if (isTyped) {
-                      if (isMet) {
-                        colorClass = "text-green-600";
-                        icon = <Check className="w-3 h-3 text-green-600" />;
-                      } else {
-                        colorClass = "text-red-500";
-                        icon = <X className="w-3 h-3 text-red-500" />;
-                      }
-                    }
-
-                    return (
-                      <div
-                        key={index}
-                        className="flex items-center gap-2 text-xs"
-                      >
-                        {icon}
-                        <span className={colorClass}>{item.label}</span>
+                {formData.password.length > 0 && (
+                  <>
+                    {passwordCriteria.every((c) => c.valid) ? (
+                      <div className="mt-2 flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg p-2">
+                        <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                        <span className="text-xs text-green-700 font-medium">
+                          Strong password! All requirements met.
+                        </span>
                       </div>
-                    );
-                  })}
-                </div>
+                    ) : (
+                      <div className="space-y-1 mt-2">
+                        {passwordCriteria.map((item, index) => {
+                          const isMet = item.valid;
+
+                          let colorClass = "text-gray-500";
+                          let icon = (
+                            <div className="w-3 h-3 rounded-full border border-gray-400" />
+                          );
+
+                          if (isMet) {
+                            colorClass = "text-green-600";
+                            icon = <Check className="w-3 h-3 text-green-600" />;
+                          } else {
+                            colorClass = "text-red-500";
+                            icon = <X className="w-3 h-3 text-red-500" />;
+                          }
+
+                          return (
+                            <div
+                              key={index}
+                              className="flex items-center gap-2 text-xs"
+                            >
+                              {icon}
+                              <span className={colorClass}>{item.label}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
 
               <div className="space-y-2">
