@@ -1,22 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
-  User,
   Mail,
   Phone,
   MapPin,
   Clock,
   Truck,
-  Building2,
   CheckCircle2,
   XCircle,
   Loader2,
   Edit,
-  Save,
-  AlertCircle,
-  Check,
 } from "lucide-react";
 import {
   Dialog,
@@ -24,7 +19,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,6 +26,51 @@ import { CityAutocomplete } from "@/components/ui/CityAutocomplete";
 import { OpeningHoursInput } from "@/components/ui/OpeningHoursInput";
 import { Button } from "@/components/ui/button";
 import { LEBANON_CITIES } from "@/constants/lebanon-cities";
+
+interface ServiceChipProps {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  available: boolean;
+}
+const ServiceChip = ({ icon: Icon, label, available }: ServiceChipProps) => {
+  return (
+    <div className="flex items-center gap-2 rounded-full border px-3 py-1.5 bg-white shadow-sm">
+      <Icon className="h-4 w-4 text-gray-700" />
+      <span className="text-sm font-medium text-gray-800">{label}</span>
+      <span
+        className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+          available
+            ? "bg-green-100 text-green-700"
+            : "bg-gray-200 text-gray-600"
+        }`}
+      >
+        {available ? "Available" : "Unavailable"}
+      </span>
+    </div>
+  );
+};
+
+interface TimeSlot {
+  id: string;
+  days: string[];
+  openTime: string;
+  closeTime: string;
+}
+
+interface PharmacyProfile {
+  id: number;
+  name: string;
+  email: string;
+  city: string | null;
+  phone: string | null;
+  address: string | null;
+  openingHours: TimeSlot[] | string | null;
+  hasDelivery: boolean | null;
+  status: string;
+  userType: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 interface TimeSlot {
   id: string;
@@ -73,8 +112,7 @@ export default function PharmacyProfilePage() {
   });
   const [editLoading, setEditLoading] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
-  const [editSuccess, setEditSuccess] = useState<string | null>(null);
-  const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     fetchProfile();
@@ -85,38 +123,36 @@ export default function PharmacyProfilePage() {
     setError(null);
     try {
       const response = await axios.get("/api/pharmacy/profile");
-      if (response.data.success) {
-        setProfile(response.data.data);
-      }
+      if (response.data.success) setProfile(response.data.data);
     } catch (err: any) {
-      setError(
-        err.response?.data?.error || "Failed to fetch pharmacy profile"
-      );
+      setError(err.response?.data?.error || "Failed to fetch pharmacy profile");
     } finally {
       setLoading(false);
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    const statusLower = status?.toLowerCase();
-
-    if (statusLower === "approved") {
+  const getStatusPill = (status: string) => {
+    const s = status?.toLowerCase();
+    if (s === "approved" || s === "active") {
       return (
-        <div className="flex items-center gap-2">
-          <CheckCircle2 className="h-5 w-5 text-green-600" />
-          <span className="px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800 border border-green-200">
-            Approved
-          </span>
+        <div className="inline-flex items-center gap-2 rounded-full bg-green-100 text-green-700 px-3 py-1 text-sm font-semibold">
+          <span className="h-2 w-2 rounded-full bg-green-500" />
+          Approved
         </div>
       );
     }
-
+    if (s === "pending") {
+      return (
+        <div className="inline-flex items-center gap-2 rounded-full bg-orange-100 text-orange-700 px-3 py-1 text-sm font-semibold">
+          <span className="h-2 w-2 rounded-full bg-orange-500" />
+          Pending
+        </div>
+      );
+    }
     return (
-      <div className="flex items-center gap-2">
-        <XCircle className="h-5 w-5 text-red-600" />
-        <span className="px-3 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-800 border border-red-200">
-          {status || "Inactive"}
-        </span>
+      <div className="inline-flex items-center gap-2 rounded-full bg-red-100 text-red-700 px-3 py-1 text-sm font-semibold">
+        <span className="h-2 w-2 rounded-full bg-red-500" />
+        {status || "Rejected"}
       </div>
     );
   };
@@ -129,47 +165,44 @@ export default function PharmacyProfilePage() {
     });
   };
 
-
-  const formatOpeningHours = (openingHours: any): string => {
-    // If it's a string, return it directly (could be status or simple hours)
-    if (typeof openingHours === "string") {
-      return openingHours || "Not provided";
-    }
-
-    // If it's null, undefined, or empty array
-    if (!openingHours || !Array.isArray(openingHours) || openingHours.length === 0) {
+  const formatOpeningHours = (openingHours: any) => {
+    if (typeof openingHours === "string") return openingHours || "Not provided";
+    if (!openingHours || !Array.isArray(openingHours) || openingHours.length === 0)
       return "Not provided";
-    }
-
-    return openingHours
-      .map((slot: any) => {
-        if (!slot.days || slot.days.length === 0) return "";
-        const daysStr =
-          slot.days.length === 7
-            ? "Every day"
-            : slot.days.length === 5 &&
-              ["Mon", "Tue", "Wed", "Thu", "Fri"].every((d: string) =>
-                slot.days.includes(d)
-              )
-            ? "Mon-Fri"
-            : slot.days.join(", ");
-        return `${daysStr}: ${slot.openTime} - ${slot.closeTime}`;
-      })
-      .filter(Boolean)
-      .join(" | ");
+    return (
+      <div className="space-y-1">
+        {openingHours
+          .map((slot: any) => {
+            if (!slot.days || slot.days.length === 0) return null;
+            const daysStr =
+              slot.days.length === 7
+                ? "Every day"
+                : slot.days.length === 5 &&
+                  ["Mon", "Tue", "Wed", "Thu", "Fri"].every((d: string) =>
+                    slot.days.includes(d)
+                  )
+                ? "Mon, Tue, Wed, Thu, Fri"
+                : slot.days.join(", ");
+            return (
+              <div key={`${daysStr}-${slot.openTime}`} className="leading-tight">
+                <div className="text-xs text-gray-600">{daysStr}</div>
+                <div className="text-sm font-semibold text-gray-900">
+                  {slot.openTime} – {slot.closeTime}
+                </div>
+              </div>
+            );
+          })
+          .filter(Boolean)}
+      </div>
+    );
   };
 
-  // Edit dialog functions
   const openEditDialog = () => {
     if (!profile) return;
 
-    // Pre-fill form with current profile data
     let openingHoursValue = "";
-    if (Array.isArray(profile.openingHours)) {
-      openingHoursValue = JSON.stringify(profile.openingHours);
-    } else if (typeof profile.openingHours === "string") {
-      openingHoursValue = profile.openingHours;
-    }
+    if (Array.isArray(profile.openingHours)) openingHoursValue = JSON.stringify(profile.openingHours);
+    else if (typeof profile.openingHours === "string") openingHoursValue = profile.openingHours;
 
     setEditForm({
       name: profile.name,
@@ -182,7 +215,6 @@ export default function PharmacyProfilePage() {
     });
 
     setEditError(null);
-    setEditSuccess(null);
     setFormErrors({});
     setIsEditDialogOpen(true);
   };
@@ -190,44 +222,24 @@ export default function PharmacyProfilePage() {
   const closeEditDialog = () => {
     setIsEditDialogOpen(false);
     setEditError(null);
-    setEditSuccess(null);
     setFormErrors({});
   };
 
   const validateForm = () => {
-    const errors: {[key: string]: string} = {};
-
-    if (!editForm.name.trim()) {
-      errors.name = "Pharmacy name is required";
-    }
-
-    if (!editForm.email.trim()) {
-      errors.email = "Email address is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editForm.email)) {
+    const errors: { [key: string]: string } = {};
+    if (!editForm.name.trim()) errors.name = "Pharmacy name is required";
+    if (!editForm.email.trim()) errors.email = "Email address is required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editForm.email))
       errors.email = "Please enter a valid email address";
-    }
-
-    if (editForm.phone && editForm.phone.length < 8) {
+    if (editForm.phone && editForm.phone.length < 8)
       errors.phone = "Phone number must be at least 8 characters";
-    }
-
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
   const handleFormChange = (field: string, value: string | boolean) => {
-    setEditForm(prev => ({
-      ...prev,
-      [field]: value,
-    }));
-
-    // Clear field error when user starts typing
-    if (formErrors[field]) {
-      setFormErrors(prev => ({
-        ...prev,
-        [field]: "",
-      }));
-    }
+    setEditForm((prev) => ({ ...prev, [field]: value }));
+    if (formErrors[field]) setFormErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
   const handleSaveProfile = async () => {
@@ -235,21 +247,15 @@ export default function PharmacyProfilePage() {
 
     setEditLoading(true);
     setEditError(null);
-    setEditSuccess(null);
 
     try {
       const response = await axios.put("/api/pharmacy/profile", editForm);
-
       if (response.data.success) {
         setProfile(response.data.data);
-        setEditSuccess("Profile updated successfully!");
-        // Close dialog immediately after successful update
         closeEditDialog();
       }
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error || "Failed to update profile";
-      console.error("Error updating profile:", errorMessage);
-      setEditError(errorMessage);
+      setEditError(err.response?.data?.error || "Failed to update profile");
     } finally {
       setEditLoading(false);
     }
@@ -286,187 +292,169 @@ export default function PharmacyProfilePage() {
     );
   }
 
-  if (!profile) {
-    return null;
-  }
+  if (!profile) return null;
 
   return (
-    <div className="min-h-screen bg-background py-8">
-      <div className="my-container">
-        {/* Header Section */}
-        <div className="mb-8 animate-slide-up">
-          <div className="flex justify-between items-start mb-4">
+    <div className="min-h-screen bg-gray-50 py-6">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        {/* Breadcrumb + Header */}
+        <div className="mb-6">
+          <div className="text-sm text-gray-500 mb-2">Dashboard / <span className="text-gray-900 font-medium">Profile</span></div>
+
+          <div className="flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-h2 text-primary mb-2">Pharmacy Profile</h1>
-              <p className="text-gray-600">
-                Manage your pharmacy information and settings
+              <h1 className="text-3xl font-bold text-gray-900">Your Profile</h1>
+              <p className="text-gray-600 mt-1">
+                Manage your pharmacy information and settings to provide better service to your patients.
               </p>
             </div>
-            <button
-              onClick={openEditDialog}
-              className="bg-primary hover:bg-secondary text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-all duration-200 transform hover:scale-105"
-            >
-              <Edit size={20} />
+
+            <Button onClick={openEditDialog} className="rounded-lg px-4">
+              <Edit className="h-4 w-4 mr-2" />
               Edit Profile
-            </button>
+            </Button>
           </div>
         </div>
 
-        {/* Profile Cards Grid */}
+        {/* Top Pharmacy Summary Card */}
+        <div className="bg-white rounded-2xl border shadow-sm p-5 mb-6">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-gray-100 border flex items-center justify-center">
+                <CheckCircle2 className="h-5 w-5 text-gray-500" />
+              </div>
+
+              <div>
+                <div className="text-lg font-semibold text-gray-900">{profile.name}</div>
+                <div className="mt-1">{getStatusPill(profile.status)}</div>
+              </div>
+            </div>
+
+            <ServiceChip icon={Truck} label="Delivery" available={profile.hasDelivery || false} />
+          </div>
+        </div>
+
+        {/* Main Grid: Contact Info (left) + Quick Info (right) */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Profile Card */}
-          <div className="lg:col-span-2 bg-card rounded-xl shadow-lg p-8 animate-scale-in border border-gray-200">
-            {/* Profile Header */}
-            <div className="flex items-start gap-6 mb-8 pb-6 border-b border-gray-200">
-              <div className="bg-gray-100 rounded-full p-6 shadow-lg border-2 border-gray-200">
-                <Building2 className="h-12 w-12 text-gray-800" />
+          {/* Contact Information */}
+          <div className="lg:col-span-2 bg-white rounded-2xl border shadow-sm p-6">
+            <h3 className="text-sm font-semibold text-gray-800 mb-4">
+              Contact Information
+            </h3>
+
+            {/* 2x2 tiles like screenshot */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Email */}
+              <div className="rounded-xl border bg-blue-50/50 p-4">
+                <div className="flex items-start gap-3">
+                  <div className="h-9 w-9 rounded-lg bg-blue-600 flex items-center justify-center">
+                    <Mail className="h-4 w-4 text-white" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-xs font-semibold text-blue-700 uppercase">
+                      Email Address
+                    </div>
+                    <div className="text-sm font-semibold text-gray-900 break-words mt-1">
+                      {profile.email}
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="flex-1">
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                  {profile.name}
-                </h2>
-                <div className="flex items-center gap-3">
-                  {getStatusBadge(profile.status)}
-                  {/* Delivery Badge */}
-                  <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border ${
-                    profile.hasDelivery
-                      ? 'bg-green-50 border-green-200 text-green-700'
-                      : 'bg-gray-50 border-gray-200 text-gray-600'
-                  }`}>
-                    <Truck className={`h-4 w-4 ${
-                      profile.hasDelivery ? 'text-green-600' : 'text-gray-400'
-                    }`} />
-                    <span>{profile.hasDelivery ? 'Delivery Available' : 'No Delivery'}</span>
+
+              {/* Phone */}
+              <div className="rounded-xl border bg-green-50/50 p-4">
+                <div className="flex items-start gap-3">
+                  <div className="h-9 w-9 rounded-lg bg-green-600 flex items-center justify-center">
+                    <Phone className="h-4 w-4 text-white" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-xs font-semibold text-green-700 uppercase">
+                      Phone Number
+                    </div>
+                    <div className="text-sm font-semibold text-gray-900 mt-1">
+                      {profile.phone || "Not provided"}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* City */}
+              <div className="rounded-xl border bg-purple-50/50 p-4">
+                <div className="flex items-start gap-3">
+                  <div className="h-9 w-9 rounded-lg bg-purple-600 flex items-center justify-center">
+                    <MapPin className="h-4 w-4 text-white" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-xs font-semibold text-purple-700 uppercase">
+                      City
+                    </div>
+                    <div className="text-sm font-semibold text-gray-900 mt-1">
+                      {profile.city || "Not provided"}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Opening Hours */}
+              <div className="rounded-xl border bg-orange-50/50 p-4">
+                <div className="flex items-start gap-3">
+                  <div className="h-9 w-9 rounded-lg bg-orange-600 flex items-center justify-center">
+                    <Clock className="h-4 w-4 text-white" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-xs font-semibold text-orange-700 uppercase">
+                      Opening Hours
+                    </div>
+                    <div className="text-gray-900 mt-2">
+                      {formatOpeningHours(profile.openingHours)}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Contact Information */}
-            <div className="space-y-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <User className="h-5 w-5 text-primary" />
-                Contact Information
-              </h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Email */}
-                <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-primary transition-all duration-200">
-                  <div className="bg-blue-100 p-3 rounded-lg">
-                    <Mail className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-1">
-                      Email Address
-                    </p>
-                    <p className="text-gray-900 font-medium truncate">
-                      {profile.email}
-                    </p>
-                  </div>
+            {/* Full Address full width */}
+            <div className="mt-4 rounded-xl border bg-indigo-50/50 p-4">
+              <div className="flex items-start gap-3">
+                <div className="h-9 w-9 rounded-lg bg-indigo-600 flex items-center justify-center">
+                  <MapPin className="h-4 w-4 text-white" />
                 </div>
-
-                {/* Phone */}
-                <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-primary transition-all duration-200">
-                  <div className="bg-green-100 p-3 rounded-lg">
-                    <Phone className="h-5 w-5 text-green-600" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-1">
-                      Phone Number
-                    </p>
-                    <p className="text-gray-900 font-medium">
-                      {profile.phone || "Not provided"}
-                    </p>
-                  </div>
-                </div>
-
-                {/* City */}
-                <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-primary transition-all duration-200">
-                  <div className="bg-purple-100 p-3 rounded-lg">
-                    <MapPin className="h-5 w-5 text-purple-600" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-1">
-                      City
-                    </p>
-                    <p className="text-gray-900 font-medium">
-                      {profile.city || "Not provided"}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Opening Hours */}
-                <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-primary transition-all duration-200">
-                  <div className="bg-orange-100 p-3 rounded-lg">
-                    <Clock className="h-5 w-5 text-orange-600" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-1">
-                      Opening Hours
-                    </p>
-                    <p className="text-gray-900 font-medium">
-                      {formatOpeningHours(profile.openingHours)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Address */}
-              <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-primary transition-all duration-200">
-                <div className="bg-indigo-100 p-3 rounded-lg">
-                  <MapPin className="h-5 w-5 text-indigo-600" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-1">
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-semibold text-indigo-700 uppercase">
                     Full Address
-                  </p>
-                  <p className="text-gray-900 font-medium">
+                  </div>
+                  <div className="text-sm font-semibold text-gray-900 break-words mt-1">
                     {profile.address || "Not provided"}
-                  </p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Sidebar Cards */}
-          <div className="space-y-6">
-            {/* Quick Info */}
-            <div className="bg-card rounded-xl shadow-lg p-6 animate-scale-in border border-gray-200">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Quick Info</h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Status</span>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    profile.status === 'active'
-                      ? 'bg-green-100 text-green-800'
-                      : profile.status === 'pending'
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-gray-100 text-gray-800'
-                  }`}>
-                    {profile.status.charAt(0).toUpperCase() + profile.status.slice(1)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Phone</span>
-                  <span className="font-medium">{profile.phone || "Not provided"}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">City</span>
-                  <span className="font-medium">{profile.city || "Not provided"}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Member since</span>
-                  <span className="font-medium">
-                    {new Date(profile.createdAt).getFullYear()}
-                  </span>
-                </div>
+          {/* Quick Info */}
+          <div className="bg-white rounded-2xl border shadow-sm p-6 h-fit">
+            <h3 className="text-sm font-semibold text-gray-800 mb-4">
+              Quick Info
+            </h3>
+
+            <div className="space-y-3 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-600">Member since</span>
+                <span className="font-medium text-gray-900">
+                  {formatDate(profile.createdAt)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-600">Last updated</span>
+                <span className="font-medium text-gray-900">
+                  {formatDate(profile.updatedAt)}
+                </span>
               </div>
             </div>
-
           </div>
         </div>
 
-        {/* Edit Profile Dialog */}
+        {/* Edit Dialog (same as yours) */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
@@ -480,7 +468,6 @@ export default function PharmacyProfilePage() {
             )}
 
             <div className="grid gap-6 py-4">
-              {/* Name */}
               <div className="grid gap-2">
                 <Label htmlFor="name">Pharmacy Name *</Label>
                 <Input
@@ -494,7 +481,6 @@ export default function PharmacyProfilePage() {
                 )}
               </div>
 
-              {/* Phone */}
               <div className="grid gap-2">
                 <Label htmlFor="phone">Phone Number</Label>
                 <Input
@@ -508,7 +494,6 @@ export default function PharmacyProfilePage() {
                 )}
               </div>
 
-              {/* City */}
               <div className="grid gap-2">
                 <Label htmlFor="city">City</Label>
                 <CityAutocomplete
@@ -518,7 +503,6 @@ export default function PharmacyProfilePage() {
                 />
               </div>
 
-              {/* Address */}
               <div className="grid gap-2">
                 <Label htmlFor="address">Full Address</Label>
                 <Input
@@ -528,7 +512,6 @@ export default function PharmacyProfilePage() {
                 />
               </div>
 
-              {/* Opening Hours */}
               <div className="grid gap-2">
                 <Label htmlFor="openingHours">Opening Hours</Label>
                 <OpeningHoursInput
@@ -537,13 +520,14 @@ export default function PharmacyProfilePage() {
                 />
               </div>
 
-              {/* Has Delivery */}
               <div className="flex items-center space-x-2">
                 <input
                   type="checkbox"
                   id="hasDelivery"
                   checked={editForm.hasDelivery}
-                  onChange={(e) => handleFormChange("hasDelivery", e.target.checked)}
+                  onChange={(e) =>
+                    handleFormChange("hasDelivery", e.target.checked)
+                  }
                   className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
                 />
                 <Label htmlFor="hasDelivery">Offers delivery service</Label>
