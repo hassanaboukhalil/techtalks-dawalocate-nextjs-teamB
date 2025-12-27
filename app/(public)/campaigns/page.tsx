@@ -97,8 +97,9 @@ export default function PublicCampaignsPage() {
         setCampaigns(response.data.data || []);
         setTotalCount(response.data.pagination?.total || 0);
       }
-    } catch (err: any) {
-      setError(err.response?.data?.error || "Failed to fetch campaigns");
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: string } } };
+      setError(error.response?.data?.error || "Failed to fetch campaigns");
     } finally {
       setLoading(false);
     }
