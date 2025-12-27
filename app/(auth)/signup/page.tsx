@@ -457,72 +457,17 @@ export default function SignupPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">
-                  Password
+                  City
                 </label>
-                <div className="relative">
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    value={formData.password}
-                    onChange={(e) =>
-                      setFormData({ ...formData, password: e.target.value })
-                    }
-                    className="h-11 rounded-lg border-gray-300 focus:border-primary focus:ring-primary pr-10 text-gray-900"
-                    placeholder="••••••••"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="w-5 h-5" />
-                    ) : (
-                      <Eye className="w-5 h-5" />
-                    )}
-                  </button>
-                </div>
-                {formData.password.length > 0 && (
-                  <>
-                    {passwordCriteria.every((c) => c.valid) ? (
-                      <div className="mt-2 flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg p-2">
-                        <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                        <span className="text-xs text-green-700 font-medium">
-                          Strong password! All requirements met.
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="space-y-1 mt-2">
-                        {passwordCriteria.map((item, index) => {
-                          const isMet = item.valid;
-
-                          let colorClass = "text-gray-500";
-                          let icon = (
-                            <div className="w-3 h-3 rounded-full border border-gray-400" />
-                          );
-
-                          if (isMet) {
-                            colorClass = "text-green-600";
-                            icon = <Check className="w-3 h-3 text-green-600" />;
-                          } else {
-                            colorClass = "text-red-500";
-                            icon = <X className="w-3 h-3 text-red-500" />;
-                          }
-
-                          return (
-                            <div
-                              key={index}
-                              className="flex items-center gap-2 text-xs"
-                            >
-                              {icon}
-                              <span className={colorClass}>{item.label}</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </>
-                )}
+                <CityAutocomplete
+                  cities={LEBANON_CITIES}
+                  value={formData.city}
+                  onChange={(value) =>
+                    setFormData({ ...formData, city: value })
+                  }
+                  placeholder="Select your city"
+                  className="border-gray-300 focus:border-primary focus:ring-primary"
+                />
               </div>
 
               <div className="space-y-2">
@@ -560,17 +505,76 @@ export default function SignupPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-gray-700">
-                      City
+                      Password
                     </label>
-                    <CityAutocomplete
-                      cities={LEBANON_CITIES}
-                      value={formData.city}
-                      onChange={(value) =>
-                        setFormData({ ...formData, city: value })
-                      }
-                      placeholder="Select your city"
-                      className="border-gray-300 focus:border-primary focus:ring-primary"
-                    />
+                    <div className="relative">
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        value={formData.password}
+                        onChange={(e) =>
+                          setFormData({ ...formData, password: e.target.value })
+                        }
+                        className="h-11 rounded-lg border-gray-300 focus:border-primary focus:ring-primary pr-10 text-gray-900"
+                        placeholder="••••••••"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="w-5 h-5" />
+                        ) : (
+                          <Eye className="w-5 h-5" />
+                        )}
+                      </button>
+                    </div>
+                    {formData.password.length > 0 && (
+                      <>
+                        {passwordCriteria.every((c) => c.valid) ? (
+                          <div className="mt-2 flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg p-2">
+                            <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                            <span className="text-xs text-green-700 font-medium">
+                              Strong password! All requirements met.
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="space-y-1 mt-2">
+                            {passwordCriteria.map((item, index) => {
+                              const isMet = item.valid;
+
+                              let colorClass = "text-gray-500";
+                              let icon = (
+                                <div className="w-3 h-3 rounded-full border border-gray-400" />
+                              );
+
+                              if (isMet) {
+                                colorClass = "text-green-600";
+                                icon = (
+                                  <Check className="w-3 h-3 text-green-600" />
+                                );
+                              } else {
+                                colorClass = "text-red-500";
+                                icon = <X className="w-3 h-3 text-red-500" />;
+                              }
+
+                              return (
+                                <div
+                                  key={index}
+                                  className="flex items-center gap-2 text-xs"
+                                >
+                                  {icon}
+                                  <span className={colorClass}>
+                                    {item.label}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </>
+                    )}
                   </div>
 
                   <div className="space-y-2">
