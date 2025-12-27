@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Mail } from "lucide-react";
 import medicinesImg from "@/public/images/auth/medicines-img-auth.svg";
+import loginImg from "@/public/images/auth/find-medicine-auth-login-img.svg";
 
 interface AuthLeftPanelProps {
   variant?: "welcome" | "verify" | "login";
@@ -41,11 +42,11 @@ export default function AuthLeftPanel({
               </p>
             </div>
 
-            {/* Medicines illustration */}
+            {/* Login illustration */}
             <div className="flex justify-center">
               <Image
-                src={medicinesImg}
-                alt="Medicines illustration"
+                src={loginImg}
+                alt="Find medicine illustration"
                 width={446}
                 height={419}
                 className="w-full max-w-xs 2xl:max-w-none"
