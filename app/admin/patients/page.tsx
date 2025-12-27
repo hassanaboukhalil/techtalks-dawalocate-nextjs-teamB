@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useSearchParams } from "next/navigation";
 import { 
   Search, Loader2, User, Mail, FileText, Plus, MapPin, Contact, ShieldCheck, Pencil, Trash2, Lock
 } from "lucide-react"; 
@@ -40,6 +41,20 @@ export default function PatientsManagementPage() {
   const [nameFilter, setNameFilter] = useState("");
   const [emailFilter, setEmailFilter] = useState("");
   const [cityFilter, setCityFilter] = useState("");
+  
+
+  // 👇 2. PASTE THIS BLOCK AFTER YOUR STATE
+  
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const query = searchParams.get("search");
+    if (query) {
+      setNameFilter(query); // 👈 CHANGE THIS from setSearch(query)
+    }
+  }, [searchParams]);
+  // 👆 END OF BLOCK
+
 
   // Dialog & Form State
   const [isDialogOpen, setIsDialogOpen] = useState(false);
