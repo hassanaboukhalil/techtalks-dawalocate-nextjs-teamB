@@ -214,9 +214,7 @@ export default function PublicCampaignsPage() {
                   <p className="text-3xl font-bold text-primary">
                     {totalCount}
                   </p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Total Campaigns
-                  </p>
+                  <p className="text-sm text-gray-600 mt-1">Total Campaigns</p>
                 </div>
                 <div>
                   <p className="text-3xl font-bold text-primary">
@@ -225,15 +223,14 @@ export default function PublicCampaignsPage() {
                         .length
                     }
                   </p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Active Campaigns
-                  </p>
+                  <p className="text-sm text-gray-600 mt-1">Active Campaigns</p>
                 </div>
                 <div>
                   <p className="text-3xl font-bold text-primary">
                     {
-                      campaigns.filter((c) => getCampaignStatus(c) === "upcoming")
-                        .length
+                      campaigns.filter(
+                        (c) => getCampaignStatus(c) === "upcoming"
+                      ).length
                     }
                   </p>
                   <p className="text-sm text-gray-600 mt-1">
@@ -247,9 +244,7 @@ export default function PublicCampaignsPage() {
                       0
                     )}
                   </p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Medicines Needed
-                  </p>
+                  <p className="text-sm text-gray-600 mt-1">Medicines Needed</p>
                 </div>
               </div>
             </div>
@@ -396,11 +391,13 @@ export default function PublicCampaignsPage() {
                   No campaigns found
                 </h3>
                 <p className="text-gray-600 mb-6">
-                  {(searchMedicine || searchCharity || statusFilter !== "all")
+                  {searchMedicine || searchCharity || statusFilter !== "all"
                     ? "Try adjusting your search terms or filters"
                     : "Check back soon for new campaigns from charities"}
                 </p>
-                {(searchMedicine || searchCharity || statusFilter !== "all") && (
+                {(searchMedicine ||
+                  searchCharity ||
+                  statusFilter !== "all") && (
                   <Button
                     onClick={handleReturnToAll}
                     className="rounded-xl px-6"
@@ -496,7 +493,8 @@ export default function PublicCampaignsPage() {
                               <div className="mt-1 inline-flex items-center gap-1 px-2 py-0.5 bg-orange-50 border border-orange-200 rounded-full">
                                 <Clock className="h-3 w-3 text-orange-600" />
                                 <span className="text-xs font-semibold text-orange-700">
-                                  {daysRemaining} day{daysRemaining !== 1 ? "s" : ""} left
+                                  {daysRemaining} day
+                                  {daysRemaining !== 1 ? "s" : ""} left
                                 </span>
                               </div>
                             )}
@@ -512,7 +510,8 @@ export default function PublicCampaignsPage() {
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-                                  Medicines ({campaign.campaignMedicines.length})
+                                  Medicines ({campaign.campaignMedicines.length}
+                                  )
                                 </p>
                                 <div className="flex flex-wrap gap-1.5">
                                   {campaign.campaignMedicines
@@ -527,7 +526,8 @@ export default function PublicCampaignsPage() {
                                     ))}
                                   {campaign.campaignMedicines.length > 2 && (
                                     <span className="inline-flex items-center px-2 py-0.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold border border-gray-200">
-                                      +{campaign.campaignMedicines.length - 2} more
+                                      +{campaign.campaignMedicines.length - 2}{" "}
+                                      more
                                     </span>
                                   )}
                                 </div>
@@ -593,7 +593,8 @@ export default function PublicCampaignsPage() {
                 campaign(s)
                 {(searchMedicine || searchCharity) && (
                   <>
-                    {" "}matching{" "}
+                    {" "}
+                    matching{" "}
                     {[
                       searchMedicine && `medicine: "${searchMedicine}"`,
                       searchCharity && `charity: "${searchCharity}"`,
@@ -631,4 +632,3 @@ export default function PublicCampaignsPage() {
     </>
   );
 }
-
