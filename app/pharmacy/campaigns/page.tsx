@@ -208,15 +208,19 @@ export default function PharmacyCampaignsPage() {
             </div>
             <div>
               <p className="text-3xl font-bold text-primary">
-                {campaigns.filter((c) => getCampaignStatus(c) === "active")
-                  .length}
+                {
+                  campaigns.filter((c) => getCampaignStatus(c) === "active")
+                    .length
+                }
               </p>
               <p className="text-sm text-gray-600 mt-1">Active Campaigns</p>
             </div>
             <div>
               <p className="text-3xl font-bold text-primary">
-                {campaigns.filter((c) => getCampaignStatus(c) === "upcoming")
-                  .length}
+                {
+                  campaigns.filter((c) => getCampaignStatus(c) === "upcoming")
+                    .length
+                }
               </p>
               <p className="text-sm text-gray-600 mt-1">Upcoming Campaigns</p>
             </div>
@@ -372,15 +376,12 @@ export default function PharmacyCampaignsPage() {
               No campaigns found
             </h3>
             <p className="text-gray-600 mb-6">
-              {(searchMedicine || searchCharity || statusFilter !== "all")
+              {searchMedicine || searchCharity || statusFilter !== "all"
                 ? "Try adjusting your search terms or filters"
                 : "Check back soon for new campaigns from charities"}
             </p>
             {(searchMedicine || searchCharity || statusFilter !== "all") && (
-              <Button
-                onClick={handleReturnToAll}
-                className="rounded-xl px-6"
-              >
+              <Button onClick={handleReturnToAll} className="rounded-xl px-6">
                 Return to All Campaigns
               </Button>
             )}
@@ -400,7 +401,9 @@ export default function PharmacyCampaignsPage() {
                 key={campaign.id}
                 className="group relative rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-2xl transition-all duration-500 ease-out overflow-hidden cursor-pointer animate-scale-in"
                 style={{ animationDelay: `${index * 50}ms` }}
-                onClick={() => router.push(`/pharmacy/campaigns/${campaign.id}`)}
+                onClick={() =>
+                  router.push(`/pharmacy/campaigns/${campaign.id}`)
+                }
               >
                 {/* Status Badge - Top Right Corner */}
                 <div className="absolute top-3 right-3 z-10">
@@ -472,7 +475,8 @@ export default function PharmacyCampaignsPage() {
                           <div className="mt-1 inline-flex items-center gap-1 px-2 py-0.5 bg-orange-50 border border-orange-200 rounded-full">
                             <Clock className="h-3 w-3 text-orange-600" />
                             <span className="text-xs font-semibold text-orange-700">
-                              {daysRemaining} day{daysRemaining !== 1 ? "s" : ""} left
+                              {daysRemaining} day
+                              {daysRemaining !== 1 ? "s" : ""} left
                             </span>
                           </div>
                         )}
@@ -561,11 +565,13 @@ export default function PharmacyCampaignsPage() {
       {!loading && !error && filteredCampaigns.length > 0 && (
         <div className="mt-8 text-center">
           <p className="text-gray-600">
-            Showing <span className="font-semibold">{filteredCampaigns.length}</span> of{" "}
+            Showing{" "}
+            <span className="font-semibold">{filteredCampaigns.length}</span> of{" "}
             <span className="font-semibold">{totalCount}</span> campaign(s)
             {(searchMedicine || searchCharity) && (
               <>
-                {" "}matching{" "}
+                {" "}
+                matching{" "}
                 {[
                   searchMedicine && `medicine: "${searchMedicine}"`,
                   searchCharity && `charity: "${searchCharity}"`,
@@ -580,4 +586,3 @@ export default function PharmacyCampaignsPage() {
     </div>
   );
 }
-
