@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RefreshCw, User, Phone, Mail } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 
 interface Pharmacy {
   id: number;
@@ -63,6 +64,17 @@ export default function AdminPharmaciesPage() {
   const [searchEmail, setSearchEmail] = useState("");
   const [cityFilter, setCityFilter] = useState("");
   const [deliveryFilter, setDeliveryFilter] = useState<string>("all");
+
+ // 👇👇👇 PASTE THIS BLOCK HERE 👇👇👇
+ const searchParams = useSearchParams();
+
+ useEffect(() => {
+   const query = searchParams.get("search");
+   if (query) {
+     setSearchName(query); // 👈 We auto-fill the NAME box
+   }
+ }, [searchParams]);
+ // 👆👆👆 END OF NEW BLOCK 👆👆👆
 
   const fetchPharmacies = async () => {
     try {
