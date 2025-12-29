@@ -7,6 +7,7 @@ import {
   getStatusBadge,
   formatDateLong,
 } from "@/lib/utils/campaignHelpers";
+import CampaignWhatsAppCTA from "./CampaignWhatsAppCTA";
 
 interface CampaignDetailHeaderProps {
   campaign: Campaign;
@@ -64,6 +65,13 @@ export default function CampaignDetailHeader({
             <Share2 className="h-4 w-4 mr-2" />
             Share
           </Button>
+          {/* WhatsApp CTA button beside Share */}
+          {campaign.charity.phone && (
+            <CampaignWhatsAppCTA
+              phone={campaign.charity.phone}
+              campaignTitle={campaign.title}
+            />
+          )}
         </div>
       </div>
     </div>
