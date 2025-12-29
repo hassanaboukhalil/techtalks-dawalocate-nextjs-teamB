@@ -13,7 +13,8 @@ import {
     CheckCircle2,
     AlertCircle,
     Eye,
-    EyeOff
+    EyeOff,
+    Loader2
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -132,9 +133,18 @@ export default function AdminAccountPage() {
             });
 
         } catch (err: any) {
+            console.error("Account update error:", JSON.stringify({
+                data: err.response?.data,
+                status: err.response?.status,
+                headers: err.response?.headers,
+                message: err.message,
+                stack: err.stack
+            }, null, 2));
             setMessage({
                 type: "error",
-                text: err.response?.data?.error || "Failed to update account settings"
+                text: err.response?.data?.details
+                    ? `${err.response.data.error}: ${err.response.data.details}`
+                    : (err.response?.data?.error || "Failed to update account settings")
             });
         } finally {
             setSaving(false);
@@ -150,223 +160,209 @@ export default function AdminAccountPage() {
     }
 
     return (
-        <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-10 animate-in fade-in duration-700 bg-primary/5 min-h-screen">
+        <div className="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-700">
 
-            {/* GLOSSY HEADER */}
-            <header className="relative overflow-hidden rounded-[40px] bg-slate-950 p-10 text-white shadow-2xl border-b-8 border-primary">
-                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 bg-primary rounded-2xl shadow-lg shadow-primary/20">
-                                <Settings className="h-8 w-8 text-white" />
-                            </div>
-                            <h1 className="text-4xl font-black tracking-tighter uppercase">Admin Settings</h1>
+            {/* HEADER */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Account Settings</h1>
+                    <p className="text-slate-500 mt-1">Manage your administrative profile and security credentials.</p>
+                </div>
+
+                <div className="flex items-center gap-3">
+                    <div className="px-4 py-2 bg-slate-50 border rounded-lg flex items-center gap-3 shadow-sm">
+                        <div className="h-8 w-8 rounded-full bg-[#119abf] flex items-center justify-center text-xs font-bold text-white shadow-sm">
+                            {account.name[0].toUpperCase()}
                         </div>
-                        <p className="text-slate-400 max-w-xl text-lg font-medium leading-relaxed">
-                            Manage your administrative profile, security credentials, and system preferences with full control.
-                        </p>
-                    </div>
-                    <div className="hidden lg:block">
-                        <div className="px-8 py-4 bg-white/5 backdrop-blur-2xl rounded-[30px] border border-white/10 flex items-center gap-5 shadow-inner">
-                            <div className="h-16 w-16 rounded-2xl bg-primary flex items-center justify-center text-2xl font-black shadow-lg shadow-primary/40 text-white">
-                                {account.name[0].toUpperCase()}
-                            </div>
-                            <div>
-                                <p className="font-bold text-xl tracking-tight text-white">{account.name}</p>
-                                <p className="text-sm text-primary font-bold uppercase tracking-widest opacity-80">System Admin</p>
-                                <p className="text-[10px] text-slate-500 italic mt-1 font-medium">Admin since {new Date(account.createdAt).toLocaleDateString()}</p>
-                            </div>
+                        <div>
+                            <p className="font-bold text-sm text-slate-900 leading-none">{account.name}</p>
+                            <p className="text-[10px] text-[#119abf] font-bold uppercase tracking-wider mt-1">System Admin</p>
                         </div>
                     </div>
                 </div>
-
-                {/* Background Decorative Elements */}
-                <div className="absolute top-0 right-0 h-64 w-64 rounded-full bg-primary/10 blur-[120px]"></div>
-                <div className="absolute -bottom-24 -left-24 h-80 w-80 rounded-full bg-primary/5 blur-[100px]"></div>
-            </header>
+            </div>
 
             {/* FEEDBACK MESSAGE */}
             {message && (
-                <div className={`flex items-center gap-3 p-4 rounded-2xl border transition-all duration-500 animate-in slide-in-from-top-4 ${message.type === "success"
-                    ? "bg-emerald-50 border-emerald-100 text-emerald-700 shadow-sm"
-                    : "bg-rose-50 border-rose-100 text-rose-700 shadow-sm"
+                <div className={`flex items-center gap-3 p-4 rounded-xl border animate-in slide-in-from-top-4 ${message.type === "success"
+                    ? "bg-emerald-50 border-emerald-100 text-emerald-700"
+                    : "bg-rose-50 border-rose-100 text-rose-700"
                     }`}>
                     {message.type === "success" ? <CheckCircle2 className="h-5 w-5" /> : <AlertCircle className="h-5 w-5" />}
-                    <p className="font-medium">{message.text}</p>
+                    <p className="text-sm font-medium">{message.text}</p>
                 </div>
             )}
 
             <form onSubmit={handleSave} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-                {/* LEFT COLUMN: Profile info */}
-                <div className="lg:col-span-12 space-y-8">
-                    <Card className="overflow-hidden border-none shadow-2xl bg-primary/10 backdrop-blur-md rounded-3xl border border-primary/20">
-                        <div className="p-1 bg-gradient-to-r from-primary/40 via-transparent to-primary/40"></div>
-                        <div className="p-8 space-y-8">
-                            <div className="flex items-center gap-3">
-                                <div className="p-3 bg-primary/20 rounded-2xl">
-                                    <User className="h-5 w-5 text-primary" />
+                {/* GENERAL INFORMATION */}
+                <div className="lg:col-span-12">
+                    <Card className="overflow-hidden border rounded-xl shadow-sm z-0">
+                        <div className="p-6 border-b bg-slate-50/50">
+                            <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                                <User className="w-5 h-5 text-[#119abf]" />
+                                General Information
+                            </h2>
+                        </div>
+                        <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="space-y-2">
+                                <Label htmlFor="name" className="text-sm font-semibold text-slate-700 ml-0.5">Full Name</Label>
+                                <div className="relative group">
+                                    <User className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 group-focus-within:text-[#119abf] transition-colors" />
+                                    <Input
+                                        id="name"
+                                        name="name"
+                                        value={form.name}
+                                        onChange={handleChange}
+                                        placeholder="Admin Name"
+                                        className="pl-9 h-11 rounded-lg border-slate-200 focus:ring-2 focus:ring-[#119abf]/20 focus:border-[#119abf] transition-all"
+                                    />
                                 </div>
-                                <h2 className="text-xl font-bold text-primary-foreground bg-primary px-4 py-1 rounded-full shadow-sm">General Information</h2>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <Label htmlFor="name" className="text-sm font-bold text-primary ml-1">Full Name</Label>
-                                    <div className="relative group">
-                                        <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary group-focus-within:text-white transition-colors" />
-                                        <Input
-                                            id="name"
-                                            name="name"
-                                            value={form.name}
-                                            onChange={handleChange}
-                                            placeholder="Admin Name"
-                                            className="pl-11 h-12 rounded-xl border-primary/30 focus:ring-4 focus:ring-primary/20 transition-all bg-white/60 text-primary font-medium"
+                            <div className="space-y-2">
+                                <Label htmlFor="email" className="text-sm font-semibold text-slate-700 ml-0.5">Email Address</Label>
+                                <div className="relative group">
+                                    <Mail className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 group-focus-within:text-[#119abf] transition-colors" />
+                                    <Input
+                                        id="email"
+                                        name="email"
+                                        type="email"
+                                        value={form.email}
+                                        onChange={handleChange}
+                                        placeholder="admin@dawalocate.com"
+                                        className="pl-9 h-11 rounded-lg border-slate-200 focus:ring-2 focus:ring-[#119abf]/20 focus:border-[#119abf] transition-all"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2 md:col-span-2">
+                                <Label htmlFor="phone" className="text-sm font-semibold text-slate-700 ml-0.5">Phone Number</Label>
+                                <div className="flex h-11 w-full rounded-lg border border-slate-200 bg-white focus-within:ring-2 focus-within:ring-[#119abf]/20 focus-within:border-[#119abf] overflow-hidden transition-all">
+                                    <div className="flex items-center gap-2 px-3 bg-slate-50 border-r border-slate-200 shrink-0">
+                                        <img
+                                            src="https://flagcdn.com/w40/lb.png"
+                                            alt="Lebanon Flag"
+                                            className="w-6 h-4 object-cover rounded-sm shadow-sm"
                                         />
+                                        <span className="text-sm font-bold text-slate-700">+961</span>
+                                    </div>
+                                    <input
+                                        id="phone"
+                                        name="phoneDigits"
+                                        className="flex h-full w-full bg-transparent px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none"
+                                        placeholder="70 123 456"
+                                        value={form.phoneDigits}
+                                        onChange={handlePhoneChange}
+                                        maxLength={8}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </Card>
+                </div>
+
+                {/* SECURITY SETTINGS */}
+                <div className="lg:col-span-12">
+                    <Card className="overflow-hidden border rounded-xl shadow-sm z-0">
+                        <div className="p-6 border-b bg-slate-50/50">
+                            <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                                <ShieldCheck className="w-5 h-5 text-[#119abf]" />
+                                Security Credentials
+                            </h2>
+                        </div>
+                        <div className="p-8 space-y-8">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                <div className="space-y-2">
+                                    <Label htmlFor="currentPassword" title="Current Password" className="text-sm font-semibold text-slate-700 ml-0.5">Current Password</Label>
+                                    <div className="relative group">
+                                        <Lock className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 group-focus-within:text-[#119abf] transition-colors" />
+                                        <Input
+                                            id="currentPassword"
+                                            name="currentPassword"
+                                            type={showCurrentPassword ? "text" : "password"}
+                                            value={form.currentPassword}
+                                            onChange={handleChange}
+                                            placeholder="Enter current password"
+                                            className="pl-9 h-11 rounded-lg border-slate-200 focus:ring-2 focus:ring-[#119abf]/20 focus:border-[#119abf] transition-all pr-10"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                            className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 transition-colors"
+                                        >
+                                            {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                        </button>
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="email" className="text-sm font-bold text-primary ml-1">Email Address</Label>
+                                    <Label htmlFor="newPassword" title="New Password" className="text-sm font-semibold text-slate-700 ml-0.5">New Password</Label>
                                     <div className="relative group">
-                                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary group-focus-within:text-white transition-colors" />
+                                        <Lock className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 group-focus-within:text-[#119abf] transition-colors" />
                                         <Input
-                                            id="email"
-                                            name="email"
-                                            type="email"
-                                            value={form.email}
+                                            id="newPassword"
+                                            name="newPassword"
+                                            type={showNewPassword ? "text" : "password"}
+                                            value={form.newPassword}
                                             onChange={handleChange}
-                                            placeholder="admin@dawalocate.com"
-                                            className="pl-11 h-12 rounded-xl border-primary/30 focus:ring-4 focus:ring-primary/20 transition-all bg-white/60 text-primary font-medium"
+                                            placeholder="Create new password"
+                                            className="pl-9 h-11 rounded-lg border-slate-200 focus:ring-2 focus:ring-[#119abf]/20 focus:border-[#119abf] transition-all pr-10"
                                         />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowNewPassword(!showNewPassword)}
+                                            className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 transition-colors"
+                                        >
+                                            {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                        </button>
                                     </div>
                                 </div>
 
-                                <div className="space-y-2 md:col-span-2">
-                                    <Label htmlFor="phone" className="text-sm font-bold text-primary ml-1">Phone Number</Label>
-                                    <div className="flex gap-2">
-                                        <div className="flex items-center justify-center px-4 h-12 rounded-xl bg-primary text-white font-bold font-mono text-sm shadow-md">
-                                            +961
-                                        </div>
-                                        <div className="relative flex-1 group">
-                                            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary group-focus-within:text-white transition-colors" />
-                                            <Input
-                                                id="phone"
-                                                name="phoneDigits"
-                                                value={form.phoneDigits}
-                                                onChange={handlePhoneChange}
-                                                placeholder="70 123 456"
-                                                className="pl-11 h-12 rounded-xl border-primary/30 focus:ring-4 focus:ring-primary/20 transition-all bg-white/60 text-primary font-medium"
-                                            />
-                                        </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="confirmPassword" title="Confirm Password" className="text-sm font-semibold text-slate-700 ml-0.5">Confirm New Password</Label>
+                                    <div className="relative group">
+                                        <Lock className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 group-focus-within:text-[#119abf] transition-colors" />
+                                        <Input
+                                            id="confirmPassword"
+                                            name="confirmPassword"
+                                            type={showConfirmPassword ? "text" : "password"}
+                                            value={form.confirmPassword}
+                                            onChange={handleChange}
+                                            placeholder="Confirm new password"
+                                            className="pl-9 h-11 rounded-lg border-slate-200 focus:ring-2 focus:ring-[#119abf]/20 focus:border-[#119abf] transition-all pr-10"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                            className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 transition-colors"
+                                        >
+                                            {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </Card>
+                </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {/* Security Section Integrated into Main Grid */}
-                        <Card className="overflow-hidden border-none shadow-2xl bg-primary rounded-3xl relative">
-                            <div className="p-8 space-y-6 relative z-10">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-md">
-                                        <ShieldCheck className="h-6 w-6 text-white" />
-                                    </div>
-                                    <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Security Settings</h2>
-                                </div>
-
-                                <div className="space-y-5">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="currentPassword" title="Current Password" className="text-white/80 font-bold ml-1 uppercase text-[10px] tracking-widest" />
-                                        <div className="relative group">
-                                            <Input
-                                                id="currentPassword"
-                                                name="currentPassword"
-                                                type={showCurrentPassword ? "text" : "password"}
-                                                value={form.currentPassword}
-                                                onChange={handleChange}
-                                                placeholder="Enter current password"
-                                                className="h-14 rounded-2xl border-white/20 focus:ring-4 focus:ring-white/10 transition-all bg-white/10 text-white placeholder:text-white/40 font-medium pr-12"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors"
-                                            >
-                                                {showCurrentPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="newPassword" title="New Password" className="text-white/80 font-bold ml-1 uppercase text-[10px] tracking-widest" />
-                                        <div className="relative group">
-                                            <Input
-                                                id="newPassword"
-                                                name="newPassword"
-                                                type={showNewPassword ? "text" : "password"}
-                                                value={form.newPassword}
-                                                onChange={handleChange}
-                                                placeholder="Create new password"
-                                                className="h-14 rounded-2xl border-white/20 focus:ring-4 focus:ring-white/10 transition-all bg-white/10 text-white placeholder:text-white/40 font-medium pr-12"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowNewPassword(!showNewPassword)}
-                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors"
-                                            >
-                                                {showNewPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="confirmPassword" title="Confirm Password" className="text-white/80 font-bold ml-1 uppercase text-[10px] tracking-widest" />
-                                        <div className="relative group">
-                                            <Input
-                                                id="confirmPassword"
-                                                name="confirmPassword"
-                                                type={showConfirmPassword ? "text" : "password"}
-                                                value={form.confirmPassword}
-                                                onChange={handleChange}
-                                                placeholder="Confirm new password"
-                                                className="h-14 rounded-2xl border-white/20 focus:ring-4 focus:ring-white/10 transition-all bg-white/10 text-white placeholder:text-white/40 font-medium pr-12"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors"
-                                            >
-                                                {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="absolute top-0 right-0 h-full w-1/2 bg-gradient-to-l from-white/5 to-transparent"></div>
-                            <div className="absolute -bottom-10 -right-10 h-32 w-32 rounded-full bg-white/5 blur-2xl"></div>
-                        </Card>
-
-                        <div className="flex flex-col justify-end space-y-6">
-                            <div className="p-10 bg-slate-900 rounded-3xl text-white shadow-2xl overflow-hidden relative group border-t-4 border-primary">
-                                <div className="relative z-10 space-y-6">
-                                    <div>
-                                        <h3 className="text-2xl font-black uppercase tracking-tighter">Apply Changes</h3>
-                                        <p className="text-slate-400 text-sm mt-1 font-medium italic">Updates will be synchronized across the administrative system.</p>
-                                    </div>
-                                    <Button
-                                        type="submit"
-                                        disabled={saving}
-                                        className="w-full h-16 rounded-2xl bg-primary text-white hover:bg-primary/90 font-black text-xl transition-all transform hover:scale-[1.02] active:scale-95 shadow-2xl shadow-primary/40 group/btn border-b-4 border-primary-foreground/20"
-                                    >
-                                        {saving ? "🔄 Processing..." : "COMMIT CHANGES"}
-                                        {!saving && <ArrowRight className="ml-2 h-6 w-6 group-hover/btn:translate-x-3 transition-transform" />}
-                                    </Button>
-                                </div>
-                                <div className="absolute top-0 right-0 h-full w-1/3 bg-gradient-to-l from-primary/10 to-transparent"></div>
-                                <div className="absolute -top-10 -left-10 h-40 w-40 rounded-full bg-primary/5 blur-3xl group-hover:bg-primary/10 transition-colors"></div>
-                            </div>
-                        </div>
+                {/* APPLY CHANGES */}
+                <div className="lg:col-span-12 flex items-center justify-between p-6 bg-slate-50 border rounded-xl shadow-sm border-slate-200/60">
+                    <div className="hidden sm:block">
+                        <h3 className="text-base font-bold text-slate-900 tracking-tight">Apply Changes</h3>
+                        <p className="text-xs text-slate-500 font-medium">Updates will be synchronized across the administrative system.</p>
                     </div>
+                    <Button
+                        type="submit"
+                        disabled={saving}
+                        className="bg-[#119abf] hover:bg-[#0e8cae] px-10 h-12 rounded-lg font-bold shadow-md shadow-[#119abf]/20 transform transition-all active:scale-95 disabled:opacity-70"
+                    >
+                        {saving ? (
+                            <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> saving...</>
+                        ) : (
+                            <>SUBMIT <ArrowRight className="ml-2 h-4 w-4" /></>
+                        )}
+                    </Button>
                 </div>
             </form>
         </div>

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import bcrypt from "bcryptjs";
+import fs from "fs";
+import path from "path";
 
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -49,15 +51,18 @@ export async function GET() {
  * Update logged-in admin's account data
  */
 export async function PATCH(request: NextRequest) {
+    console.log("[ADMIN_ACCOUNT_PATCH] Request received");
+    let body: any;
     try {
         const session = await getServerSession(authOptions);
+        console.log("[ADMIN_ACCOUNT_PATCH] Session:", !!session);
 
         if (!session?.user?.id || session.user.userType !== "admin") {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
         const userId = Number(session.user.id);
-        const body = await request.json();
+        body = await request.json();
 
         const {
             name,
@@ -134,10 +139,26 @@ export async function PATCH(request: NextRequest) {
         });
 
         return NextResponse.json(updatedUser, { status: 200 });
-    } catch (error) {
-        console.error("[ADMIN_ACCOUNT_PATCH]", error);
+    } catch (error: any) {
+        const errorLog = `
+--- [${new Date().toISOString()}] ADMIN_ACCOUNT_PATCH Error ---
+Message: ${error.message}
+Stack: ${error.stack}
+Body: ${JSON.stringify(body, null, 2)}
+--------------------------------------------------
+`;
+        try {
+            fs.appendFileSync(path.join(process.cwd(), "debug.log"), errorLog);
+        } catch (fsErr) {
+            console.error("Failed to write to debug.log:", fsErr);
+        }
+
+        console.error("[ADMIN_ACCOUNT_PATCH] Full Error:", error);
         return NextResponse.json(
-            { error: "Failed to update account data" },
+            {
+                error: "Failed to update account data",
+                details: error?.message || String(error)
+            },
             { status: 500 }
         );
     }
