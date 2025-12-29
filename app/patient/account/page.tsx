@@ -102,7 +102,7 @@ export default function PatientAccountPage() {
 
     try {
       setSaving(true);
-      await axios.patch("/api/patient/account", {
+      const response = await axios.patch<Account>("/api/patient/account", {
         name: form.name,
         email: form.email,
         phone: `+961${form.phoneDigits}`,
@@ -113,6 +113,19 @@ export default function PatientAccountPage() {
           newPassword: form.newPassword,
         }),
       });
+
+      // Update the account state with the response data
+      setAccount(response.data);
+
+      // Update the form state to match the updated data
+      setForm({
+        name: response.data.name,
+        email: response.data.email,
+        phoneDigits: response.data.phone?.replace("+961", "") ?? "",
+        city: response.data.city ?? "",
+        address: response.data.address ?? "",
+      });
+
       setOpen(false);
     } finally {
       setSaving(false);
