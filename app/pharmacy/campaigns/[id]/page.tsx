@@ -150,12 +150,6 @@ export default function PharmacyCampaignDetailPage() {
               endDate={campaign.endDate}
             />
             <CampaignTargetAreas targetAreas={campaign.targetAreas} />
-            {campaign.charity.phone && (
-              <CampaignWhatsAppCTA
-                phone={campaign.charity.phone}
-                campaignTitle={campaign.title}
-              />
-            )}
           </div>
         </div>
       </div>
