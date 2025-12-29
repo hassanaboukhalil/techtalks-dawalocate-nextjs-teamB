@@ -56,21 +56,25 @@ export default function CampaignDetailHeader({
             Created {formatDateLong(campaign.createdAt)}
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button
-            onClick={onShare}
-            variant="outline"
-            className="rounded-xl border-primary/30 text-primary hover:bg-primary/10"
-          >
-            <Share2 className="h-4 w-4 mr-2" />
-            Share
-          </Button>
-          {/* WhatsApp CTA button beside Share */}
+        <div className="flex flex-col gap-2 md:flex-row md:gap-2 md:items-center">
+          <div className="flex-1 md:flex-initial">
+            <Button
+              onClick={onShare}
+              variant="outline"
+              className="rounded-xl border-primary/30 text-primary hover:bg-primary/10 w-full md:w-auto"
+            >
+              <Share2 className="h-4 w-4 mr-2" />
+              Share
+            </Button>
+          </div>
+          {/* WhatsApp CTA button: below Share on mobile, beside on desktop */}
           {campaign.charity.phone && (
-            <CampaignWhatsAppCTA
-              phone={campaign.charity.phone}
-              campaignTitle={campaign.title}
-            />
+            <div className="flex-1 md:flex-initial">
+              <CampaignWhatsAppCTA
+                phone={campaign.charity.phone}
+                campaignTitle={campaign.title}
+              />
+            </div>
           )}
         </div>
       </div>
