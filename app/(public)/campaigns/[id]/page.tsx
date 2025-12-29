@@ -127,7 +127,7 @@ export default function PublicCampaignDetailPage() {
     <>
       {!session && <Header />}
       <div className="p-6">
-        <div className={`max-w-6xl mx-auto ${!session ? "mt-20" : ""}`}>
+        <div className={`max-w-6xl mx-auto`}>
           <CampaignDetailHeader
             campaign={campaign}
             status={status}
