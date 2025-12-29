@@ -30,13 +30,20 @@ import {
 /* =====================
    Types
 ===================== */
-interface Account {
+interface AccountData {
   id: number;
   name: string;
   email: string;
   phone: string | null;
   city: string | null;
   address: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface AccountResponse {
+  success: boolean;
+  data: AccountData;
 }
 
 interface FormState {
@@ -53,25 +60,32 @@ interface FormState {
 /* =====================
    Page
 ===================== */
-export default function PatientAccountPage() {
-  const [account, setAccount] = useState<Account | null>(null);
+export default function CharityAccountPage() {
+  const [account, setAccount] = useState<AccountData | null>(null);
   const [form, setForm] = useState<FormState | null>(null);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  const loadAccount = async () => {
+    try {
+      const res = await axios.get<AccountResponse>("/api/charity/account");
+      if (res.data.success) {
+        setAccount(res.data.data);
+        setForm({
+          name: res.data.data.name,
+          email: res.data.data.email,
+          phoneDigits: res.data.data.phone?.replace("+961", "") ?? "",
+          city: res.data.data.city || "",
+          address: res.data.data.address || "",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to load account:", error);
+    }
+  };
+
   useEffect(() => {
-    const load = async () => {
-      const res = await axios.get<Account>("/api/patient/account");
-      setAccount(res.data);
-      setForm({
-        name: res.data.name,
-        email: res.data.email,
-        phoneDigits: res.data.phone?.replace("+961", "") ?? "",
-        city: res.data.city ?? "",
-        address: res.data.address ?? "",
-      });
-    };
-    load();
+    loadAccount();
   }, []);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -86,6 +100,7 @@ export default function PatientAccountPage() {
       setForm({ ...form, phoneDigits: digits });
     }
   };
+
 
   const handleSave = async () => {
     if (!form) return;
@@ -102,7 +117,7 @@ export default function PatientAccountPage() {
 
     try {
       setSaving(true);
-      const response = await axios.patch<Account>("/api/patient/account", {
+      const response = await axios.patch("/api/charity/account", {
         name: form.name,
         email: form.email,
         phone: `+961${form.phoneDigits}`,
@@ -114,19 +129,24 @@ export default function PatientAccountPage() {
         }),
       });
 
-      // Update the account state with the response data
-      setAccount(response.data);
-
-      // Update the form state to match the updated data
-      setForm({
-        name: response.data.name,
-        email: response.data.email,
-        phoneDigits: response.data.phone?.replace("+961", "") ?? "",
-        city: response.data.city ?? "",
-        address: response.data.address ?? "",
-      });
-
-      setOpen(false);
+      if (response.data.success) {
+        // Update the account state with the returned data
+        setAccount(response.data.data);
+        // Update form state with new data (except password fields)
+        setForm({
+          name: response.data.data.name,
+          email: response.data.data.email,
+          phoneDigits: response.data.data.phone?.replace("+961", "") ?? "",
+          city: response.data.data.city || "",
+          address: response.data.data.address || "",
+        });
+        setOpen(false);
+      } else {
+        alert(response.data.error || "Failed to update account");
+      }
+    } catch (error: any) {
+      console.error("Error updating account:", error);
+      alert(error.response?.data?.error || "Failed to update account");
     } finally {
       setSaving(false);
     }
@@ -227,7 +247,7 @@ export default function PatientAccountPage() {
                   Edit Account Information
                 </h2>
                 <p className="text-sm italic text-gray-600">
-                  Make changes carefully , they apply immediately
+                  Make changes carefully, they apply immediately
                 </p>
               </div>
             </div>
@@ -274,7 +294,7 @@ export default function PatientAccountPage() {
 
             <Section title="Security" icon={Lock} color="orange">
               <p className="text-sm italic text-gray-500 mb-4">
-                Leave empty if you don’t want to change your password
+                Leave empty if you don't want to change your password
               </p>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -290,10 +310,17 @@ export default function PatientAccountPage() {
 
           {/* FOOTER */}
           <div className="px-6 py-4 border-t bg-gray-50 flex justify-end gap-3">
-            <Button variant="outline" onClick={() => setOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setOpen(false)}
+              disabled={saving}
+            >
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={saving}>
+            <Button
+              onClick={handleSave}
+              disabled={saving}
+            >
               {saving ? "Saving..." : "Save Changes"}
             </Button>
           </div>
@@ -382,3 +409,4 @@ function Section({
     </div>
   );
 }
+

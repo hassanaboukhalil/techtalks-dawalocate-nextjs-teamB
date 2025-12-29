@@ -28,6 +28,14 @@ export default function PublicCampaignDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Function to get the back URL based on user type
+  const getBackUrl = () => {
+    if (session?.user?.userType === "pharmacy") {
+      return "/pharmacy/campaigns";
+    }
+    return "/campaigns";
+  };
+
   useEffect(() => {
     if (campaignId) {
       fetchCampaign();
