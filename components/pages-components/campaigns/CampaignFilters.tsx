@@ -67,7 +67,6 @@ export default function CampaignFilters({
               onChange={onSearchMedicineChange}
               onSelect={(medicine) => {
                 onSearchMedicineChange(medicine.name);
-                onSearch();
               }}
               placeholder="Search by medicine..."
             />
@@ -82,7 +81,6 @@ export default function CampaignFilters({
               onChange={onSearchCharityChange}
               onSelect={(charity) => {
                 onSearchCharityChange(charity.name);
-                onSearch();
               }}
               placeholder="Search by charity name..."
             />
