@@ -49,6 +49,7 @@ export default function PharmacyCampaignsPage() {
       await fetchCampaigns();
     };
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter]);
 
   const fetchMedicines = async () => {
@@ -112,6 +113,16 @@ export default function PharmacyCampaignsPage() {
     fetchCampaigns();
   };
 
+  const handleMedicineSelect = (medicineName: string) => {
+    setSearchMedicine(medicineName);
+    fetchCampaigns(medicineName, searchCharity, statusFilter);
+  };
+
+  const handleCharitySelect = (charityName: string) => {
+    setSearchCharity(charityName);
+    fetchCampaigns(searchMedicine, charityName, statusFilter);
+  };
+
   const handleReturnToAll = () => {
     setSearchMedicine("");
     setSearchCharity("");
@@ -152,6 +163,8 @@ export default function PharmacyCampaignsPage() {
         onSearchCharityChange={setSearchCharity}
         onStatusFilterChange={setStatusFilter}
         onSearch={handleSearch}
+        onMedicineSelect={handleMedicineSelect}
+        onCharitySelect={handleCharitySelect}
         onReturnToAll={handleReturnToAll}
         showReturnButton={hasFilters}
         variant="pharmacy"
