@@ -42,10 +42,17 @@ export function MedicineAutocomplete({
 
   // Show all medicines when search term is empty, filter when user types
   const filteredMedicines = searchTerm.trim()
-    ? medicines.filter((medicine) =>
-        medicine.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (medicine.genericName?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
-        (medicine.synonyms?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false)
+    ? medicines.filter(
+        (medicine) =>
+          medicine.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (medicine.genericName
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ??
+            false) ||
+          (medicine.synonyms
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ??
+            false)
       )
     : medicines; // Show all medicines when search term is empty
 
@@ -123,7 +130,7 @@ export function MedicineAutocomplete({
       {isOpen && (
         <>
           {filteredMedicines.length > 0 ? (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-10 max-h-96 overflow-y-auto">
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-50 max-h-96 overflow-y-auto">
               {filteredMedicines.map((medicine) => (
                 <button
                   key={medicine.id}
@@ -133,7 +140,9 @@ export function MedicineAutocomplete({
                   <div className="flex-1">
                     <div className="font-medium text-sm">{medicine.name}</div>
                     {medicine.genericName && (
-                      <div className="text-xs text-gray-500">{medicine.genericName}</div>
+                      <div className="text-xs text-gray-500">
+                        {medicine.genericName}
+                      </div>
                     )}
                     {medicine.strength && (
                       <div className="text-xs text-gray-400">
