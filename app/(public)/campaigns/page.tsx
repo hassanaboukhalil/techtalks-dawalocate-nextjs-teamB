@@ -76,16 +76,24 @@ export default function PublicCampaignsPage() {
     }
   };
 
-  const fetchCampaigns = async () => {
+  const fetchCampaigns = async (
+    medicine?: string,
+    charity?: string,
+    status?: StatusFilter
+  ) => {
     setLoading(true);
     setError(null);
 
     try {
       const params = new URLSearchParams();
-      params.append("status", statusFilter);
+      const statusValue = status ?? statusFilter;
+      const medicineValue = medicine ?? searchMedicine;
+      const charityValue = charity ?? searchCharity;
+
+      params.append("status", statusValue);
       params.append("limit", "50");
-      if (searchMedicine) params.append("medicine", searchMedicine);
-      if (searchCharity) params.append("charity", searchCharity);
+      if (medicineValue) params.append("medicine", medicineValue);
+      if (charityValue) params.append("charity", charityValue);
 
       const response = await axios.get(
         `/api/global/campaigns?${params.toString()}`
@@ -111,6 +119,8 @@ export default function PublicCampaignsPage() {
     setSearchMedicine("");
     setSearchCharity("");
     setStatusFilter("all");
+    // Fetch with empty filters to show all results
+    fetchCampaigns("", "", "all");
   };
 
   const handleCardClick = (campaignId: number) => {
