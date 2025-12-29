@@ -97,20 +97,6 @@ export default function CampaignFilters({
         </Button>
       </div>
 
-      {/* Return to All Campaigns Button */}
-      {showReturnButton && (
-        <div className="flex justify-end">
-          <Button
-            onClick={onReturnToAll}
-            variant="outline"
-            className="h-9 px-4 rounded-lg border-gray-300 hover:bg-gray-50 text-sm"
-          >
-            <RotateCcw className="h-4 w-4 mr-2" />
-            Return to All Campaigns
-          </Button>
-        </div>
-      )}
-
       {/* Filter Tabs */}
       <div className="flex items-center gap-2 border-b border-gray-200 overflow-x-auto">
         <Filter className="h-5 w-5 text-gray-400 mr-2" />
