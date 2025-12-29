@@ -144,18 +144,18 @@ export default function PharmacyCampaignDetailPage() {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            <CampaignCharityInfo charity={campaign.charity} />
+            <CampaignTimeline
+              startDate={campaign.startDate}
+              endDate={campaign.endDate}
+            />
+            <CampaignTargetAreas targetAreas={campaign.targetAreas} />
             {campaign.charity.phone && (
               <CampaignWhatsAppCTA
                 phone={campaign.charity.phone}
                 campaignTitle={campaign.title}
               />
             )}
-            <CampaignTimeline
-              startDate={campaign.startDate}
-              endDate={campaign.endDate}
-            />
-            <CampaignTargetAreas targetAreas={campaign.targetAreas} />
-            <CampaignCharityInfo charity={campaign.charity} />
           </div>
         </div>
       </div>
