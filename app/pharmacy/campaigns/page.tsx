@@ -14,10 +14,28 @@ import {
   getFilterCount,
 } from "@/lib/utils/campaignHelpers";
 
+interface Medicine {
+  id: number;
+  name: string;
+  genericName?: string;
+  strength?: string;
+  form?: string;
+}
+
+interface Charity {
+  id: number;
+  name: string;
+  city?: string | null;
+  phone?: string | null;
+  email: string;
+}
+
 export default function PharmacyCampaignsPage() {
   const router = useRouter();
 
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [medicines, setMedicines] = useState<Medicine[]>([]);
+  const [charities, setCharities] = useState<Charity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
@@ -26,8 +44,34 @@ export default function PharmacyCampaignsPage() {
   const [totalCount, setTotalCount] = useState(0);
 
   useEffect(() => {
-    fetchCampaigns();
+    const loadData = async () => {
+      await Promise.all([fetchMedicines(), fetchCharities()]);
+      await fetchCampaigns();
+    };
+    loadData();
   }, [statusFilter]);
+
+  const fetchMedicines = async () => {
+    try {
+      const response = await axios.get("/api/global/medicines");
+      if (response.data.success) {
+        setMedicines(response.data.data || []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch medicines:", err);
+    }
+  };
+
+  const fetchCharities = async () => {
+    try {
+      const response = await axios.get("/api/global/charities");
+      if (response.data.success) {
+        setCharities(response.data.data || []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch charities:", err);
+    }
+  };
 
   const fetchCampaigns = async () => {
     setLoading(true);
@@ -88,6 +132,8 @@ export default function PharmacyCampaignsPage() {
       )}
 
       <CampaignFilters
+        medicines={medicines}
+        charities={charities}
         searchMedicine={searchMedicine}
         searchCharity={searchCharity}
         statusFilter={statusFilter}
