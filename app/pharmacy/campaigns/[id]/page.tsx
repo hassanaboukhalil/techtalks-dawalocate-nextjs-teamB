@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { useSession } from "next-auth/react";
 import axios from "axios";
 import { Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,25 +15,15 @@ import CampaignTimeline from "@/components/pages-components/campaigns/detail/Cam
 import CampaignTargetAreas from "@/components/pages-components/campaigns/detail/CampaignTargetAreas";
 import CampaignCharityInfo from "@/components/pages-components/campaigns/detail/CampaignCharityInfo";
 import { Campaign, getCampaignStatus } from "@/lib/utils/campaignHelpers";
-import Header from "@/components/layout/Header";
 
-export default function PublicCampaignDetailPage() {
+export default function PharmacyCampaignDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const { data: session } = useSession();
   const campaignId = params.id as string;
 
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Function to get the back URL based on user type
-  const getBackUrl = () => {
-    if (session?.user?.userType === "pharmacy") {
-      return "/pharmacy/campaigns";
-    }
-    return "/campaigns";
-  };
 
   useEffect(() => {
     if (campaignId) {
@@ -112,7 +101,7 @@ export default function PublicCampaignDetailPage() {
                   Try Again
                 </Button>
                 <Button
-                  onClick={() => router.push("/campaigns")}
+                  onClick={() => router.push("/pharmacy/campaigns")}
                   variant="outline"
                 >
                   Back to Campaigns
@@ -132,43 +121,38 @@ export default function PublicCampaignDetailPage() {
   const status = getCampaignStatus(campaign);
 
   return (
-    <>
-      {!session && <Header />}
-      <div className="p-6">
-        <div className={`max-w-6xl mx-auto`}>
-          <CampaignDetailHeader
-            campaign={campaign}
-            status={status}
-            onBack={() => router.push("/campaigns")}
-            onShare={handleShare}
-          />
+    <div className="p-6">
+      <div className="max-w-6xl mx-auto">
+        <CampaignDetailHeader
+          campaign={campaign}
+          status={status}
+          onBack={() => router.push("/pharmacy/campaigns")}
+          onShare={handleShare}
+        />
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Main Content */}
-            <div className="lg:col-span-2 space-y-6">
-              <CampaignDescription description={campaign.description} />
-              <CampaignMedicines
-                campaignMedicines={campaign.campaignMedicines}
-              />
-              {/* <CampaignContactInfo
-                contactInfo={campaign.contactInfo}
-                charity={campaign.charity}
-                campaignTitle={campaign.title}
-              /> */}
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            <CampaignDescription description={campaign.description} />
+            <CampaignMedicines campaignMedicines={campaign.campaignMedicines} />
+            {/* <CampaignContactInfo
+              contactInfo={campaign.contactInfo}
+              charity={campaign.charity}
+              campaignTitle={campaign.title}
+            /> */}
+          </div>
 
-            {/* Sidebar */}
-            <div className="space-y-6">
-              <CampaignCharityInfo charity={campaign.charity} />
-              <CampaignTimeline
-                startDate={campaign.startDate}
-                endDate={campaign.endDate}
-              />
-              <CampaignTargetAreas targetAreas={campaign.targetAreas} />
-            </div>
+          {/* Sidebar */}
+          <div className="space-y-6">
+            <CampaignCharityInfo charity={campaign.charity} />
+            <CampaignTimeline
+              startDate={campaign.startDate}
+              endDate={campaign.endDate}
+            />
+            <CampaignTargetAreas targetAreas={campaign.targetAreas} />
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
