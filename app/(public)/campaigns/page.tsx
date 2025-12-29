@@ -413,7 +413,7 @@ export default function PublicCampaignsPage() {
 
           {/* Campaigns Grid */}
           {!loading && !error && filteredCampaigns.length > 0 && (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2">
               {filteredCampaigns.map((campaign, index) => {
                 const status = getCampaignStatus(campaign);
                 const daysRemaining = getDaysRemaining(campaign.endDate);
@@ -421,45 +421,57 @@ export default function PublicCampaignsPage() {
                 return (
                   <Card
                     key={campaign.id}
-                    className="rounded-xl border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer animate-scale-in overflow-hidden"
+                    className="group relative rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-2xl transition-all duration-500 ease-out overflow-hidden cursor-pointer animate-scale-in"
                     style={{ animationDelay: `${index * 50}ms` }}
                     onClick={() => router.push(`/campaigns/${campaign.id}`)}
                   >
-                    {/* Campaign Header - Clean Modern Design */}
-                    <div className="bg-gradient-to-br from-blue-50 to-teal-50 p-6 border-b-2 border-primary/10">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="bg-primary/10 rounded-full p-2.5">
-                          <Heart className="h-5 w-5 text-primary" />
-                        </div>
-                        {getStatusBadge(status)}
+                    {/* Status Badge - Top Right Corner */}
+                    <div className="absolute top-3 right-3 z-10">
+                      {getStatusBadge(status)}
+                    </div>
+
+                    {/* Card Header with Gradient Background */}
+                    <div className="relative bg-gradient-to-br from-primary/5 via-primary/3 to-secondary/5 p-4 pb-5 border-b border-gray-100">
+                      {/* Heart Icon - Top Left */}
+                      <div className="absolute top-2.5 left-2.5 bg-white/80 backdrop-blur-sm rounded-full p-1.5 shadow-sm group-hover:bg-white transition-colors">
+                        <Heart className="h-4 w-4 text-primary" />
                       </div>
-                      <h3 className="font-bold text-xl line-clamp-2 mb-2 text-gray-900">
+
+                      {/* Campaign Title */}
+                      <h3 className="font-bold text-xl leading-tight text-gray-900 mt-5 mb-1.5 line-clamp-2 group-hover:text-primary transition-colors">
                         {campaign.title}
                       </h3>
-                      <div className="flex items-center gap-2 text-gray-600 text-sm">
-                        <Building2 className="h-4 w-4 text-primary" />
-                        <span className="font-medium">
+
+                      {/* Charity Name */}
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <div className="bg-white/60 backdrop-blur-sm rounded-lg p-1">
+                          <Building2 className="h-3.5 w-3.5 text-primary" />
+                        </div>
+                        <span className="text-sm font-semibold">
                           {campaign.charity.name}
                         </span>
                       </div>
                     </div>
 
-                    <div className="p-6 space-y-4">
+                    {/* Card Body */}
+                    <div className="p-4 space-y-3">
                       {/* Description */}
-                      <p className="text-sm text-gray-600 line-clamp-3">
+                      <p className="text-sm text-gray-600 leading-normal line-clamp-2">
                         {campaign.description}
                       </p>
 
-                      {/* Details */}
-                      <div className="space-y-3 pt-2 border-t">
+                      {/* Key Information Grid */}
+                      <div className="grid grid-cols-1 gap-2 pt-1.5 border-t border-gray-100">
                         {/* Target Areas */}
                         <div className="flex items-start gap-2">
-                          <MapPin className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                          <div className="bg-blue-50 rounded-lg p-1 flex-shrink-0">
+                            <MapPin className="h-4 w-4 text-blue-600" />
+                          </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-xs font-medium text-gray-500 uppercase">
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-0.5">
                               Target Areas
                             </p>
-                            <p className="text-sm text-gray-900 truncate">
+                            <p className="text-sm font-medium text-gray-900 leading-tight">
                               {campaign.targetAreas}
                             </p>
                           </div>
@@ -467,21 +479,25 @@ export default function PublicCampaignsPage() {
 
                         {/* Campaign Duration */}
                         <div className="flex items-start gap-2">
-                          <Calendar className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                          <div className="bg-purple-50 rounded-lg p-1 flex-shrink-0">
+                            <Calendar className="h-4 w-4 text-purple-600" />
+                          </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-xs font-medium text-gray-500 uppercase">
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-0.5">
                               Duration
                             </p>
-                            <p className="text-sm text-gray-900">
+                            <p className="text-sm font-medium text-gray-900">
                               {formatDate(campaign.startDate)}
                               {campaign.endDate &&
                                 ` - ${formatDate(campaign.endDate)}`}
                             </p>
                             {daysRemaining !== null && daysRemaining > 0 && (
-                              <p className="text-xs text-orange-600 font-medium mt-1">
-                                {daysRemaining} day
-                                {daysRemaining !== 1 ? "s" : ""} remaining
-                              </p>
+                              <div className="mt-1 inline-flex items-center gap-1 px-2 py-0.5 bg-orange-50 border border-orange-200 rounded-full">
+                                <Clock className="h-3 w-3 text-orange-600" />
+                                <span className="text-xs font-semibold text-orange-700">
+                                  {daysRemaining} day{daysRemaining !== 1 ? "s" : ""} left
+                                </span>
+                              </div>
                             )}
                           </div>
                         </div>
@@ -490,27 +506,27 @@ export default function PublicCampaignsPage() {
                         {campaign.campaignMedicines &&
                           campaign.campaignMedicines.length > 0 && (
                             <div className="flex items-start gap-2">
-                              <Package className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                              <div className="bg-emerald-50 rounded-lg p-1 flex-shrink-0">
+                                <Package className="h-4 w-4 text-emerald-600" />
+                              </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-xs font-medium text-gray-500 uppercase mb-1">
-                                  Medicines ({campaign.campaignMedicines.length}
-                                  )
+                                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+                                  Medicines ({campaign.campaignMedicines.length})
                                 </p>
-                                <div className="flex flex-wrap gap-1">
+                                <div className="flex flex-wrap gap-1.5">
                                   {campaign.campaignMedicines
                                     .slice(0, 2)
                                     .map((cm) => (
                                       <span
                                         key={cm.id}
-                                        className="inline-block px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs font-medium border border-blue-200"
+                                        className="inline-flex items-center px-2 py-0.5 bg-blue-50 text-blue-700 rounded-lg text-xs font-semibold border border-blue-100 hover:bg-blue-100 transition-colors"
                                       >
                                         {cm.medicine.name}
                                       </span>
                                     ))}
                                   {campaign.campaignMedicines.length > 2 && (
-                                    <span className="inline-block px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium">
-                                      +{campaign.campaignMedicines.length - 2}{" "}
-                                      more
+                                    <span className="inline-flex items-center px-2 py-0.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold border border-gray-200">
+                                      +{campaign.campaignMedicines.length - 2} more
                                     </span>
                                   )}
                                 </div>
@@ -519,37 +535,45 @@ export default function PublicCampaignsPage() {
                           )}
                       </div>
 
-                      {/* Contact Information */}
-                      <div className="bg-gray-50 rounded-lg p-3 space-y-2">
-                        <p className="text-xs font-semibold text-gray-700 uppercase">
-                          Contact
-                        </p>
-                        {campaign.charity.phone && (
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <Phone className="h-3 w-3 text-gray-400" />
-                            <span>{campaign.charity.phone}</span>
+                      {/* Contact Information - Compact Design */}
+                      <div className="bg-gradient-to-r from-gray-50 to-gray-50/50 rounded-xl p-2.5 border border-gray-100">
+                        <div className="flex items-center justify-between gap-2">
+                          {campaign.charity.phone && (
+                            <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                              <div className="bg-white rounded-lg p-1 shadow-sm">
+                                <Phone className="h-3.5 w-3.5 text-gray-500" />
+                              </div>
+                              <span className="text-xs font-medium text-gray-700 truncate">
+                                {campaign.charity.phone}
+                              </span>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                            <div className="bg-white rounded-lg p-1 shadow-sm">
+                              <Mail className="h-3.5 w-3.5 text-gray-500" />
+                            </div>
+                            <span className="text-xs font-medium text-gray-700 truncate">
+                              {campaign.charity.email}
+                            </span>
                           </div>
-                        )}
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <Mail className="h-3 w-3 text-gray-400" />
-                          <span className="truncate">
-                            {campaign.charity.email}
-                          </span>
                         </div>
                       </div>
 
-                      {/* Action Button */}
+                      {/* Action Button - Enhanced Design */}
                       <Button
-                        className="w-full rounded-lg bg-primary hover:bg-secondary group"
+                        className="w-full rounded-xl bg-primary hover:bg-primary/90 shadow-md hover:shadow-lg text-white font-semibold py-2 group-hover:scale-[1.02] transition-all duration-300 border-0"
                         onClick={(e) => {
                           e.stopPropagation();
                           router.push(`/campaigns/${campaign.id}`);
                         }}
                       >
-                        View Details
+                        <span>View Full Details</span>
                         <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
                       </Button>
                     </div>
+
+                    {/* Hover Effect Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:to-transparent transition-all duration-500 pointer-events-none rounded-2xl" />
                   </Card>
                 );
               })}

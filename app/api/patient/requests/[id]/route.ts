@@ -140,11 +140,11 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
 
     // Update the request
-    const updateData: any = {
-      medicine: {
-        connect: { id: newMedicine.id }
-      },
-      quantity: medicine.quantity || 1,
+    const updateData: {
+      medicineId: number;
+      city?: string;
+    } = {
+      medicineId: newMedicine.id,
     };
 
     // Allow updating city if provided
@@ -187,6 +187,103 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     console.error("[PATIENT_REQUEST_PUT] Error details:", errorMessage);
     return NextResponse.json(
       { success: false, error: "Failed to update medicine request", details: errorMessage },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(request: NextRequest, { params }: RouteParams) {
+  try {
+    // Get authenticated user
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized", details: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    // Verify user type is patient
+    if (session.user.userType !== "patient") {
+      return NextResponse.json(
+        { success: false, error: "Forbidden", details: "Forbidden" },
+        { status: 403 }
+      );
+    }
+
+    // Get request ID from params
+    const resolvedParams = await Promise.resolve(params);
+    const requestId = resolvedParams.id;
+    if (!requestId || isNaN(Number(requestId))) {
+      return NextResponse.json(
+        { success: false, error: "Invalid request ID" },
+        { status: 400 }
+      );
+    }
+
+    // Parse request body
+    const body = await request.json();
+    const { status } = body;
+
+    // Validate status
+    if (!status || !["OPEN", "IN_PROGRESS", "FULFILLED"].includes(status)) {
+      return NextResponse.json(
+        { success: false, error: "Invalid status. Must be OPEN, IN_PROGRESS, or FULFILLED" },
+        { status: 400 }
+      );
+    }
+
+    const userId = Number(session.user.id);
+    const requestIdNum = Number(requestId);
+
+    // Find the existing request
+    const existingRequest = await db.donationRequest.findUnique({
+      where: { id: requestIdNum },
+    });
+
+    if (!existingRequest) {
+      return NextResponse.json(
+        { success: false, error: "Request not found" },
+        { status: 404 }
+      );
+    }
+
+    // Check ownership
+    if (existingRequest.userId !== userId) {
+      return NextResponse.json(
+        { success: false, error: "You can only update your own requests", details: "You can only update your own requests" },
+        { status: 403 }
+      );
+    }
+
+    // Update the status
+    const updatedRequest = await db.donationRequest.update({
+      where: { id: requestIdNum },
+      data: { status },
+      include: {
+        medicine: {
+          select: {
+            id: true,
+            name: true,
+            genericName: true,
+            strength: true,
+            form: true,
+          },
+        },
+      },
+    });
+
+    return NextResponse.json(
+      { success: true, data: updatedRequest },
+      { status: 200 }
+    );
+
+  } catch (error) {
+    console.error("[PATIENT_REQUEST_PATCH]", error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return NextResponse.json(
+      { success: false, error: "Failed to update request status", details: errorMessage },
       { status: 500 }
     );
   }

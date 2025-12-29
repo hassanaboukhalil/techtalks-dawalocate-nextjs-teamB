@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import axios from "axios";
 import {
   ArrowLeft,
@@ -73,11 +74,20 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
 export default function CampaignDetailPage() {
   const router = useRouter();
   const params = useParams();
+  const { data: session } = useSession();
   const campaignId = params.id as string;
 
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Function to get the back URL based on user type
+  const getBackUrl = () => {
+    if (session?.user?.userType === "pharmacy") {
+      return "/pharmacy/campaigns";
+    }
+    return "/campaigns";
+  };
 
   useEffect(() => {
     if (campaignId) {
@@ -251,7 +261,7 @@ export default function CampaignDetailPage() {
                     Try Again
                   </Button>
                   <Button
-                    onClick={() => router.push("/campaigns")}
+                    onClick={() => router.push(getBackUrl())}
                     variant="outline"
                   >
                     Back to Campaigns
@@ -283,7 +293,7 @@ export default function CampaignDetailPage() {
           <div className="mb-8 animate-slide-up">
             <Button
               variant="outline"
-              onClick={() => router.push("/campaigns")}
+              onClick={() => router.push(getBackUrl())}
               className="mb-6 border-primary/30 text-primary hover:bg-primary/10 rounded-xl"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />

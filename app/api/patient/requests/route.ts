@@ -100,18 +100,11 @@ export async function POST(request: NextRequest) {
 
     const userId = Number(session.user.id);
 
-    // Get user's city for the request
+    // Get user's city for fallback
     const user = await db.user.findUnique({
       where: { id: userId },
       select: { city: true },
     });
-
-    if (!user?.city) {
-      return NextResponse.json(
-        { success: false, error: "User city is required to create requests", details: "User city is required to create requests" },
-        { status: 400 }
-      );
-    }
 
     // Create medicine requests using transaction
     const createdRequests = await db.$transaction(async (tx) => {
@@ -146,13 +139,21 @@ export async function POST(request: NextRequest) {
           throw new Error(`You already have a pending request for "${medicine.name}"`);
         }
 
+        // Determine city: use medicine.city if provided, otherwise fall back to user.city
+        const requestCity = (medicine.city && medicine.city.trim()) 
+          ? medicine.city.trim() 
+          : (user?.city || null);
+
+        if (!requestCity) {
+          throw new Error("City is required. Please provide a city or update your profile.");
+        }
+
         // Create the request
         const newRequest = await tx.donationRequest.create({
           data: {
             userId,
             medicineId: medicineRecord.id,
-            city: user.city,
-            quantity: medicine.quantity || 1,
+            city: requestCity, // Use the determined city
             status: "OPEN",
           },
           include: {
@@ -176,10 +177,7 @@ export async function POST(request: NextRequest) {
           },
         });
 
-        requests.push({
-          ...newRequest,
-          requestedQuantity: medicine.quantity, // Add requested quantity to response
-        });
+        requests.push(newRequest);
       }
 
       return requests;

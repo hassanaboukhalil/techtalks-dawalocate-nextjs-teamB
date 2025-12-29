@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Edit, Trash2, Pill, MapPin, Calendar, AlertCircle } from "lucide-react";
+import { Plus, Edit, Trash2, Pill, MapPin, Calendar, AlertCircle, CheckCircle2, XCircle, Loader2, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -55,6 +55,8 @@ export default function PatientRequestsPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [editingRequestId, setEditingRequestId] = useState<number | null>(null);
   const [selectedRequestId, setSelectedRequestId] = useState<number | null>(null);
+  const [togglingStatusId, setTogglingStatusId] = useState<number | null>(null);
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "OPEN" | "FULFILLED">("ALL");
 
   // Form states
   const [formData, setFormData] = useState({
@@ -88,6 +90,18 @@ export default function PatientRequestsPage() {
     fetchMedicinesAndCities();
   }, []);
 
+  // Calculate filtered requests and counts
+  const filteredRequests = requests.filter((request) => {
+    if (statusFilter === "ALL") return true;
+    return request.status === statusFilter;
+  });
+
+  const statusCounts = {
+    ALL: requests.length,
+    OPEN: requests.filter((r) => r.status === "OPEN").length,
+    FULFILLED: requests.filter((r) => r.status === "FULFILLED").length,
+  };
+
   // Fetch medicines and cities
   const fetchMedicinesAndCities = async () => {
     try {
@@ -108,7 +122,7 @@ export default function PatientRequestsPage() {
   // Status badge helper
   const getStatusBadge = (status: string) => {
     const styles = {
-      OPEN: "bg-blue-100 text-blue-800 border-blue-200",
+      OPEN: "bg-[#E6F7FB] text-[#094A58] border-[#2699b2]",
       IN_PROGRESS: "bg-yellow-100 text-yellow-800 border-yellow-200",
       FULFILLED: "bg-green-100 text-green-800 border-green-200",
     };
@@ -279,6 +293,42 @@ export default function PatientRequestsPage() {
     }
   };
 
+  // Handle toggle status
+  const handleToggleStatus = async (request: Request) => {
+    const newStatus = request.status === "OPEN" ? "FULFILLED" : "OPEN";
+    
+    setTogglingStatusId(request.id);
+    try {
+      const response = await fetch(`/api/patient/requests/${request.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!response.ok) {
+        const text = await response.text();
+        console.error("Status update failed. Status:", response.status, "Body:", text);
+        setError(`Failed to update status: ${response.status}`);
+        return;
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        await fetchRequests(); // Refresh the list
+        setError(null);
+      } else {
+        setError(data.error || "Failed to update status");
+      }
+    } catch (error) {
+      console.error("Status update error:", error);
+      setError("Network error occurred");
+    } finally {
+      setTogglingStatusId(null);
+    }
+  };
+
   // Reset form when dialogs close
   const resetForm = () => {
     setFormData({ medicine: "", city: "", note: "" });
@@ -287,8 +337,8 @@ export default function PatientRequestsPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <div>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div className="flex-1">
           <h1 className="text-3xl font-bold text-gray-900">My Medicine Requests</h1>
           <p className="text-gray-600 mt-2">
             Manage your medicine requests and track their status
@@ -302,6 +352,69 @@ export default function PatientRequestsPage() {
           New Request
         </Button>
       </div>
+
+      {/* Status Filter - Beautiful Segmented Control */}
+      {requests.length > 0 && (
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <Filter className="h-4 w-4 text-gray-500" />
+            <span className="text-sm font-medium text-gray-700">Filter by status:</span>
+          </div>
+          <div className="inline-flex bg-gray-100 rounded-lg p-1 shadow-sm border border-gray-200">
+            <button
+              onClick={() => setStatusFilter("ALL")}
+              className={`px-4 py-2 rounded-md text-sm font-semibold transition-all duration-200 ${
+                statusFilter === "ALL"
+                  ? "bg-white text-gray-900 shadow-md"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              All
+              <span className={`ml-2 px-1.5 py-0.5 rounded-full text-xs ${
+                statusFilter === "ALL"
+                  ? "bg-blue-100 text-blue-700"
+                  : "bg-gray-200 text-gray-600"
+              }`}>
+                {statusCounts.ALL}
+              </span>
+            </button>
+            <button
+              onClick={() => setStatusFilter("OPEN")}
+              className={`px-4 py-2 rounded-md text-sm font-semibold transition-all duration-200 ${
+                statusFilter === "OPEN"
+                  ? "bg-white text-[#094A58] shadow-md"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              Open
+              <span className={`ml-2 px-1.5 py-0.5 rounded-full text-xs ${
+                statusFilter === "OPEN"
+                  ? "bg-[#E6F7FB] text-[#094A58]"
+                  : "bg-gray-200 text-gray-600"
+              }`}>
+                {statusCounts.OPEN}
+              </span>
+            </button>
+            <button
+              onClick={() => setStatusFilter("FULFILLED")}
+              className={`px-4 py-2 rounded-md text-sm font-semibold transition-all duration-200 ${
+                statusFilter === "FULFILLED"
+                  ? "bg-white text-green-700 shadow-md"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              Fulfilled
+              <span className={`ml-2 px-1.5 py-0.5 rounded-full text-xs ${
+                statusFilter === "FULFILLED"
+                  ? "bg-green-100 text-green-700"
+                  : "bg-gray-200 text-gray-600"
+              }`}>
+                {statusCounts.FULFILLED}
+              </span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
@@ -319,7 +432,7 @@ export default function PatientRequestsPage() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
           <p className="text-gray-600 mt-4">Loading requests...</p>
         </div>
-      ) : requests.length === 0 ? (
+      ) : filteredRequests.length === 0 ? (
         <div className="flex justify-center items-center min-h-96">
           <Card className="text-center py-16 max-w-md w-full relative overflow-hidden">
             {/* Animated background elements */}
@@ -333,35 +446,56 @@ export default function PatientRequestsPage() {
               <div className="flex justify-center mb-6">
                 <div className="relative">
                   <div className="animate-spin-slow absolute inset-0 border-2 border-transparent border-t-blue-300 border-r-blue-300 rounded-full"></div>
-                  <Pill className="h-16 w-16 text-gray-400 animate-bounce relative" />
+                  {statusFilter === "ALL" ? (
+                    <Pill className="h-16 w-16 text-gray-400 animate-bounce relative" />
+                  ) : (
+                    <Filter className="h-16 w-16 text-gray-400 animate-bounce relative" />
+                  )}
                 </div>
               </div>
 
               <h3 className="text-xl font-semibold text-gray-900 mb-2 animate-fade-in">
-                No requests yet
+                {statusFilter === "ALL" 
+                  ? "No requests yet" 
+                  : `No ${statusFilter.toLowerCase()} requests`}
               </h3>
               <p className="text-gray-600 mb-2 animate-fade-in">
-                Your medicine cabinet is feeling lonely...
+                {statusFilter === "ALL"
+                  ? "Your medicine cabinet is feeling lonely..."
+                  : statusFilter === "OPEN"
+                  ? "All your requests have been fulfilled! 🎉"
+                  : "You haven't fulfilled any requests yet."}
               </p>
-              <p className="text-gray-500 mb-8 animate-fade-in text-sm">
-                Let's change that!
-              </p>
-
-              <Button 
-                onClick={() => setIsNewDialogOpen(true)}
-                className="animate-pulse-soft hover:animate-pulse-faster relative overflow-hidden group"
-              >
-                <Plus className="h-4 w-4 mr-2 group-hover:rotate-90 transition-transform" />
-                Create Request
-              </Button>
-
-              <p className="text-xs text-gray-400 mt-6 animate-blink">✨ Click here to get started ✨</p>
+              {statusFilter !== "ALL" && (
+                <Button
+                  onClick={() => setStatusFilter("ALL")}
+                  variant="outline"
+                  className="mt-4 mb-4"
+                >
+                  View All Requests
+                </Button>
+              )}
+              {statusFilter === "ALL" && (
+                <>
+                  <p className="text-gray-500 mb-8 animate-fade-in text-sm">
+                    Let's change that!
+                  </p>
+                  <Button 
+                    onClick={() => setIsNewDialogOpen(true)}
+                    className="animate-pulse-soft hover:animate-pulse-faster relative overflow-hidden group"
+                  >
+                    <Plus className="h-4 w-4 mr-2 group-hover:rotate-90 transition-transform" />
+                    Create Request
+                  </Button>
+                  <p className="text-xs text-gray-400 mt-6 animate-blink">✨ Click here to get started ✨</p>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {requests.map((request) => (
+          {filteredRequests.map((request) => (
             <Card key={request.id} className="hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
@@ -396,30 +530,38 @@ export default function PatientRequestsPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => handleEdit(request)}
-                    disabled={request.status !== "OPEN"}
+                    disabled={request.status !== "OPEN" || togglingStatusId === request.id}
                     className="flex-1"
                   >
                     <Edit className="h-4 w-4 mr-1" />
                     Edit
                   </Button>
                   <Button
-                    variant="outline"
+                    onClick={() => handleToggleStatus(request)}
+                    disabled={togglingStatusId === request.id}
                     size="sm"
-                    onClick={() => {
-                      console.log("Delete button clicked on card, request ID:", request.id, "Type:", typeof request.id);
-                      if (request.id && typeof request.id === 'number' && request.id > 0) {
-                        setSelectedRequestId(request.id);
-                        setIsDeleteDialogOpen(true);
-                      } else {
-                        console.error("Invalid request ID from card:", request.id);
-                        setError("Invalid request selected for deletion");
-                      }
-                    }}
-                    disabled={request.status !== "OPEN"}
-                    className="flex-1 text-red-600 hover:text-red-700"
+                    className={`flex-1 transition-all duration-200 ${
+                      request.status === "OPEN"
+                        ? "bg-primary hover:bg-tertiary text-white shadow-md hover:shadow-lg"
+                        : "bg-green hover:bg-[#1db34a] text-white shadow-md hover:shadow-lg"
+                    }`}
                   >
-                    <Trash2 className="h-4 w-4 mr-1" />
-                    Delete
+                    {togglingStatusId === request.id ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                        Updating...
+                      </>
+                    ) : request.status === "OPEN" ? (
+                      <>
+                        <CheckCircle2 className="h-4 w-4 mr-1" />
+                        Mark Fulfilled
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="h-4 w-4 mr-1" />
+                        Reopen
+                      </>
+                    )}
                   </Button>
                 </div>
               </CardContent>
