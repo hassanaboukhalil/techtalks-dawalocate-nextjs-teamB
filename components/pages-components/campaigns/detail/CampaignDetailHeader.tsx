@@ -57,7 +57,7 @@ export default function CampaignDetailHeader({
           </p>
         </div>
         <div className="flex flex-col gap-2 md:flex-row md:gap-2 md:items-center">
-          <div className="flex-1 md:flex-initial">
+          <div className="w-full md:w-auto">
             <Button
               onClick={onShare}
               variant="outline"
@@ -69,10 +69,11 @@ export default function CampaignDetailHeader({
           </div>
           {/* WhatsApp CTA button: below Share on mobile, beside on desktop */}
           {campaign.charity.phone && (
-            <div className="flex-1 md:flex-initial">
+            <div className="w-full md:w-auto">
               <CampaignWhatsAppCTA
                 phone={campaign.charity.phone}
                 campaignTitle={campaign.title}
+                className="w-full md:w-auto"
               />
             </div>
           )}
