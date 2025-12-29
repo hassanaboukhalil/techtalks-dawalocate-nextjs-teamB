@@ -1,9 +1,28 @@
-import { Package, Building2, Search, RotateCcw, Filter, X } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Package, Building2, Search, RotateCcw, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { MedicineAutocomplete } from "@/components/ui/MedicineAutocomplete";
+import { CharityAutocomplete } from "@/components/ui/CharityAutocomplete";
 import { StatusFilter } from "@/lib/utils/campaignHelpers";
 
+interface Medicine {
+  id: number;
+  name: string;
+  genericName?: string;
+  strength?: string;
+  form?: string;
+}
+
+interface Charity {
+  id: number;
+  name: string;
+  city?: string | null;
+  phone?: string | null;
+  email: string;
+}
+
 interface CampaignFiltersProps {
+  medicines: Medicine[];
+  charities: Charity[];
   searchMedicine: string;
   searchCharity: string;
   statusFilter: StatusFilter;
@@ -18,6 +37,8 @@ interface CampaignFiltersProps {
 }
 
 export default function CampaignFilters({
+  medicines,
+  charities,
   searchMedicine,
   searchCharity,
   statusFilter,
@@ -39,45 +60,32 @@ export default function CampaignFilters({
       <div className="flex flex-col md:flex-row gap-3 items-start md:items-center">
         <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3">
           {/* Medicine Search */}
-          <div className="relative">
-            <Package className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
+          <div className="relative medicine-autocomplete-wrapper">
+            <MedicineAutocomplete
+              medicines={medicines}
               value={searchMedicine}
-              onChange={(e) => onSearchMedicineChange(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && onSearch()}
+              onChange={onSearchMedicineChange}
+              onSelect={(medicine) => {
+                onSearchMedicineChange(medicine.name);
+                onSearch();
+              }}
               placeholder="Search by medicine..."
-              className="pl-10 h-10 text-sm rounded-lg border-gray-300 focus:border-primary focus:ring-primary shadow-sm"
             />
-            {searchMedicine && (
-              <button
-                onClick={() => onSearchMedicineChange("")}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                aria-label="Clear medicine search"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
           </div>
 
           {/* Charity Name Search */}
-          <div className="relative">
-            <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
+          <div className="relative charity-autocomplete-wrapper">
+            <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
+            <CharityAutocomplete
+              charities={charities}
               value={searchCharity}
-              onChange={(e) => onSearchCharityChange(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && onSearch()}
+              onChange={onSearchCharityChange}
+              onSelect={(charity) => {
+                onSearchCharityChange(charity.name);
+                onSearch();
+              }}
               placeholder="Search by charity name..."
-              className="pl-10 h-10 text-sm rounded-lg border-gray-300 focus:border-primary focus:ring-primary shadow-sm"
             />
-            {searchCharity && (
-              <button
-                onClick={() => onSearchCharityChange("")}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                aria-label="Clear charity search"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
           </div>
         </div>
 
