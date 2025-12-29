@@ -142,11 +142,11 @@ export default function PublicCampaignDetailPage() {
               <CampaignMedicines
                 campaignMedicines={campaign.campaignMedicines}
               />
-              <CampaignContactInfo
+              {/* <CampaignContactInfo
                 contactInfo={campaign.contactInfo}
                 charity={campaign.charity}
                 campaignTitle={campaign.title}
-              />
+              /> */}
             </div>
 
             {/* Sidebar */}

@@ -135,11 +135,11 @@ export default function PharmacyCampaignDetailPage() {
           <div className="lg:col-span-2 space-y-6">
             <CampaignDescription description={campaign.description} />
             <CampaignMedicines campaignMedicines={campaign.campaignMedicines} />
-            <CampaignContactInfo
+            {/* <CampaignContactInfo
               contactInfo={campaign.contactInfo}
               charity={campaign.charity}
               campaignTitle={campaign.title}
-            />
+            /> */}
           </div>
 
           {/* Sidebar */}
