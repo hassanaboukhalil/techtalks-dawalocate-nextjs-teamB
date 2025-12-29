@@ -31,6 +31,8 @@ interface CampaignFiltersProps {
   onSearchCharityChange: (value: string) => void;
   onStatusFilterChange: (filter: StatusFilter) => void;
   onSearch: () => void;
+  onMedicineSelect: (medicineName: string) => void;
+  onCharitySelect: (charityName: string) => void;
   onReturnToAll: () => void;
   showReturnButton: boolean;
   variant?: "public" | "pharmacy";
@@ -47,6 +49,8 @@ export default function CampaignFilters({
   onSearchCharityChange,
   onStatusFilterChange,
   onSearch,
+  onMedicineSelect,
+  onCharitySelect,
   onReturnToAll,
   showReturnButton,
   variant = "public",
@@ -66,7 +70,7 @@ export default function CampaignFilters({
               value={searchMedicine}
               onChange={onSearchMedicineChange}
               onSelect={(medicine) => {
-                onSearchMedicineChange(medicine.name);
+                onMedicineSelect(medicine.name);
               }}
               placeholder="Search by medicine..."
             />
@@ -80,20 +84,21 @@ export default function CampaignFilters({
               value={searchCharity}
               onChange={onSearchCharityChange}
               onSelect={(charity) => {
-                onSearchCharityChange(charity.name);
+                onCharitySelect(charity.name);
               }}
               placeholder="Search by charity name..."
             />
           </div>
         </div>
 
-        {/* Search Button */}
+        {/* Reset Button */}
         <Button
-          onClick={onSearch}
-          className="h-10 px-6 rounded-lg bg-primary hover:bg-secondary transition-all duration-200 whitespace-nowrap"
+          onClick={onReturnToAll}
+          variant="outline"
+          className="h-10 px-6 rounded-lg border-gray-300 hover:bg-gray-50 transition-all duration-200 whitespace-nowrap"
         >
-          <Search className="h-4 w-4 mr-2" />
-          Search
+          <RotateCcw className="h-4 w-4 mr-2" />
+          Reset
         </Button>
       </div>
 
