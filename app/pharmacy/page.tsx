@@ -39,7 +39,7 @@ interface PharmacyStats {
   }>;
 }
 
-const COLORS = ["#10b981", "#f59, "#f43f5e"]; 
+const COLORS = ["#10b981", "#f59","#f43f5e"]; 
 
 export default function PharmacyDashboard() {
   const [stats, setStats] = useState<PharmacyStats | null>(null);
@@ -334,8 +334,12 @@ export default function PharmacyDashboard() {
                     </div>
                 ) : (
                     (stats.recentRequests || []).map((req, i) => (
-                        // 🔗 CLICKABLE CARD LINKING TO /requests
-                        <Link href="/pharmacy/requests" key={i} className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl hover:bg-blue-50 hover:border-blue-100 transition-all cursor-pointer group hover:translate-x-1">
+                        // 🔗 CLICKABLE CARD LINKING TO /requests with requestId parameter
+                        <Link 
+                          href={`/pharmacy/requests?requestId=${req.id}`} 
+                          key={i} 
+                          className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl hover:bg-blue-50 hover:border-blue-100 transition-all cursor-pointer group hover:translate-x-1"
+                        >
                              <div>
                                 <p className="text-sm font-bold text-slate-800 group-hover:text-blue-700">{req.medicine.name}</p>
                                 <p className="text-[10px] text-slate-500 flex items-center gap-1">
