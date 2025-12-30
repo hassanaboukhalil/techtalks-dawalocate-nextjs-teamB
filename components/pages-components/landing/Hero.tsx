@@ -58,8 +58,31 @@ const Hero = () => {
             </Button>
           </div>
 
-          {/* Trust Indicators */}
+          {/* Key Benefits */}
           <div className="mt-16 pt-8 border-t border-gray-200">
+            <p className="text-sm text-gray-500 mb-4">Why DawaLocate</p>
+            <div className="flex flex-wrap justify-center lg:justify-start gap-8 sm:gap-12 text-center lg:text-left">
+              <div>
+                <div className="text-2xl font-bold text-primary">Fast</div>
+                <div className="text-sm text-gray-600 mt-1">
+                  Instant search results
+                </div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-primary">Free</div>
+                <div className="text-sm text-gray-600 mt-1">No hidden fees</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-primary">Local</div>
+                <div className="text-sm text-gray-600 mt-1">
+                  Made for Lebanon
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Trust Indicators */}
+          {/* <div className="mt-16 pt-8 border-t border-gray-200">
             <p className="text-sm text-gray-500 mb-4">
               Trusted by the community
             </p>
@@ -77,7 +100,7 @@ const Hero = () => {
                 <div className="text-sm text-gray-600 mt-1">Charities</div>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* Right Column - Image with Floating Cards */}
