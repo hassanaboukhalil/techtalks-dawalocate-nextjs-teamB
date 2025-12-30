@@ -24,12 +24,16 @@ const OurTeam = () => {
               className="flex flex-col items-center text-center group w-full"
             >
               {/* Member Image */}
-              <div className="relative w-40 h-40 mb-4 rounded-full overflow-hidden border-[6px] border-white shadow-lg bg-white">
+              <div className="relative w-40 h-40 mb-4 rounded-full overflow-hidden border-[6px] border-white shadow-lg bg-secondary">
                 <Image
                   src={member.imageUrl}
                   alt={member.name}
                   fill
-                  className="object-cover object-center group-hover:scale-110 transition-transform duration-500"
+                  className={`object-cover group-hover:scale-110 transition-transform duration-500 ${
+                    member.name === "Zainab Atris"
+                      ? "object-[center_15%]"
+                      : "object-center"
+                  }`}
                 />
               </div>
 
