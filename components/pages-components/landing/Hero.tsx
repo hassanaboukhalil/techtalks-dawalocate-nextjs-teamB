@@ -40,7 +40,7 @@ const Hero = () => {
               size="lg"
               className="text-base px-8 py-6 hover:bg-tertiary text-white"
             >
-              <Link href="/register">
+              <Link href="/signup">
                 <Search className="size-5" />
                 Find Medicine Now
               </Link>

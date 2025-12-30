@@ -24,7 +24,7 @@ const CTA = () => {
             size="lg"
             className="text-base px-8 py-6 bg-primary text-white hover:bg-white/90 border-0"
           >
-            <Link href="/register">
+            <Link href="/signup">
               Get Started Free
               <ArrowRight className="size-5" />
             </Link>

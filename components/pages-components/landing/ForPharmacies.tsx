@@ -81,7 +81,7 @@ const ForPharmacies = () => {
               size="lg"
               className="mt-8 bg-primary hover:bg-[#094A58]! text-white"
             >
-              <Link href="/register">Register Your Pharmacy</Link>
+              <Link href="/signup">Register Your Pharmacy</Link>
             </Button>
           </div>
         </div>
