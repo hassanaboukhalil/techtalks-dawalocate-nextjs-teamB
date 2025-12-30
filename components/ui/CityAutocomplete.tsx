@@ -68,6 +68,12 @@ export function CityAutocomplete({
     setSearchTerm("");
   };
 
+  const handleSelectAll = () => {
+    onChange(""); // Empty string represents "All Cities"
+    setIsOpen(false);
+    setSearchTerm("");
+  };
+
   const handleOpen = () => {
     setIsOpen(true);
     setTimeout(() => inputRef.current?.focus(), 0);
@@ -116,6 +122,24 @@ export function CityAutocomplete({
 
             {/* Cities List */}
             <div className="max-h-[300px] overflow-y-auto p-1">
+              {/* All Cities Option */}
+              <button
+                type="button"
+                onClick={handleSelectAll}
+                className={cn(
+                  "flex w-full items-center rounded-sm px-3 py-2 text-sm text-gray-900 hover:bg-primary-hover cursor-pointer transition-colors",
+                  value === "" && "bg-primary-hover"
+                )}
+              >
+                <Check
+                  className={cn(
+                    "mr-2 h-4 w-4",
+                    value === "" ? "opacity-100" : "opacity-0"
+                  )}
+                />
+                All Cities
+              </button>
+
               {filteredCities.length === 0 ? (
                 <div className="px-3 py-6 text-center text-sm text-gray-500">
                   No city found.
