@@ -62,7 +62,7 @@ interface PharmacyStats {
   }>;
 }
 
-const COLORS = ["#10b981", "#f59e0b", "#f43f5e"];
+const COLORS = ["#10b981", "#f59","#f43f5e"]; 
 
 export default function PharmacyDashboard() {
   const [stats, setStats] = useState<PharmacyStats | null>(null);
@@ -501,12 +501,42 @@ export default function PharmacyDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* 1. Patient Requests - CLICKABLE */}
         <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-full">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
-                <HandHeart className="w-5 h-5" />
-              </div>
-              <h3 className="font-bold text-slate-900">Recent Requests</h3>
+            <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-50 rounded-lg text-blue-600"><HandHeart className="w-5 h-5" /></div>
+                    <h3 className="font-bold text-slate-900">Recent Requests</h3>
+                </div>
+                <Link href="/pharmacy/requests" className="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1">
+                    View All <ArrowRight className="w-3 h-3" />
+                </Link>
+            </div>
+            <div className="space-y-3 flex-1">
+                {(stats.recentRequests || []).length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-full text-slate-400 py-6">
+                       <HandHeart className="w-8 h-8 mb-2 opacity-50" />
+                       <p className="text-sm italic">No recent requests.</p>
+                    </div>
+                ) : (
+                    (stats.recentRequests || []).map((req, i) => (
+                        // 🔗 CLICKABLE CARD LINKING TO /requests with requestId parameter
+                        <Link 
+                          href={`/pharmacy/requests?requestId=${req.id}`} 
+                          key={i} 
+                          className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl hover:bg-blue-50 hover:border-blue-100 transition-all cursor-pointer group hover:translate-x-1"
+                        >
+                             <div>
+                                <p className="text-sm font-bold text-slate-800 group-hover:text-blue-700">{req.medicine.name}</p>
+                                <p className="text-[10px] text-slate-500 flex items-center gap-1">
+                                    <User className="w-3 h-3" /> {req.user.name} • <MapPin className="w-3 h-3" /> {req.user.city}
+                                </p>
+                             </div>
+                             <div className="text-right">
+                                <span className="block text-[10px] text-slate-400 mb-1">{new Date(req.createdAt).toLocaleDateString()}</span>
+                                <span className="text-[10px] bg-white border border-slate-200 text-slate-500 px-2 py-0.5 rounded group-hover:border-blue-200 group-hover:text-blue-600 transition-colors">View</span>
+                             </div>
+                        </Link>
+                    ))
+                )}
             </div>
             <Link
               href="/pharmacy/requests"

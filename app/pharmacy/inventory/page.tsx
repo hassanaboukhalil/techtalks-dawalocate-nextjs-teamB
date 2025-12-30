@@ -88,15 +88,64 @@ export default function PharmacyInventoryPage() {
     expiresAt: "",
   });
 
-  // --- 1. URL LISTENER (The Magic Part) ---
+  // --- ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS ---
+  
+  // 1. URL LISTENER
   useEffect(() => {
     const query = searchParams.get("search");
     if (query) {
-      setTableSearch(query); // Auto-fill the table search bar
+      setTableSearch(query);
     }
   }, [searchParams]);
 
-  // --- 2. SESSION CHECKS ---
+  // 2. FETCH MEDICINES
+  useEffect(() => {
+    const fetchMedicines = async () => {
+      try {
+        const response = await axios.get("/api/global");
+        if (response.data.success) {
+          setMedicines(response.data.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch medicines:", error);
+      }
+    };
+    fetchMedicines();
+  }, []);
+
+  // 3. FETCH INVENTORY
+  const fetchInventory = async () => {
+    setFetchingInventory(true);
+    try {
+      const response = await axios.get("/api/pharmacy/inventory");
+      if (response.data.success) {
+        setInventoryItems(response.data.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch inventory:", error);
+    } finally {
+      setFetchingInventory(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchInventory();
+  }, []);
+
+  // 4. CLOSE DROPDOWN WHEN CLICKING OUTSIDE
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // --- NOW CONDITIONAL RETURNS CAN HAPPEN AFTER ALL HOOKS ---
+  
+  // SESSION CHECKS
   if (sessionStatus === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -134,41 +183,6 @@ export default function PharmacyInventoryPage() {
     );
   }
 
-  // --- 3. FETCH DATA ---
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  useEffect(() => {
-    const fetchMedicines = async () => {
-      try {
-        const response = await axios.get("/api/global");
-        if (response.data.success) {
-          setMedicines(response.data.data);
-        }
-      } catch (error) {
-        console.error("Failed to fetch medicines:", error);
-      }
-    };
-    fetchMedicines();
-  }, []);
-
-  const fetchInventory = async () => {
-    setFetchingInventory(true);
-    try {
-      const response = await axios.get("/api/pharmacy/inventory");
-      if (response.data.success) {
-        setInventoryItems(response.data.data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch inventory:", error);
-    } finally {
-      setFetchingInventory(false);
-    }
-  };
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  useEffect(() => {
-    fetchInventory();
-  }, []);
-
   // --- 4. FILTERING LOGIC ---
   
   // A. Filter Main Table (Based on tableSearch)
@@ -189,18 +203,6 @@ export default function PharmacyInventoryPage() {
   });
 
   // --- 5. HANDLERS ---
-  
-  // Close dropdown when clicking outside
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setShowDropdown(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
 
   const handleMedicineSelect = (medicine: Medicine) => {
