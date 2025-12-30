@@ -14,7 +14,7 @@ export default function CharityLayout({
   return (
     <SidebarProvider>
       <Header />
-      <div className="flex min-h-screen w-screen bg-gray-50">
+      <div className="flex min-h-screen w-full bg-gray-50">
         <Sidebar navItems={CHARITY_NAV_ITEMS} />
         <PageContent>{children}</PageContent>
       </div>

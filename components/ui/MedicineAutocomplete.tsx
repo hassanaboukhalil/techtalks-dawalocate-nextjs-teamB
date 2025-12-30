@@ -42,10 +42,17 @@ export function MedicineAutocomplete({
 
   // Show all medicines when search term is empty, filter when user types
   const filteredMedicines = searchTerm.trim()
-    ? medicines.filter((medicine) =>
-        medicine.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (medicine.genericName?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
-        (medicine.synonyms?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false)
+    ? medicines.filter(
+        (medicine) =>
+          medicine.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (medicine.genericName
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ??
+            false) ||
+          (medicine.synonyms
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ??
+            false)
       )
     : medicines; // Show all medicines when search term is empty
 

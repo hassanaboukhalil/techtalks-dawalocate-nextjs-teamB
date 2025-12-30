@@ -15,11 +15,11 @@ export function PageContent({
   return (
     <main
       className={cn(
-        "flex-1 lg:ml-0 overflow-x-hidden pt-16 lg:pt-0",
+        "flex-1 lg:ml-0 overflow-x-hidden pt-16 lg:pt-0 w-full max-w-full",
         className
       )}
     >
-      <div className={cn(contentPadding)}>{children}</div>
+      <div className={cn("w-full max-w-full", contentPadding)}>{children}</div>
     </main>
   );
 }
