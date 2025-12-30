@@ -372,21 +372,21 @@ export default function PharmacyDashboard() {
 
               if (daysLeft <= 30) {
                 // 🔴 0 - 1 Month (CRITICAL)
-                bgColor = "bg-red-50/50";
+                bgColor = "bg-red-50 bg-opacity-50";
                 borderColor = "border-red-100";
                 iconColor = "text-red-500";
                 textColor = "text-red-600";
                 statusText = "Critical";
               } else if (daysLeft <= 90) {
                 // 🟠 1 - 3 Months (WARNING)
-                bgColor = "bg-orange-50/50";
+                bgColor = "bg-orange-50 bg-opacity-50";
                 borderColor = "border-orange-100";
                 iconColor = "text-orange-500";
                 textColor = "text-orange-700";
                 statusText = "Warning";
               } else {
                 // 🔵 3 - 6 Months (NOTICE)
-                bgColor = "bg-blue-50/50";
+                bgColor = "bg-blue-50 bg-opacity-50";
                 borderColor = "border-blue-100";
                 iconColor = "text-blue-500";
                 textColor = "text-blue-700";
@@ -538,49 +538,7 @@ export default function PharmacyDashboard() {
                     ))
                 )}
             </div>
-            <Link
-              href="/pharmacy/requests"
-              className="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1"
-            >
-              View All <ArrowRight className="w-3 h-3" />
-            </Link>
           </div>
-          <div className="space-y-3 flex-1">
-            {(stats.recentRequests || []).length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-slate-400 py-6">
-                <HandHeart className="w-8 h-8 mb-2 opacity-50" />
-                <p className="text-sm italic">No recent requests.</p>
-              </div>
-            ) : (
-              (stats.recentRequests || []).map((req, i) => (
-                // 🔗 CLICKABLE CARD LINKING TO /requests
-                <Link
-                  href="/pharmacy/requests"
-                  key={i}
-                  className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl hover:bg-blue-50 hover:border-blue-100 transition-all cursor-pointer group hover:translate-x-1"
-                >
-                  <div>
-                    <p className="text-sm font-bold text-slate-800 group-hover:text-blue-700">
-                      {req.medicine.name}
-                    </p>
-                    <p className="text-[10px] text-slate-500 flex items-center gap-1">
-                      <User className="w-3 h-3" /> {req.user.name} •{" "}
-                      <MapPin className="w-3 h-3" /> {req.user.city}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <span className="block text-[10px] text-slate-400 mb-1">
-                      {new Date(req.createdAt).toLocaleDateString()}
-                    </span>
-                    <span className="text-[10px] bg-white border border-slate-200 text-slate-500 px-2 py-0.5 rounded group-hover:border-blue-200 group-hover:text-blue-600 transition-colors">
-                      View
-                    </span>
-                  </div>
-                </Link>
-              ))
-            )}
-          </div>
-        </div>
 
         {/* 2. Active Campaigns - CLICKABLE */}
         <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-full">
