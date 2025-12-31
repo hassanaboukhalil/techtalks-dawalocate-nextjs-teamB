@@ -1,9 +1,9 @@
 import { StaticImageData } from "next/image";
-// import hassan_img from "../public/images/landing-page/our-team/hassan-abou-khalil.jpg";
-// import zainab_img from "../public/images/landing-page/our-team/zainab-atris.jpeg";
-// import mhmd_img from "../public/images/landing-page/our-team/mhmd-saleh.jpeg";
-// import fatima_img from "../public/images/landing-page/our-team/fatima-hodroj.jpeg";
-// import hadi_img from "../public/images/landing-page/our-team/hadi-orabi.jpeg";
+// import hassan_img from "../public/images/landing-page/our-team-1/hassan-abou-khalil.jpg";
+// import zainab_img from "../public/images/landing-page/our-team-1/zainab-atris.jpeg";
+// import mhmd_img from "../public/images/landing-page/our-team-1/mhmd-saleh.jpeg";
+// import fatima_img from "../public/images/landing-page/our-team-1/fatima-hodroj.jpeg";
+// import hadi_img from "../public/images/landing-page/our-team-1/hadi-orabi.jpeg";
 import hassan_img from "../public/images/landing-page/our-team/hassan-abou-khalil.png";
 import zainab_img from "../public/images/landing-page/our-team/zainab-atris.png";
 import mhmd_img from "../public/images/landing-page/our-team/mhmd-saleh.png";
