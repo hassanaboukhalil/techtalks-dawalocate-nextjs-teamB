@@ -50,7 +50,7 @@ const OurTeam = () => {
                     {member.name}
                   </h3>
 
-                  <span className="inline-block border-2 bg-tertiary text-white text-xs font-semibold px-4 py-1.5 rounded-full mb-4">
+                  <span className="inline-block border-2 bg-tertiary text-white text-xs font-semibold px-4 py-1.5 rounded-full mb-4 whitespace-nowrap">
                     {member.title}
                   </span>
 
