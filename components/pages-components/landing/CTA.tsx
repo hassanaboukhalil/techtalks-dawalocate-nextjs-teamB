@@ -6,7 +6,7 @@ import Link from "next/link";
 const CTA = () => {
   return (
     <Section
-      className="py-20 bg-gradient-to-br from-primary to-secondary"
+      className="py-30 bg-gradient-to-br from-primary to-secondary"
       id="cta"
     >
       <div className="max-w-4xl mx-auto text-center">
