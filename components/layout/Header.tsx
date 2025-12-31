@@ -11,10 +11,19 @@ const Header = () => {
   const { data: session, status } = useSession();
   const sidebarContext = useSidebarOptional();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isOverTeamSection, setIsOverTeamSection] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
+
+      // Check if we're over the team section
+      const teamSection = document.getElementById("team");
+      if (teamSection) {
+        const rect = teamSection.getBoundingClientRect();
+        // If team section is visible in the viewport (accounting for header height)
+        setIsOverTeamSection(rect.top <= 80 && rect.bottom >= 0);
+      }
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -45,10 +54,16 @@ const Header = () => {
   if (status === "unauthenticated") {
     return (
       <header
-        className={`my-container sections-max-width w-full flex justify-between items-center py-4 fixed top-0 z-50 bg-background/95 backdrop-blur-md transition-all duration-300 ${
-          isScrolled
+        className={`my-container sections-max-width w-full flex justify-between items-center py-4 fixed top-0 z-50 transition-all duration-300 ${
+          isOverTeamSection
+            ? "bg-white shadow-md"
+            : "bg-background/95 backdrop-blur-md"
+        } ${
+          isScrolled && !isOverTeamSection
             ? "shadow-lg border-b border-gray-100"
-            : "border-b border-gray-100"
+            : isScrolled
+              ? "shadow-lg"
+              : "border-b border-gray-100"
         }`}
       >
         <Logo withTitle />
