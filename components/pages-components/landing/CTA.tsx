@@ -6,7 +6,7 @@ import Link from "next/link";
 const CTA = () => {
   return (
     <Section
-      className="py-20 bg-gradient-to-br from-primary to-secondary"
+      className="py-30 bg-gradient-to-br from-primary to-secondary"
       id="cta"
     >
       <div className="max-w-4xl mx-auto text-center">
@@ -24,7 +24,7 @@ const CTA = () => {
             size="lg"
             className="text-base px-8 py-6 bg-primary text-white hover:bg-white/90 border-0"
           >
-            <Link href="/register">
+            <Link href="/signup">
               Get Started Free
               <ArrowRight className="size-5" />
             </Link>
@@ -40,12 +40,12 @@ const CTA = () => {
         </div>
 
         {/* Trust Badge */}
-        <div className="mt-12 pt-8 border-t border-white/20">
-          <p className="text-white/70 text-sm">
+        {/* <div className="mt-12 pt-8 border-t border-white/20">
+          <p className="text-dark/70 text-sm">
             ✓ Free forever &nbsp;•&nbsp; ✓ No credit card required &nbsp;•&nbsp;
             ✓ Verified pharmacies
           </p>
-        </div>
+        </div> */}
       </div>
     </Section>
   );

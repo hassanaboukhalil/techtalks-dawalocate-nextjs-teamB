@@ -1,6 +1,6 @@
 import Section from "@/components/layout/Section";
 import { Button } from "@/components/ui/button";
-import { Search, QrCode, Heart, FileText } from "lucide-react";
+import { Search, QrCode, Heart, Megaphone } from "lucide-react";
 import Link from "next/link";
 
 const patientFeatures = [
@@ -27,10 +27,10 @@ const patientFeatures = [
   },
   {
     id: 4,
-    icon: FileText,
-    title: "Track Your Requests",
+    icon: Megaphone,
+    title: "Browse Campaigns",
     description:
-      "Keep track of your medicine requests and get notified when help is available.",
+      "Discover active charity campaigns for free medicines and emergency support.",
   },
 ];
 
@@ -58,7 +58,7 @@ const ForPatients = () => {
               size="lg"
               className="mt-8 bg-primary hover:bg-[#094A58]! text-white"
             >
-              <Link href="/register">Get Started Free</Link>
+              <Link href="/signup">Register for Free</Link>
             </Button>
           </div>
 

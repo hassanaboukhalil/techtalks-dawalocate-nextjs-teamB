@@ -39,7 +39,7 @@ const faqs = [
     id: 6,
     question: "How do I request a hard-to-find medicine?",
     answer:
-      "Create an account, go to 'My Requests', and submit details about the medicine you need. Pharmacies and charities in your area will be notified and can reach out if they can help.",
+      "Sign up, navigate to 'My Requests', and add the medicine details. Pharmacies, donors, and charities can see your request and contact you directly if they can help.",
   },
 ];
 
