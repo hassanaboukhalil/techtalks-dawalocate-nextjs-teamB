@@ -40,12 +40,12 @@ const CTA = () => {
         </div>
 
         {/* Trust Badge */}
-        <div className="mt-12 pt-8 border-t border-white/20">
-          <p className="text-white/70 text-sm">
+        {/* <div className="mt-12 pt-8 border-t border-white/20">
+          <p className="text-dark/70 text-sm">
             ✓ Free forever &nbsp;•&nbsp; ✓ No credit card required &nbsp;•&nbsp;
             ✓ Verified pharmacies
           </p>
-        </div>
+        </div> */}
       </div>
     </Section>
   );
