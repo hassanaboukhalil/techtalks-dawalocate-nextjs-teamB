@@ -38,7 +38,7 @@ const OurTeam = () => {
                     } ${
                       member.name === "Mohammad Saleh" ||
                       member.name === "Hadi Orabi"
-                        ? "scale-125"
+                        ? "scale-135"
                         : ""
                     }`}
                   />
