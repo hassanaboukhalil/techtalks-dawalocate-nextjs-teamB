@@ -41,8 +41,8 @@ export default function Home() {
         <ForPharmacies />
         <ForCharities />
         {/* <Testimonials /> */}
-        <OurTeam />
         <FAQ />
+        <OurTeam />
         <CTA />
       </main>
       <Footer />
