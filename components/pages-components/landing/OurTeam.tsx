@@ -24,7 +24,7 @@ const OurTeam = () => {
               className="flex flex-col items-center text-center group w-full max-w-[240px]"
             >
               {/* Card Container */}
-              <div className="relative w-full">
+              <div className="relative w-full hover:scale-[1.03] transition-transform duration-300">
                 {/* Member Image - positioned to overlap */}
                 <div className="relative z-10 w-40 h-40 mx-auto rounded-full overflow-hidden border-4 border-white shadow-lg bg-gradient-to-br from-[#2750b8] to-[#af68e3]">
                   <Image
@@ -55,13 +55,13 @@ const OurTeam = () => {
                   </span>
 
                   {/* Social Icons */}
-                  <div className="flex gap-3">
+                  <div className="flex gap-3 bg-tertiary p-2 rounded-full">
                     {member.linkedinUrl && (
                       <a
                         href={member.linkedinUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-primary hover:text-tertiary transition-colors"
+                        className="text-white hover:text-tertiary transition-colors"
                         aria-label={`${member.name}'s LinkedIn`}
                       >
                         <Linkedin className="w-6 h-6" />
