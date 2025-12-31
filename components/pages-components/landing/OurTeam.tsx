@@ -31,21 +31,26 @@ const OurTeam = () => {
                     src={member.imageUrl}
                     alt={member.name}
                     fill
-                    className={`object-cover group-hover:scale-110 transition-transform duration-500 ${
+                    className={`object-cover transition-transform duration-500 ${
                       member.name === "Zainab Atris"
                         ? "object-[center_15%]"
                         : "object-center"
+                    } ${
+                      member.name === "Mohammad Saleh" ||
+                      member.name === "Hadi Orabi"
+                        ? "scale-125"
+                        : ""
                     }`}
                   />
                 </div>
 
                 {/* White Card - behind image */}
-                <div className="bg-white rounded-2xl pt-24 pb-6 px-4 -mt-20 flex flex-col items-center shadow-lg">
+                <div className="bg-card rounded-2xl pt-24 pb-6 px-4 -mt-20 flex flex-col items-center shadow-lg">
                   <h3 className="text-lg font-bold text-gray-800 mb-3">
                     {member.name}
                   </h3>
 
-                  <span className="inline-block border-2 border-primary text-primary text-xs font-semibold px-4 py-1.5 rounded-full mb-4">
+                  <span className="inline-block border-2 bg-tertiary text-white text-xs font-semibold px-4 py-1.5 rounded-full mb-4">
                     {member.title}
                   </span>
 
