@@ -4,62 +4,66 @@ import { Linkedin } from "lucide-react";
 
 const OurTeam = () => {
   return (
-    <section className="bg-background pb-20" id="team">
-      {/* Top Colored Section */}
-      <div className="bg-primary pt-20 pb-32 px-4 text-center">
+    <section className="bg-primary py-20" id="team">
+      {/* Section Header */}
+      <div className="text-center mb-16 px-4">
         <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">
           Meet Our Team
         </h2>
-        <p className="text-primary-foreground/80 text-lg max-w-2xl mx-auto">
+        <p className="text-white/80 text-lg max-w-2xl mx-auto">
           The passionate developers behind DawaLocate
         </p>
       </div>
 
-      {/* Team Grid - Overlapping */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-24">
+      {/* Team Grid */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 justify-items-center">
           {team.map((member, index) => (
             <div
               key={index}
-              className="flex flex-col items-center text-center group w-full"
+              className="flex flex-col items-center text-center group w-full max-w-[240px]"
             >
-              {/* Member Image */}
-              <div className="relative w-40 h-40 mb-4 rounded-full overflow-hidden border-[6px] border-white shadow-lg bg-secondary">
-                <Image
-                  src={member.imageUrl}
-                  alt={member.name}
-                  fill
-                  className={`object-cover group-hover:scale-110 transition-transform duration-500 ${
-                    member.name === "Zainab Atris"
-                      ? "object-[center_15%]"
-                      : "object-center"
-                  }`}
-                />
-              </div>
+              {/* Card Container */}
+              <div className="relative w-full">
+                {/* Member Image - positioned to overlap */}
+                <div className="relative z-10 w-32 h-32 mx-auto rounded-full overflow-hidden border-4 border-white shadow-lg bg-secondary">
+                  <Image
+                    src={member.imageUrl}
+                    alt={member.name}
+                    fill
+                    className={`object-cover group-hover:scale-110 transition-transform duration-500 ${
+                      member.name === "Zainab Atris"
+                        ? "object-[center_15%]"
+                        : "object-center"
+                    }`}
+                  />
+                </div>
 
-              {/* Member Info */}
-              <div className="flex flex-col items-center">
-                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-1">
-                  {member.name}
-                </h3>
-                <p className="text-primary text-xs font-semibold mb-3 uppercase tracking-wide">
-                  {member.title}
-                </p>
+                {/* White Card - behind image */}
+                <div className="bg-white rounded-2xl pt-20 pb-6 px-4 -mt-16 flex flex-col items-center shadow-lg">
+                  <h3 className="text-lg font-bold text-gray-800 mb-3">
+                    {member.name}
+                  </h3>
 
-                {/* Social Icons */}
-                {member.linkedinUrl && (
+                  <span className="inline-block border-2 border-primary text-primary text-xs font-semibold px-4 py-1.5 rounded-full mb-4">
+                    {member.title}
+                  </span>
+
+                  {/* Social Icons */}
                   <div className="flex gap-3">
-                    <a
-                      href={member.linkedinUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-gray-400 hover:text-[#0077b5] transition-colors"
-                      aria-label={`${member.name}'s LinkedIn`}
-                    >
-                      <Linkedin className="w-5 h-5" />
-                    </a>
+                    {member.linkedinUrl && (
+                      <a
+                        href={member.linkedinUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:text-tertiary transition-colors"
+                        aria-label={`${member.name}'s LinkedIn`}
+                      >
+                        <Linkedin className="w-6 h-6" />
+                      </a>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
             </div>
           ))}
