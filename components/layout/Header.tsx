@@ -62,8 +62,8 @@ const Header = () => {
           isScrolled && !isOverTeamSection
             ? "shadow-lg border-b border-gray-100"
             : isScrolled
-              ? "shadow-lg"
-              : "border-b border-gray-100"
+            ? "shadow-lg"
+            : "border-b border-gray-100"
         }`}
       >
         <Logo withTitle />
