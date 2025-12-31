@@ -26,7 +26,7 @@ const OurTeam = () => {
               {/* Card Container */}
               <div className="relative w-full">
                 {/* Member Image - positioned to overlap */}
-                <div className="relative z-10 w-32 h-32 mx-auto rounded-full overflow-hidden border-4 border-white shadow-lg bg-secondary">
+                <div className="relative z-10 w-40 h-40 mx-auto rounded-full overflow-hidden border-4 border-white shadow-lg bg-gradient-to-br from-[#2750b8] to-[#af68e3]">
                   <Image
                     src={member.imageUrl}
                     alt={member.name}
@@ -40,7 +40,7 @@ const OurTeam = () => {
                 </div>
 
                 {/* White Card - behind image */}
-                <div className="bg-white rounded-2xl pt-20 pb-6 px-4 -mt-16 flex flex-col items-center shadow-lg">
+                <div className="bg-white rounded-2xl pt-24 pb-6 px-4 -mt-20 flex flex-col items-center shadow-lg">
                   <h3 className="text-lg font-bold text-gray-800 mb-3">
                     {member.name}
                   </h3>
