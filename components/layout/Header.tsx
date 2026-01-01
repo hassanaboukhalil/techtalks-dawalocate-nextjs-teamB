@@ -11,10 +11,33 @@ const Header = () => {
   const { data: session, status } = useSession();
   const sidebarContext = useSidebarOptional();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isOverDarkSection, setIsOverDarkSection] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
+
+      // Check if we're over the team section or footer
+      const teamSection = document.getElementById("team");
+      const footerSection = document.getElementById("footer");
+
+      let isOverDark = false;
+
+      if (teamSection) {
+        const rect = teamSection.getBoundingClientRect();
+        if (rect.top <= 80 && rect.bottom >= 0) {
+          isOverDark = true;
+        }
+      }
+
+      if (footerSection && !isOverDark) {
+        const rect = footerSection.getBoundingClientRect();
+        if (rect.top <= 80 && rect.bottom >= 0) {
+          isOverDark = true;
+        }
+      }
+
+      setIsOverDarkSection(isOverDark);
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -45,11 +68,11 @@ const Header = () => {
   if (status === "unauthenticated") {
     return (
       <header
-        className={`my-container sections-max-width w-full flex justify-between items-center py-4 fixed top-0 z-50 bg-background/95 backdrop-blur-md transition-all duration-300 ${
-          isScrolled
-            ? "shadow-lg border-b border-gray-100"
-            : "border-b border-gray-100"
-        }`}
+        className={`my-container sections-max-width w-full flex justify-between items-center py-4 fixed top-0 z-50 transition-all duration-300 ${
+          isOverDarkSection
+            ? "bg-white shadow-md"
+            : "bg-background/95 backdrop-blur-md"
+        } ${isScrolled && !isOverDarkSection ? "shadow-md" : ""}`}
       >
         <Logo withTitle />
         <Navbar />

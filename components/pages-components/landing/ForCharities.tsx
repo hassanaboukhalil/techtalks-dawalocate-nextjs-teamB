@@ -56,7 +56,7 @@ const ForCharities = () => {
               size="lg"
               className="mt-8 bg-primary hover:bg-[#094A58]! text-white"
             >
-              <Link href="/register">Start a Campaign</Link>
+              <Link href="/signup">Start a Campaign</Link>
             </Button>
           </div>
 

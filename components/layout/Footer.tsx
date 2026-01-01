@@ -5,7 +5,7 @@ import Logo from "./Logo";
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-900 text-white border-t border-gray-800">
+    <footer className="bg-gray-900 text-white border-t border-gray-800" id="footer">
       <div className="my-container py-16">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
@@ -104,13 +104,13 @@ const Footer = () => {
             </p>
             <div className="flex gap-6 text-sm text-gray-400">
               <Link
-                href="/privacy"
+                href="#"
                 className="hover:text-(--color-primary)! transition-colors"
               >
                 Privacy Policy
               </Link>
               <Link
-                href="/terms"
+                href="#"
                 className="hover:text-(--color-primary)! transition-colors"
               >
                 Terms of Service
