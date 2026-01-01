@@ -10,7 +10,7 @@ import { db } from "@/lib/db";
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // 1. Authenticate user
@@ -49,7 +49,8 @@ export async function GET(
     }
 
     // 3. Validate pharmacy ID
-    const pharmacyId = parseInt(params.id);
+    const { id } = await params;
+    const pharmacyId = parseInt(id);
 
     if (isNaN(pharmacyId) || pharmacyId <= 0) {
       return NextResponse.json(
@@ -184,7 +185,7 @@ export async function GET(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // 1. Authenticate user
@@ -223,7 +224,8 @@ export async function DELETE(
     }
 
     // 3. Validate pharmacy ID
-    const pharmacyId = parseInt(params.id);
+    const { id } = await params;
+    const pharmacyId = parseInt(id);
 
     if (isNaN(pharmacyId) || pharmacyId <= 0) {
       return NextResponse.json(
@@ -331,7 +333,7 @@ export async function DELETE(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // 1. Authenticate user
@@ -370,7 +372,8 @@ export async function PATCH(
     }
 
     // 3. Validate pharmacy ID
-    const pharmacyId = parseInt(params.id);
+    const { id } = await params;
+    const pharmacyId = parseInt(id);
 
     if (isNaN(pharmacyId) || pharmacyId <= 0) {
       return NextResponse.json(
@@ -429,7 +432,16 @@ export async function PATCH(
     } = body;
 
     const validationErrors: string[] = [];
-    const updateData: any = {};
+    const updateData: {
+      name?: string;
+      email?: string;
+      city?: string | null;
+      phone?: string | null;
+      address?: string | null;
+      openingHours?: string | null;
+      hasDelivery?: boolean;
+      status?: "PENDING" | "APPROVED" | "REJECTED";
+    } = {};
 
     // Validate and prepare update data
     if (name !== undefined) {
@@ -513,7 +525,9 @@ export async function PATCH(
         if (typeof openingHours !== "string") {
           validationErrors.push("Opening hours must be a string.");
         } else if (openingHours.trim().length > 100) {
-          validationErrors.push("Opening hours must not exceed 100 characters.");
+          validationErrors.push(
+            "Opening hours must not exceed 100 characters."
+          );
         } else {
           updateData.openingHours = openingHours.trim() || null;
         }
@@ -601,4 +615,3 @@ export async function PATCH(
     );
   }
 }
-
