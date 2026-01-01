@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Link from "next/link";
-import { Eye, EyeOff, Mail, Clock, Check, X } from "lucide-react";
+import { Eye, EyeOff, Clock, Check, X } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { CityAutocomplete } from "@/components/ui/CityAutocomplete";
 import { LEBANON_CITIES } from "@/constants/lebanon-cities";
