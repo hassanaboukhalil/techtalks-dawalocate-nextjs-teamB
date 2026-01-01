@@ -29,7 +29,13 @@ export async function PATCH(
       }
     }
 
-    const updateData: any = { name, email, phone, city, address };
+    const updateData: {
+      name: string;
+      email: string;
+      phone: string | null;
+      city: string | null;
+      address: string | null;
+    } = { name, email, phone, city, address };
 
     if (password && password.trim() !== "") {
       updateData.passwordHash = await bcrypt.hash(password, 10);

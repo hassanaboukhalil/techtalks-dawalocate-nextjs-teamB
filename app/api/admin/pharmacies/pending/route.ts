@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
     };
 
     // 6. Build orderBy clause
-    const orderBy: any = {};
+    const orderBy: Record<string, "asc" | "desc"> = {};
     const validSortFields = ["createdAt", "name", "city"];
     const sortField = validSortFields.includes(sortBy) ? sortBy : "createdAt";
     const order = sortOrder === "desc" ? "desc" : "asc";

@@ -72,7 +72,18 @@ export async function GET(request: NextRequest) {
     }
 
     // 5. Build query filters
-    const where: any = {
+    const where: {
+      userTypeId: number;
+      status?: string;
+      city?: { contains: string; mode: "insensitive" };
+      OR?: Array<{
+        name?: { contains: string; mode: "insensitive" };
+        email?: { contains: string; mode: "insensitive" };
+        city?: { contains: string; mode: "insensitive" };
+        phone?: { contains: string; mode: "insensitive" };
+        address?: { contains: string; mode: "insensitive" };
+      }>;
+    } = {
       userTypeId: pharmacyType.id,
     };
 
@@ -110,8 +121,14 @@ export async function GET(request: NextRequest) {
     }
 
     // 6. Build orderBy clause
-    const orderBy: any = {};
-    const validSortFields = ["createdAt", "name", "city", "status", "updatedAt"];
+    const orderBy: Record<string, "asc" | "desc"> = {};
+    const validSortFields = [
+      "createdAt",
+      "name",
+      "city",
+      "status",
+      "updatedAt",
+    ];
     const sortField = validSortFields.includes(sortBy) ? sortBy : "createdAt";
     const order = sortOrder === "asc" ? "asc" : "desc";
     orderBy[sortField] = order;
@@ -341,4 +358,3 @@ export async function PATCH(request: NextRequest) {
     );
   }
 }
-
