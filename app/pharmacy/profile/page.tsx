@@ -17,7 +17,7 @@ import {
   QuickInfoCard,
   TimeSlot,
   ProfileData,
-} from "@/components/ui/profile";
+} from "@/components/pharmacy/profile";
 import {
   Dialog,
   DialogContent,

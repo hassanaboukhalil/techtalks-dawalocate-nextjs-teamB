@@ -18,7 +18,7 @@ import {
   QuickInfoCard,
   TimeSlot,
   ProfileData,
-} from "@/components/ui/profile";
+} from "@/components/pharmacy/profile";
 import { Button } from "@/components/ui/button";
 import { WhatsAppIcon, getWhatsAppUrl } from "@/lib/utils/campaignHelpers";
 
