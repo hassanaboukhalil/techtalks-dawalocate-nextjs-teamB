@@ -508,7 +508,49 @@ export default function PharmacyDashboard() {
               </div>
               <h3 className="font-bold text-slate-900">Recent Requests</h3>
             </div>
+            <Link
+              href="/pharmacy/requests"
+              className="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1"
+            >
+              View All <ArrowRight className="w-3 h-3" />
+            </Link>
           </div>
+          <div className="space-y-3 flex-1">
+            {(stats.recentRequests || []).length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-slate-400 py-6">
+                <HandHeart className="w-8 h-8 mb-2 opacity-50" />
+                <p className="text-sm italic">No recent requests.</p>
+              </div>
+            ) : (
+              (stats.recentRequests || []).map((req, i) => (
+                // 🔗 CLICKABLE CARD LINKING TO /requests
+                <Link
+                  href="/pharmacy/requests"
+                  key={i}
+                  className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl hover:bg-blue-50 hover:border-blue-100 transition-all cursor-pointer group hover:translate-x-1"
+                >
+                  <div>
+                    <p className="text-sm font-bold text-slate-800 group-hover:text-blue-700">
+                      {req.medicine.name}
+                    </p>
+                    <p className="text-[10px] text-slate-500 flex items-center gap-1">
+                      <User className="w-3 h-3" /> {req.user.name} •{" "}
+                      <MapPin className="w-3 h-3" /> {req.user.city}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <span className="block text-[10px] text-slate-400 mb-1">
+                      {new Date(req.createdAt).toLocaleDateString()}
+                    </span>
+                    <span className="text-[10px] bg-white border border-slate-200 text-slate-500 px-2 py-0.5 rounded group-hover:border-blue-200 group-hover:text-blue-600 transition-colors">
+                      View
+                    </span>
+                  </div>
+                </Link>
+              ))
+            )}
+          </div>
+        </div>
 
         {/* 2. Active Campaigns - CLICKABLE */}
         <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-full">
@@ -519,82 +561,43 @@ export default function PharmacyDashboard() {
               </div>
               <h3 className="font-bold text-slate-900">Active Campaigns</h3>
             </div>
-          ) : (
-            (stats.recentRequests || []).map((req, i) => (
-              // 🔗 CLICKABLE CARD LINKING TO /requests
-              <Link
-                href="/pharmacy/requests"
-                key={i}
-                className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl hover:bg-blue-50 hover:border-blue-100 transition-all cursor-pointer group hover:translate-x-1"
-              >
-                <div>
-                  <p className="text-sm font-bold text-slate-800 group-hover:text-blue-700">
-                    {req.medicine.name}
-                  </p>
-                  <p className="text-[10px] text-slate-500 flex items-center gap-1">
-                    <User className="w-3 h-3" /> {req.user.name} •{" "}
-                    <MapPin className="w-3 h-3" /> {req.user.city}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <span className="block text-[10px] text-slate-400 mb-1">
-                    {new Date(req.createdAt).toLocaleDateString()}
-                  </span>
-                  <span className="text-[10px] bg-white border border-slate-200 text-slate-500 px-2 py-0.5 rounded group-hover:border-blue-200 group-hover:text-blue-600 transition-colors">
-                    View
-                  </span>
-                </div>
-              </Link>
-            ))
-          )}
-        </div>
-      </div>
-
-      {/* 2. Active Campaigns - CLICKABLE */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-full">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-purple-50 rounded-lg text-purple-600">
-              <Megaphone className="w-5 h-5" />
-            </div>
-            <h3 className="font-bold text-slate-900">Active Campaigns</h3>
+            <Link
+              href="/pharmacy/campaigns"
+              className="text-xs font-bold text-purple-600 hover:text-purple-700 hover:underline flex items-center gap-1"
+            >
+              View All <ArrowRight className="w-3 h-3" />
+            </Link>
           </div>
-          <Link
-            href="/pharmacy/campaigns"
-            className="text-xs font-bold text-purple-600 hover:text-purple-700 hover:underline flex items-center gap-1"
-          >
-            View All <ArrowRight className="w-3 h-3" />
-          </Link>
-        </div>
-        <div className="space-y-3 flex-1">
-          {(stats.activeCampaigns || []).length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-slate-400 py-6">
-              <Megaphone className="w-8 h-8 mb-2 opacity-50" />
-              <p className="text-sm italic">No active campaigns.</p>
-            </div>
-          ) : (
-            (stats.activeCampaigns || []).map((camp, i) => (
-              // 🔗 CLICKABLE CARD LINKING TO /campaigns
-              <Link
-                href="/pharmacy/campaigns"
-                key={i}
-                className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl hover:bg-purple-50 hover:border-purple-100 transition-all cursor-pointer group hover:translate-x-1"
-              >
-                <div>
-                  <p className="text-sm font-bold text-slate-800 group-hover:text-purple-700">
-                    {camp.title}
-                  </p>
-                  <p className="text-[10px] text-slate-500 flex items-center gap-1">
-                    <User className="w-3 h-3" /> {camp.charity.name} •{" "}
-                    {camp.targetAreas.split(",")[0]}
-                  </p>
-                </div>
-                <span className="text-[10px] px-2 py-1 bg-white border border-slate-200 rounded text-slate-500 group-hover:border-purple-200 group-hover:text-purple-600 group-hover:font-bold shadow-sm transition-all">
-                  Join
-                </span>
-              </Link>
-            ))
-          )}
+          <div className="space-y-3 flex-1">
+            {(stats.activeCampaigns || []).length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-slate-400 py-6">
+                <Megaphone className="w-8 h-8 mb-2 opacity-50" />
+                <p className="text-sm italic">No active campaigns.</p>
+              </div>
+            ) : (
+              (stats.activeCampaigns || []).map((camp, i) => (
+                // 🔗 CLICKABLE CARD LINKING TO /campaigns
+                <Link
+                  href="/pharmacy/campaigns"
+                  key={i}
+                  className="flex items-center justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl hover:bg-purple-50 hover:border-purple-100 transition-all cursor-pointer group hover:translate-x-1"
+                >
+                  <div>
+                    <p className="text-sm font-bold text-slate-800 group-hover:text-purple-700">
+                      {camp.title}
+                    </p>
+                    <p className="text-[10px] text-slate-500 flex items-center gap-1">
+                      <User className="w-3 h-3" /> {camp.charity.name} •{" "}
+                      {camp.targetAreas.split(",")[0]}
+                    </p>
+                  </div>
+                  <span className="text-[10px] px-2 py-1 bg-white border border-slate-200 rounded text-slate-500 group-hover:border-purple-200 group-hover:text-purple-600 group-hover:font-bold shadow-sm transition-all">
+                    Join
+                  </span>
+                </Link>
+              ))
+            )}
+          </div>
         </div>
       </div>
     </div>
