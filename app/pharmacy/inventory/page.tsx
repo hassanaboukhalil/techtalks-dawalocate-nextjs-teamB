@@ -243,8 +243,12 @@ export default function PharmacyInventoryPage() {
         setSelectedMedicine(null);
         fetchInventory();
       }
-    } catch (error: any) {
-      alert(error.response?.data?.error || "Failed to add medicine to inventory");
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        alert(error.response?.data?.error || "Failed to add medicine to inventory");
+      } else {
+        alert("Failed to add medicine to inventory");
+      }
     } finally {
       setLoading(false);
     }
@@ -280,8 +284,12 @@ export default function PharmacyInventoryPage() {
         setEditingItem(null);
         fetchInventory();
       }
-    } catch (error: any) {
-      alert(error.response?.data?.error || "Failed to update medicine");
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        alert(error.response?.data?.error || "Failed to update medicine");
+      } else {
+        alert("Failed to update medicine");
+      }
     } finally {
       setLoading(false);
     }
@@ -299,8 +307,12 @@ export default function PharmacyInventoryPage() {
         alert(response.data.message || "Medicine deleted successfully!");
         fetchInventory();
       }
-    } catch (error: any) {
-      alert(error.response?.data?.error || "Failed to delete medicine from inventory");
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        alert(error.response?.data?.error || "Failed to delete medicine from inventory");
+      } else {
+        alert("Failed to delete medicine from inventory");
+      }
     } finally {
       setLoading(false);
     }

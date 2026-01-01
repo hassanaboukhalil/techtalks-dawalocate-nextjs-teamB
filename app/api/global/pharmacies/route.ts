@@ -11,7 +11,9 @@ export async function GET(request: NextRequest) {
         const query = searchParams.get("query")?.trim();
         const limit = parseInt(searchParams.get("limit") || "10");
 
-        const where: any = {
+        import type { UserWhereInput } from "@/lib/generated/prisma/client";
+
+        const where: UserWhereInput = {
             userType: { name: "pharmacy" },
             status: "APPROVED",
         };

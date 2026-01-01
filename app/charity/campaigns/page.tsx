@@ -171,8 +171,13 @@ export default function CampaignsPage() {
         setCampaigns(response.data.data || []);
         setTotalCount(response.data.pagination?.total || 0);
       }
-    } catch (err: any) {
-      setError(err.response?.data?.error || "Failed to fetch campaigns");
+    } catch (err: unknown) {
+      if (typeof err === "object" && err !== null && "response" in err) {
+        // @ts-expect-error: response may exist on axios error
+        setError(err.response?.data?.error || "Failed to fetch campaigns");
+      } else {
+        setError("Failed to fetch campaigns");
+      }
     } finally {
       setLoading(false);
     }
@@ -322,8 +327,12 @@ export default function CampaignsPage() {
         // Optionally refresh the list to get latest data
         fetchCampaigns();
       }
-    } catch (err: any) {
-      const errorData = err.response?.data;
+    } catch (err: unknown) {
+      let errorData;
+      if (typeof err === "object" && err !== null && "response" in err) {
+        // @ts-expect-error: response may exist on axios error
+        errorData = err.response?.data;
+      }
       
       if (errorData?.details && Array.isArray(errorData.details)) {
         setEditValidationErrors(errorData.details);

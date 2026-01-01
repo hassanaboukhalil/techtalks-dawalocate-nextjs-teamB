@@ -317,7 +317,8 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get("offset") || "0");
 
     // 4. Build query filters
-    const where: any = {
+    import type { Prisma } from "@/lib/generated/prisma/client";
+    const where: Prisma.CampaignWhereInput = {
       charityUserId: userId,
     };
 

@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     const patient = searchParams.get("patient") || "";
 
     // Build query filters
-    const where: any = {};
+    const where: import("@/lib/generated/prisma/client").Prisma.DonationRequestWhereInput = {};
 
     // Filter by status
     if (status && status !== "all") {
