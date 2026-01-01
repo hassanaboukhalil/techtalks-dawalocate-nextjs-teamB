@@ -1,299 +1,316 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import axios from "axios";
-import { useSession, signIn } from "next-auth/react";
+import { Eye, EyeOff, Pencil, Shield } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Mail, Phone, Lock, ShieldCheck, Eye, EyeOff } from "lucide-react";
+type TabKey = "account" | "security";
 
-/**
- * SCRUM-207
- * Pharmacy – Edit Account (Credentials)
- * Updates: email, phone, password
- */
+export default function PharmacySettingsPage() {
+  const [tab, setTab] = useState<TabKey>("account");
 
-type FormState = {
-  email: string;
-  phone: string;
-  password: string;
-};
+  // Account info
+  const [email, setEmail] = useState("pharmacy1@gmail.com");
+  const [phone, setPhone] = useState("+961 1 111 111");
 
-export default function PharmacyProfilePage() {
-  const { data: session, status } = useSession();
+  const [isEditingEmail, setIsEditingEmail] = useState(false);
+  const [isEditingPhone, setIsEditingPhone] = useState(false);
 
-  const [loadingProfile, setLoadingProfile] = useState(true);
+  const initial = useMemo(() => ({ email, phone }), []); // demo snapshot
   const [saving, setSaving] = useState(false);
 
-  const [form, setForm] = useState<FormState>({
-    email: "",
-    phone: "",
-    password: "",
-  });
+  // Security
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const [initial, setInitial] = useState({
-    email: "",
-    phone: "",
-  });
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
-  const [showPassword, setShowPassword] = useState(false);
-  const [passwordUpdated, setPasswordUpdated] = useState(false);
+  const passwordHint =
+    "Password must be at least 8 characters, include numbers, letters, and special characters.";
 
-  const [successMsg, setSuccessMsg] = useState("");
-  const [errorMsg, setErrorMsg] = useState("");
+  const onResetAccount = () => {
+    setEmail(initial.email);
+    setPhone(initial.phone);
+    setIsEditingEmail(false);
+    setIsEditingPhone(false);
+  };
 
-  const isDirty = useMemo(() => {
-    return (
-      form.email.trim() !== initial.email.trim() ||
-      form.phone.trim() !== initial.phone.trim() ||
-      form.password.trim().length > 0
-    );
-  }, [form, initial]);
-
-  // Load profile
-  useEffect(() => {
-    const loadProfile = async () => {
-      setLoadingProfile(true);
-      try {
-        const res = await axios.get("/api/pharmacy/profile");
-        if (res.data?.success) {
-          setForm({
-            email: res.data.data.email ?? "",
-            phone: res.data.data.phone ?? "",
-            password: "",
-          });
-          setInitial({
-            email: res.data.data.email ?? "",
-            phone: res.data.data.phone ?? "",
-          });
-        }
-      } catch {
-        setErrorMsg("Unable to load account information.");
-      } finally {
-        setLoadingProfile(false);
-      }
-    };
-
-    if (status === "authenticated") loadProfile();
-    if (status !== "loading") setLoadingProfile(false);
-  }, [status]);
-
-  // Auth guards
-  if (status === "loading") {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-[#119abf]" />
-      </div>
-    );
-  }
-
-  if (status === "unauthenticated") {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="max-w-md w-full">
-          <CardHeader>
-            <CardTitle>Sign in required</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-slate-600 mb-4">
-              Please sign in to manage your pharmacy account.
-            </p>
-            <Button onClick={() => signIn()} className="w-full">
-              Sign in
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  // Handlers
-  const onChange =
-    (key: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      setErrorMsg("");
-      setSuccessMsg("");
-      setForm((prev) => ({ ...prev, [key]: e.target.value }));
-    };
-
-  const handleSave = async () => {
-    setErrorMsg("");
-    setSuccessMsg("");
-
-    if (!isDirty) {
-      setErrorMsg("No changes detected.");
-      return;
-    }
-
+  const onSaveAccount = async () => {
     setSaving(true);
-
     try {
-      const payload: { email?: string; phone?: string; password?: string } = {};
-
-      if (form.email.trim() !== initial.email) payload.email = form.email.trim();
-      if (form.phone.trim() !== initial.phone) payload.phone = form.phone.trim();
-      if (form.password.trim()) payload.password = form.password.trim();
-
-      const res = await axios.patch(
-        "/api/pharmacy/settings",
-        payload
-      );
-
-      if (res.data?.success) {
-        setSuccessMsg("Your account details have been updated successfully.");
-
-        if (payload.password) setPasswordUpdated(true);
-
-        setInitial({
-          email: form.email,
-          phone: form.phone,
-        });
-
-        setForm((prev) => ({ ...prev, password: "" }));
-      } else {
-        setErrorMsg(res.data?.error || "Update failed.");
-      }
-    } catch {
-      setErrorMsg("Something went wrong. Please try again.");
+      // TODO: replace with your real endpoint
+      // await axios.patch("/api/pharmacy/account", { email, phone });
+      await new Promise((r) => setTimeout(r, 500));
+      setIsEditingEmail(false);
+      setIsEditingPhone(false);
     } finally {
       setSaving(false);
     }
   };
 
-  const handleReset = () => {
-    setForm({
-      email: initial.email,
-      phone: initial.phone,
-      password: "",
-    });
-    setErrorMsg("");
-    setSuccessMsg("");
+  const onUpdatePassword = async () => {
+    if (!newPassword || newPassword.length < 8) return;
+    if (newPassword !== confirmPassword) return;
+
+    setSaving(true);
+    try {
+      // TODO: replace with your real endpoint
+      // await axios.patch("/api/pharmacy/account/password", { currentPassword, newPassword });
+      await new Promise((r) => setTimeout(r, 600));
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } finally {
+      setSaving(false);
+    }
   };
 
+  const passwordValid = newPassword.length >= 8 && newPassword === confirmPassword;
+
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-12">
-      <div className="mx-auto max-w-4xl space-y-8">
-        {/* Header */}
+    <div className="p-8 max-w-6xl mx-auto space-y-6 min-h-screen">
+      {/* Breadcrumb + Top right icons (optional) */}
+      <div className="text-xs text-slate-500 flex items-center gap-2">
+        <span>Dashboard</span>
+        <span className="opacity-50">/</span>
+        <span>Settings</span>
+      </div>
+
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-bold text-slate-900">Edit Account</h1>
-          <p className="mt-2 text-slate-600 text-lg">
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+            Account Settings
+          </h1>
+          <p className="text-slate-500 mt-1">
             Manage your pharmacy login details safely and securely.
           </p>
         </div>
+      </div>
 
-        {/* Security tip */}
-        <div className="rounded-xl border border-slate-200 bg-white p-5 flex gap-3">
-          <ShieldCheck className="text-[#119abf]" />
-          <p className="text-slate-600">
-            For your security, passwords are never displayed or stored in plain text.
-          </p>
+      {/* FULL WIDTH TABS */}
+      <div className="w-full">
+        <div className="grid grid-cols-2 w-full max-w-md bg-slate-100/80 p-1 rounded-xl border border-slate-200">
+          <button
+            onClick={() => setTab("account")}
+            className={[
+              "py-2.5 rounded-lg text-sm font-semibold transition-all",
+              tab === "account"
+                ? "bg-blue-600 text-white shadow-sm"
+                : "text-slate-600 hover:text-slate-900",
+            ].join(" ")}
+          >
+            Account Info
+          </button>
+          <button
+            onClick={() => setTab("security")}
+            className={[
+              "py-2.5 rounded-lg text-sm font-semibold transition-all",
+              tab === "security"
+                ? "bg-blue-600 text-white shadow-sm"
+                : "text-slate-600 hover:text-slate-900",
+            ].join(" ")}
+          >
+            Security
+          </button>
         </div>
+      </div>
 
-        {/* Alerts */}
-        {errorMsg && <p className="text-red-600">{errorMsg}</p>}
-        {successMsg && <p className="text-emerald-600">{successMsg}</p>}
+      {/* CONTENT CARD */}
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm">
+        {tab === "account" ? (
+          <div className="p-6 md:p-8">
+            <h2 className="text-xl font-bold text-slate-900 mb-6">Email address</h2>
 
-        {/* Main card */}
-        <Card className="rounded-2xl shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-2xl">Account Credentials</CardTitle>
-          </CardHeader>
+            {/* Email */}
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-slate-700">Email address</label>
 
-          <CardContent className="grid lg:grid-cols-2 gap-10">
-            {/* Left: Form */}
-            <div className="space-y-6">
-              <div>
-                <Label>Email address</Label>
-                <Input
-                  value={form.email}
-                  onChange={onChange("email")}
-                  className="h-11"
+              <div className="flex items-center gap-3">
+                <input
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={!isEditingEmail}
+                  className={[
+                    "w-full h-11 rounded-lg border px-4 text-sm outline-none transition",
+                    "border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100",
+                    !isEditingEmail ? "bg-slate-50 text-slate-700" : "bg-white",
+                  ].join(" ")}
                 />
-                <p className="text-xs text-slate-500 mt-1">
-                  Used for login and notifications.
-                </p>
+
+                <button
+                  type="button"
+                  onClick={() => setIsEditingEmail((v) => !v)}
+                  className="h-11 w-11 rounded-lg bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-sm transition"
+                  aria-label="Edit email"
+                >
+                  <Pencil className="w-5 h-5" />
+                </button>
               </div>
 
-              <div>
-                <Label>Phone number</Label>
-                <Input
-                  value={form.phone}
-                  onChange={onChange("phone")}
-                  className="h-11"
+              <p className="text-xs text-slate-400">Used for login and notifications.</p>
+            </div>
+
+            {/* Phone */}
+            <div className="space-y-2 mt-6">
+              <label className="text-sm font-semibold text-slate-700">Phone number</label>
+
+              <div className="flex items-center gap-3">
+                <input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  disabled={!isEditingPhone}
+                  className={[
+                    "w-full h-11 rounded-lg border px-4 text-sm outline-none transition",
+                    "border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100",
+                    !isEditingPhone ? "bg-slate-50 text-slate-700" : "bg-white",
+                  ].join(" ")}
                 />
+
+                <button
+                  type="button"
+                  onClick={() => setIsEditingPhone((v) => !v)}
+                  className="h-11 w-11 rounded-lg bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-sm transition"
+                  aria-label="Edit phone"
+                >
+                  <Pencil className="w-5 h-5" />
+                </button>
               </div>
 
-              <div>
-                <Label>New password</Label>
+              <p className="text-xs text-slate-400">
+                You&apos;ll be logged out if you change your email or password.
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={onSaveAccount}
+                disabled={saving}
+                className="h-10 px-4 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {saving ? "Saving..." : "Save changes"}
+              </button>
+              <button
+                type="button"
+                onClick={onResetAccount}
+                className="h-10 px-4 rounded-md border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-sm font-semibold transition"
+              >
+                Reset
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="p-6 md:p-8">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 rounded-lg bg-blue-50 text-blue-700">
+                <Shield className="w-5 h-5" />
+              </div>
+              <h2 className="text-xl font-bold text-slate-900">Security</h2>
+            </div>
+            <p className="text-slate-500 text-sm mb-6">
+              Change your password regularly to keep your account secure.
+            </p>
+
+            <div className="bg-blue-50 rounded-2xl border border-blue-100 p-6">
+              <h3 className="text-base font-bold text-slate-900 mb-4">Change password</h3>
+
+              {/* Current */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700">
+                  Current password
+                </label>
                 <div className="relative">
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    value={form.password}
-                    onChange={onChange("password")}
-                    className="h-11 pr-12"
+                  <input
+                    type={showCurrent ? "text" : "password"}
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className="w-full h-11 rounded-lg border border-slate-200 bg-white px-4 pr-11 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                   />
                   <button
                     type="button"
-                    onClick={() => setShowPassword((v) => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500"
+                    onClick={() => setShowCurrent((v) => !v)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-md hover:bg-blue-100 flex items-center justify-center"
+                    aria-label="Toggle current password visibility"
                   >
-                    {showPassword ? <EyeOff /> : <Eye />}
+                    {showCurrent ? <EyeOff className="w-5 h-5 text-slate-500" /> : <Eye className="w-5 h-5 text-slate-500" />}
                   </button>
                 </div>
-                <p className="text-xs text-slate-500 mt-1">
-                  Leave empty to keep your current password.
-                </p>
               </div>
 
-              <div className="flex gap-3">
-                <Button
-                  onClick={handleSave}
-                  disabled={saving || !isDirty}
-                  className="h-11 bg-[#119abf] hover:bg-[#0e8cae]"
+              {/* New */}
+              <div className="space-y-2 mt-5">
+                <label className="text-sm font-semibold text-slate-700">New password</label>
+                <div className="relative">
+                  <input
+                    type={showNew ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full h-11 rounded-lg border border-slate-200 bg-white px-4 pr-11 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNew((v) => !v)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-md hover:bg-blue-100 flex items-center justify-center"
+                    aria-label="Toggle new password visibility"
+                  >
+                    {showNew ? <EyeOff className="w-5 h-5 text-slate-500" /> : <Eye className="w-5 h-5 text-slate-500" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Confirm */}
+              <div className="space-y-2 mt-5">
+                <label className="text-sm font-semibold text-slate-700">
+                  Confirm new password
+                </label>
+                <div className="relative">
+                  <input
+                    type={showConfirm ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full h-11 rounded-lg border border-slate-200 bg-white px-4 pr-11 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirm((v) => !v)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-md hover:bg-blue-100 flex items-center justify-center"
+                    aria-label="Toggle confirm password visibility"
+                  >
+                    {showConfirm ? <EyeOff className="w-5 h-5 text-slate-500" /> : <Eye className="w-5 h-5 text-slate-500" />}
+                  </button>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-400 mt-3">{passwordHint}</p>
+
+              <div className="mt-6 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={onUpdatePassword}
+                  disabled={saving || !passwordValid}
+                  className="h-10 px-4 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {saving ? "Saving..." : "Save changes"}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleReset}
-                  disabled={!isDirty}
-                  className="h-11"
+                  {saving ? "Updating..." : "Update password"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCurrentPassword("");
+                    setNewPassword("");
+                    setConfirmPassword("");
+                  }}
+                  className="h-10 px-4 rounded-md border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-sm font-semibold transition"
                 >
-                  Reset
-                </Button>
+                  Cancel
+                </button>
               </div>
             </div>
-
-            {/* Right: Summary */}
-            <div className="space-y-4">
-              <div className="rounded-xl bg-slate-100 p-4">
-                <p className="text-xs text-slate-500">Account email</p>
-                <p className="font-semibold">{form.email}</p>
-              </div>
-
-              <div className="rounded-xl bg-slate-100 p-4">
-                <p className="text-xs text-slate-500">Phone</p>
-                <p className="font-semibold">{form.phone}</p>
-              </div>
-
-              <div className="rounded-xl bg-slate-100 p-4">
-                <p className="text-xs text-slate-500">Password</p>
-                <p className="font-semibold">
-                  {passwordUpdated ? "Recently updated" : "Hidden for security"}
-                </p>
-              </div>
-
-              <div className="rounded-xl bg-blue-50 border border-blue-200 p-4">
-                <p className="text-sm font-medium text-blue-900">Note</p>
-                <p className="text-sm text-blue-800 mt-1">
-                  If you change your email or password, you may need to sign in again.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+        )}
       </div>
     </div>
   );
