@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
+import type { UserStatus, Prisma } from "@/lib/generated/prisma/client";
 
 /**
  * GET /api/admin/charities
@@ -71,24 +72,13 @@ export async function GET(request: NextRequest) {
     }
 
     // 5. Build query filters
-    const where: {
-      userTypeId: number;
-      status?: string;
-      city?: { contains: string; mode: "insensitive" };
-      OR?: Array<{
-        name?: { contains: string; mode: "insensitive" };
-        email?: { contains: string; mode: "insensitive" };
-        city?: { contains: string; mode: "insensitive" };
-        phone?: { contains: string; mode: "insensitive" };
-        address?: { contains: string; mode: "insensitive" };
-      }>;
-    } = {
+    const where: Prisma.UserWhereInput = {
       userTypeId: charityType.id,
     };
 
     // Filter by status
     if (status && ["PENDING", "APPROVED", "REJECTED"].includes(status)) {
-      where.status = status;
+      where.status = status as UserStatus;
     }
 
     // Filter by city
