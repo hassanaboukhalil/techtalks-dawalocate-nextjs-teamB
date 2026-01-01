@@ -19,6 +19,8 @@ import {
   PackageCheck,
   PackageX,
   Calendar,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import {
   Table,
@@ -31,6 +33,8 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CityAutocomplete } from "@/components/ui/CityAutocomplete";
+import { MedicineAutocomplete } from "@/components/ui/MedicineAutocomplete";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { LEBANON_CITIES } from "@/constants/lebanon-cities";
@@ -39,10 +43,10 @@ import { LEBANON_CITIES } from "@/constants/lebanon-cities";
 interface Medicine {
   id: number;
   name: string;
-  genericName: string | null;
-  strength: string | null;
-  form: string | null;
-  imageUrl: string | null;
+  genericName?: string;
+  strength?: string;
+  form?: string;
+  synonyms?: string;
 }
 
 interface Patient {
@@ -83,12 +87,18 @@ export default function PharmacyRequestsPage() {
   const [loading, setLoading] = useState(true);
   const [requests, setRequests] = useState<DonationRequest[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [filteredRequests, setFilteredRequests] = useState<DonationRequest[]>([]);
   
   // Filter & Search State
-  const [searchTerm, setSearchTerm] = useState("");
+  const [medicineSearch, setMedicineSearch] = useState("");
+  const [patientSearch, setPatientSearch] = useState("");
   const [cityFilter, setCityFilter] = useState("");
-  
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(20); // Show 20 items per page
+
   // Modal State
   const [selectedRequest, setSelectedRequest] = useState<DonationRequest | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -103,9 +113,10 @@ export default function PharmacyRequestsPage() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [requestsResponse, inventoryResponse] = await Promise.all([
+        const [requestsResponse, inventoryResponse, medicinesResponse] = await Promise.all([
           axios.get("/api/global/requests?status=OPEN"),
           axios.get("/api/pharmacy/inventory"),
+          axios.get("/api/global/medicines"),
         ]);
 
         if (requestsResponse.data.success) {
@@ -113,6 +124,9 @@ export default function PharmacyRequestsPage() {
         }
         if (inventoryResponse.data.success) {
           setInventory(inventoryResponse.data.data);
+        }
+        if (medicinesResponse.data.success) {
+          setMedicines(medicinesResponse.data.data);
         }
       } catch (error) {
         console.error("Failed to fetch data:", error);
@@ -156,20 +170,28 @@ export default function PharmacyRequestsPage() {
       );
     }
 
-    // Filter by search term (medicine name, patient name, generic name)
-    if (searchTerm) {
-      const searchLower = searchTerm.toLowerCase();
+    // Filter by medicine search
+    if (medicineSearch) {
+      const medicineLower = medicineSearch.toLowerCase();
       filtered = filtered.filter(
         (req) =>
-          req.medicine.name.toLowerCase().includes(searchLower) ||
-          req.medicine.genericName?.toLowerCase().includes(searchLower) ||
-          req.user.name.toLowerCase().includes(searchLower) ||
-          req.city.toLowerCase().includes(searchLower)
+          req.medicine.name.toLowerCase().includes(medicineLower) ||
+          req.medicine.genericName?.toLowerCase().includes(medicineLower)
+      );
+    }
+
+    // Filter by patient search
+    if (patientSearch) {
+      const patientLower = patientSearch.toLowerCase();
+      filtered = filtered.filter((req) =>
+        req.user.name.toLowerCase().includes(patientLower)
       );
     }
 
     setFilteredRequests(filtered);
-  }, [requests, searchTerm, cityFilter, requestIdParam]);
+    // Reset to first page when filters change
+    setCurrentPage(1);
+  }, [requests, medicineSearch, patientSearch, cityFilter, requestIdParam]);
 
   // --- NOW CONDITIONAL RETURNS CAN HAPPEN AFTER ALL HOOKS ---
   
@@ -247,32 +269,35 @@ export default function PharmacyRequestsPage() {
         {/* Only show filters if not viewing a specific request */}
         {!requestIdParam && (
           <div className="flex flex-col md:flex-row gap-4">
-          {/* Search */}
+          {/* Medicine Search */}
+          <div className="flex-1">
+            <MedicineAutocomplete
+              medicines={medicines}
+              value={medicineSearch}
+              onChange={setMedicineSearch}
+              placeholder="Search by medicine name..."
+            />
+          </div>
+
+          {/* Patient Search */}
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
-              placeholder="Search by medicine, patient name, or city..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              placeholder="Search by patient name..."
+              value={patientSearch}
+              onChange={(e) => setPatientSearch(e.target.value)}
+              className="pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
           {/* City Filter */}
-          <div className="relative">
-            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <select
+          <div className="w-64">
+            <CityAutocomplete
+              cities={LEBANON_CITIES}
               value={cityFilter}
-              onChange={(e) => setCityFilter(e.target.value)}
-              className="h-10 pl-10 pr-8 border border-gray-300 rounded-md text-gray-900 focus:ring-2 focus:ring-primary focus:border-transparent"
-            >
-              <option value="">All Cities</option>
-              {LEBANON_CITIES.map((city) => (
-                <option key={city} value={city}>
-                  {city}
-                </option>
-              ))}
-            </select>
+              onChange={setCityFilter}
+              placeholder="Filter by city"
+            />
           </div>
         </div>
         )}
@@ -286,123 +311,169 @@ export default function PharmacyRequestsPage() {
             <p>Loading requests...</p>
           </div>
         ) : (
-          <div className="max-h-[calc(100vh-300px)] overflow-y-auto">
-            <Table>
-              <TableHeader className="sticky top-0 z-10 bg-card">
-                <TableRow className="border-b-2 border-gray-300">
-                  <TableHead className="bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
-                    Medicine
-                  </TableHead>
-                  <TableHead className="bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
-                    Patient
-                  </TableHead>
-                  <TableHead className="bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
-                    Location
-                  </TableHead>
-                  <TableHead className="text-center bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
-                    Status
-                  </TableHead>
-                  <TableHead className="text-center bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
-                    Can Help
-                  </TableHead>
-                  <TableHead className="bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
-                    Requested
-                  </TableHead>
-                  <TableHead className="text-center w-[120px] bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
-                    Actions
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredRequests.length === 0 ? (
-                  <TableEmpty
-                    message={
-                      requestIdParam
-                        ? "Request not found."
-                        : searchTerm || cityFilter
-                        ? "No matching requests found."
-                        : "No open patient requests available yet."
-                    }
-                    icon={<Package className="h-10 w-10 text-gray-400" />}
-                  />
-                ) : (
-                  filteredRequests.map((request) => {
-                    const { canHelp: pharmacyCanHelp, inventoryItem } = canHelp(request.medicineId);
-                    return (
-                      <TableRow key={request.id} className="group">
-                        <TableCell>
-                          <div className="flex flex-col">
-                            <span className="font-medium text-gray-900">{request.medicine.name}</span>
-                            {request.medicine.genericName && (
-                              <span className="text-sm text-gray-600">{request.medicine.genericName}</span>
-                            )}
-                            {(request.medicine.strength || request.medicine.form) && (
-                              <span className="text-xs text-gray-500">
-                                {[request.medicine.strength, request.medicine.form]
-                                  .filter(Boolean)
-                                  .join(" • ")}
-                              </span>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-col">
-                            <span className="font-medium text-gray-900">{request.user.name}</span>
-                            {request.user.email && (
-                              <span className="text-sm text-gray-600">{request.user.email}</span>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1.5 text-gray-600">
-                            <MapPin className="h-4 w-4" />
-                            <span>{request.city}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-center">{getStatusBadge(request.status)}</TableCell>
-                        <TableCell className="text-center">
-                          {pharmacyCanHelp ? (
-                            <div className="flex flex-col items-center gap-1">
-                              <PackageCheck className="h-5 w-5 text-green-600" />
-                              <span className="text-xs font-semibold text-green-700">
-                                {inventoryItem?.quantity} in stock
-                              </span>
-                            </div>
-                          ) : (
-                            <div className="flex flex-col items-center gap-1">
-                              <PackageX className="h-5 w-5 text-red-600" />
-                              <span className="text-xs text-gray-500">Not available</span>
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1.5 text-gray-600 text-sm">
-                            <Calendar className="h-4 w-4" />
-                            <span>{formatDate(request.createdAt)}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center justify-center gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedRequest(request);
-                                setModalOpen(true);
-                              }}
-                              className="text-xs"
-                            >
-                              View Details
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
+          <>
+            <div className="max-h-[calc(100vh-400px)] overflow-y-auto">
+              <Table>
+                <TableHeader className="sticky top-0 z-10 bg-card">
+                  <TableRow className="border-b-2 border-gray-300">
+                    <TableHead className="bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
+                      Medicine
+                    </TableHead>
+                    <TableHead className="bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
+                      Patient
+                    </TableHead>
+                    <TableHead className="bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
+                      Location
+                    </TableHead>
+                    <TableHead className="text-center bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
+                      Status
+                    </TableHead>
+                    <TableHead className="text-center bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
+                      Can Help
+                    </TableHead>
+                    <TableHead className="bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
+                      Requested
+                    </TableHead>
+                    <TableHead className="text-center w-[120px] bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
+                      Actions
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {(() => {
+                    // Calculate pagination
+                    const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
+                    const startIndex = (currentPage - 1) * itemsPerPage;
+                    const endIndex = startIndex + itemsPerPage;
+                    const paginatedRequests = filteredRequests.slice(startIndex, endIndex);
+
+                    return paginatedRequests.length === 0 ? (
+                      <TableEmpty
+                        message={
+                          requestIdParam
+                            ? "Request not found."
+                            : medicineSearch || patientSearch || cityFilter
+                            ? "No matching requests found."
+                            : "No open patient requests available yet."
+                        }
+                        icon={<Package className="h-10 w-10 text-gray-400" />}
+                      />
+                    ) : (
+                      paginatedRequests.map((request) => {
+                        const { canHelp: pharmacyCanHelp, inventoryItem } = canHelp(request.medicineId);
+                        return (
+                          <TableRow key={request.id} className="group">
+                            <TableCell>
+                              <div className="flex flex-col">
+                                <span className="font-medium text-gray-900">{request.medicine.name}</span>
+                                {request.medicine.genericName && (
+                                  <span className="text-sm text-gray-600">{request.medicine.genericName}</span>
+                                )}
+                                {(request.medicine.strength || request.medicine.form) && (
+                                  <span className="text-xs text-gray-500">
+                                    {[request.medicine.strength, request.medicine.form]
+                                      .filter(Boolean)
+                                      .join(" • ")}
+                                  </span>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex flex-col">
+                                <span className="font-medium text-gray-900">{request.user.name}</span>
+                                {request.user.email && (
+                                  <span className="text-sm text-gray-600">{request.user.email}</span>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1.5 text-gray-600">
+                                <MapPin className="h-4 w-4" />
+                                <span>{request.city}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-center">{getStatusBadge(request.status)}</TableCell>
+                            <TableCell className="text-center">
+                              {pharmacyCanHelp ? (
+                                <div className="flex flex-col items-center gap-1">
+                                  <PackageCheck className="h-5 w-5 text-green-600" />
+                                  <span className="text-xs font-semibold text-green-700">
+                                    {inventoryItem?.quantity} in stock
+                                  </span>
+                                </div>
+                              ) : (
+                                <div className="flex flex-col items-center gap-1">
+                                  <PackageX className="h-5 w-5 text-red-600" />
+                                  <span className="text-xs text-gray-500">Not available</span>
+                                </div>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1.5 text-gray-600 text-sm">
+                                <Calendar className="h-4 w-4" />
+                                <span>{formatDate(request.createdAt)}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center justify-center gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedRequest(request);
+                                    setModalOpen(true);
+                                  }}
+                                  className="text-xs"
+                                >
+                                  View Details
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
                     );
-                  })
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                  })()}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* --- PAGINATION CONTROLS --- */}
+            {!requestIdParam && filteredRequests.length > itemsPerPage && (
+              <div className="flex items-center justify-between px-6 py-4 bg-gray-50 border-t border-gray-200">
+                <div className="text-sm text-gray-700">
+                  Showing {Math.min((currentPage - 1) * itemsPerPage + 1, filteredRequests.length)} to{" "}
+                  {Math.min(currentPage * itemsPerPage, filteredRequests.length)} of{" "}
+                  {filteredRequests.length} requests
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="flex items-center gap-1"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Previous
+                  </Button>
+                  <span className="text-sm text-gray-600 px-3">
+                    Page {currentPage} of {Math.ceil(filteredRequests.length / itemsPerPage)}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(filteredRequests.length / itemsPerPage)))}
+                    disabled={currentPage === Math.ceil(filteredRequests.length / itemsPerPage)}
+                    className="flex items-center gap-1"
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 
