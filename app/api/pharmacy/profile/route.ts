@@ -212,7 +212,16 @@ export async function PUT(request: NextRequest) {
       processedOpeningHours = openingHours;
     }
 
-    const updateData: any = {
+    const updateData: {
+      name: string;
+      email: string;
+      phone?: string | null;
+      city?: string | null;
+      address?: string | null;
+      openingHours?: string | null;
+      hasDelivery?: boolean;
+      updatedAt: Date;
+    } = {
       name: name.trim(),
       email: email.trim().toLowerCase(),
       phone: phone || null,

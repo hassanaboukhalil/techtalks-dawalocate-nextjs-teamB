@@ -93,7 +93,7 @@ export default function CharityRequestsPage() {
   const [cityFilter, setCityFilter] = useState("");
 
   // Medicine autocomplete data
-  const [medicines, setMedicines] = useState<any[]>([]);
+  const [medicines, setMedicines] = useState<Medicine[]>([]);
 
   // City autocomplete data
   const [cities, setCities] = useState<string[]>([]);

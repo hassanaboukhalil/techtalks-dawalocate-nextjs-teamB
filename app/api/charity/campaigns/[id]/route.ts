@@ -325,7 +325,15 @@ export async function PUT(
     // 8. Update campaign with medicines in a transaction
     const updatedCampaign = await db.$transaction(async (tx) => {
       // Prepare update data
-      const updateData: any = {
+      const updateData: {
+        title?: string;
+        description?: string;
+        targetAreas?: string;
+        startDate?: Date;
+        endDate?: Date | null;
+        contactInfo?: string;
+        updatedAt: Date;
+      } = {
         updatedAt: new Date(),
       };
 

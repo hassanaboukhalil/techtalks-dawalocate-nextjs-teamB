@@ -168,14 +168,26 @@ export default function CreateCampaignPage() {
         // Success - redirect to campaigns list
         router.push("/charity/campaigns");
       }
-    } catch (err: any) {
-      const errorData = err.response?.data;
-      
-      if (errorData?.details && Array.isArray(errorData.details)) {
-        setValidationErrors(errorData.details);
+    } catch (err: unknown) {
+      let errorData: unknown = undefined;
+      if (typeof err === "object" && err !== null && "response" in err) {
+        errorData = (err as { response?: { data?: unknown } }).response?.data;
       }
       
-      setError(errorData?.error || "Failed to create campaign. Please try again.");
+      if (
+        typeof errorData === "object" &&
+        errorData !== null &&
+        "details" in errorData &&
+        Array.isArray((errorData as { details?: unknown }).details)
+      ) {
+        setValidationErrors((errorData as { details: string[] }).details);
+      }
+      
+      setError(
+        typeof errorData === "object" && errorData !== null && "error" in errorData
+          ? (errorData as { error?: string }).error || "Failed to create campaign. Please try again."
+          : "Failed to create campaign. Please try again."
+      );
     } finally {
       setLoading(false);
     }
