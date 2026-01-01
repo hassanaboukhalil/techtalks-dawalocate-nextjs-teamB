@@ -2,12 +2,12 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
-import { QRCodeCanvas } from "qrcode.react";
 import { format } from "date-fns";
+import { toPng } from 'html-to-image';
 
+import DigitalIdCard from "@/components/patient/DigitalIdCard";
 
 import { DatePicker } from "@/components/ui/date-picker";
-
 import {
   Dialog,
   DialogTrigger,
@@ -37,6 +37,12 @@ import {
   Phone,
   Activity,
   Download,
+  Sparkles,
+  ShieldPlus,
+  Pencil,
+  X,
+  ChevronRight,
+  Pill
 } from "lucide-react";
 
 /* ======================
@@ -61,11 +67,14 @@ export default function HealthProfilePage() {
   const [search, setSearch] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
 
+  // 🆔 NEW STATE FOR ID
+  const [profileId, setProfileId] = useState<string | number>("");
+
   const qrCodeRef = useRef<HTMLDivElement>(null);
 
   const [formData, setFormData] = useState({
     fullName: "",
-    dob: "", // YYYY-MM-DD
+    dob: "", 
     gender: "",
     bloodType: "",
     height: "",
@@ -74,47 +83,24 @@ export default function HealthProfilePage() {
     medications: [] as string[],
     contactName: "",
     relationship: "",
-    contactNumber: "", // digits only (8)
+    contactNumber: "", 
   });
 
-  /* ======================
-     Derived DOB (Date)
-  ====================== */
   const dobDate = useMemo(() => {
     if (!formData.dob) return undefined;
     const d = new Date(formData.dob);
     return isNaN(d.getTime()) ? undefined : d;
   }, [formData.dob]);
 
-  /* ======================
-     MED FILTER
-  ====================== */
   const filteredMedicines = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return [];
-  
     return medicines.filter((m) => {
-      const fields = [
-        m.name,
-        m.genericName,
-        m.strength,
-        m.form,
-      ];
-  
-      return fields
-        .filter(Boolean)
-        .some((field) =>
-          field!.toLowerCase().includes(q)
-        );
+      const fields = [m.name, m.genericName, m.strength, m.form];
+      return fields.filter(Boolean).some((field) => field!.toLowerCase().includes(q));
     });
   }, [search, medicines]);
   
-  
-  
-  
-  /* ======================
-     LOAD DATA
-  ====================== */
   useEffect(() => {
     const load = async () => {
       try {
@@ -127,12 +113,13 @@ export default function HealthProfilePage() {
 
         if (profile && Object.keys(profile).length > 0) {
           setHasProfile(true);
+          
+          // ✅ Capture ID
+          if (profile.id) setProfileId(profile.id);
 
-          // Normalize phone (API might return "+96170123456" or "70123456")
           const rawPhone = String(profile.emergencyPhone ?? "");
           const digitsOnly = rawPhone.replace(/\D/g, "");
-          const last8 =
-            digitsOnly.length >= 8 ? digitsOnly.slice(-8) : digitsOnly;
+          const last8 = digitsOnly.length >= 8 ? digitsOnly.slice(-8) : digitsOnly;
 
           setFormData({
             fullName: profile.fullName ?? "",
@@ -164,25 +151,16 @@ export default function HealthProfilePage() {
     load();
   }, []);
 
-  /* ======================
-     HANDLERS
-  ====================== */
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData((p) => ({ ...p, [e.target.name]: e.target.value }));
   };
 
   const handleSelectMedicine = (med: Medicine) => {
-    const item = `${med.name}${med.strength ? ` ${med.strength}` : ""}${
-      med.form ? ` (${med.form})` : ""
-    }`;
-
+    const item = `${med.name} ${med.strength ? med.strength : ""} ${med.form ? `(${med.form})` : ""}`.trim();
     setFormData((p) => ({
       ...p,
       medications: p.medications.includes(item) ? p.medications : [...p.medications, item],
     }));
-
     setSearch("");
     setShowDropdown(false);
   };
@@ -197,20 +175,15 @@ export default function HealthProfilePage() {
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSaving(true);
-
     try {
-      // Send both your form fields + backend-friendly emergency fields (prevents “info lost”)
       const payload = {
         ...formData,
         medications: formData.medications.join("\n"),
-
         emergencyName: formData.contactName,
         emergencyRelation: formData.relationship,
         emergencyPhone: formData.contactNumber ? `+961${formData.contactNumber}` : "",
       };
-
       await axios.post("/api/patient/health-profile", payload, { withCredentials: true });
-
       setHasProfile(true);
       setOpen(false);
     } catch (err) {
@@ -222,34 +195,20 @@ export default function HealthProfilePage() {
 
   const handleExportQR = async () => {
     if (!qrCodeRef.current) return;
-
     try {
-      const domtoimage = (await import("dom-to-image-more")).default;
-
       await document.fonts.ready;
       await new Promise((r) => setTimeout(r, 200));
 
       const node = qrCodeRef.current;
-      const dataUrl = await domtoimage.toPng(node, {
-        quality: 1,
-        bgcolor: "#ffffff",
-        width: node.offsetWidth * 2,
-        height: node.offsetHeight * 2,
-        style: {
-          transform: "scale(2)",
-          transformOrigin: "top left",
-          width: `${node.offsetWidth}px`,
-          height: `${node.offsetHeight}px`,
-          border: "none",
-          boxShadow: "none",
-          outline: "none",
-        },
+      const dataUrl = await toPng(node, {
+        cacheBust: true,
+        pixelRatio: 3, 
+        backgroundColor: 'transparent',
+        style: { margin: '0', padding: '0' }
       });
 
       const link = document.createElement("a");
-      link.download = `health-card-${(formData.fullName || "user")
-        .replace(/\s+/g, "-")
-        .toLowerCase()}.png`;
+      link.download = `dawalocate-id-${(formData.fullName || "patient").replace(/\s+/g, "-").toLowerCase()}.png`;
       link.href = dataUrl;
       link.click();
     } catch (error) {
@@ -258,9 +217,6 @@ export default function HealthProfilePage() {
     }
   };
 
-  /* ======================
-     QR URL
-  ====================== */
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
   const qrCodeUrl =
     `${baseUrl}/view-health-profile?` +
@@ -269,480 +225,255 @@ export default function HealthProfilePage() {
     `dob=${encodeURIComponent(formData.dob)}&` +
     `gender=${encodeURIComponent(formData.gender)}&` +
     `emergencyContact=${encodeURIComponent(formData.contactName)}&` +
-    `emergencyPhone=${encodeURIComponent(
-      formData.contactNumber ? `+961${formData.contactNumber}` : ""
-    )}&` +
+    `emergencyPhone=${encodeURIComponent(formData.contactNumber ? `+961${formData.contactNumber}` : "")}&` +
     `allergies=${encodeURIComponent(formData.conditions)}&` +
     `medications=${encodeURIComponent(formData.medications.join(", "))}&` +
     `height=${encodeURIComponent(formData.height)}&` +
     `weight=${encodeURIComponent(formData.weight)}`;
 
-  /* ======================
-     LOADING
-  ====================== */
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-white">
-        <Loader className="w-8 h-8 text-[#119abf] animate-spin" />
-      </div>
-    );
+    return <div className="flex items-center justify-center min-h-screen bg-slate-50"><Loader className="w-8 h-8 text-[#119abf] animate-spin" /></div>;
   }
 
-  /* ======================
-     PAGE
-  ====================== */
   return (
-    <div className="min-h-screen bg-white flex justify-center py-16 px-4">
-      <div className="w-full max-w-[1100px]">
+    <div className="min-h-screen bg-slate-50/80 flex justify-center py-12 px-4 sm:px-6">
+      <div className="w-full max-w-[1300px]">
         {/* HEADER */}
-        <div className="mb-10">
-          <h1 className="text-4xl font-bold text-slate-900">Health Profile</h1>
-          <p className="text-slate-600 text-lg">
-            Your personal medical record always accessible and secure.
-          </p>
+        <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-slate-200/60">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">Health Profile</h1>
+            <p className="text-slate-600 text-lg mt-2 font-medium">Manage your personal medical record and emergency ID.</p>
+          </div>
+          
+          {hasProfile && (
+            <Button 
+              onClick={() => setOpen(true)} 
+              className="bg-[#119abf] hover:bg-[#0e8cae] text-white px-8 h-12 rounded-xl shadow-lg shadow-cyan-500/20 font-bold text-lg flex items-center gap-3 transition-all hover:scale-105 active:scale-95"
+            >
+               <Pencil className="w-5 h-5" /> Edit Profile
+            </Button>
+          )}
         </div>
 
         {/* INTRO */}
         {!hasProfile && (
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-8 shadow-sm mb-10">
-            <div className="flex items-start gap-6">
-              <HeartPulse className="w-12 h-12 text-blue-600" />
-              <div>
-                <h2 className="text-2xl font-bold text-blue-700 mb-2">
-                  Build Your Health Profile
-                </h2>
-                <p className="text-slate-700 leading-relaxed">
-                  A health profile helps doctors quickly understand your medical
-                  background, medications, allergies, and emergency contacts.
-                </p>
-              </div>
+          <div className="relative overflow-hidden bg-gradient-to-br from-white to-blue-50 border border-blue-100/50 rounded-3xl p-8 md:p-12 shadow-xl shadow-blue-100/20 text-center max-w-4xl mx-auto">
+            <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/3 w-64 h-64 bg-blue-100 rounded-full blur-3xl opacity-60 pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/3 w-64 h-64 bg-teal-100 rounded-full blur-3xl opacity-60 pointer-events-none"></div>
+            <div className="relative z-10 flex flex-col items-center">
+                <div className="w-20 h-20 bg-gradient-to-tr from-blue-500 to-[#119abf] rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-blue-500/20 rotate-3 transition-transform hover:rotate-6"><Sparkles className="w-10 h-10 text-white" /></div>
+                <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-3">Initialize Your Secure Health ID</h2>
+                <p className="text-slate-600 text-lg max-w-lg mx-auto mb-8 leading-relaxed">Create a scannable professional profile.</p>
+                <Button onClick={() => setOpen(true)} className="bg-gradient-to-r from-[#119abf] to-[#0e8cae] hover:from-[#0e8cae] hover:to-[#0b7a96] text-white px-10 py-7 text-lg rounded-full shadow-xl shadow-cyan-500/30 font-bold transition-all hover:scale-105 active:scale-95 flex items-center gap-2"><ShieldPlus className="w-5 h-5" /> Create Professional Profile</Button>
             </div>
           </div>
         )}
 
-        {/* PROFILE VIEW */}
+        {/* CONTENT GRID */}
         {hasProfile && (
-          <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-8 mb-10">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* PERSONAL */}
-              <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                  <UserCircle2 className="w-5 h-5 text-blue-600" />
-                  Personal Information
-                </h3>
-
-                <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-                  <div>
-                    <p className="text-sm text-slate-500 font-medium">Full Name</p>
-                    <p className="text-base font-semibold text-slate-900">
-                      {formData.fullName || "-"}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-slate-500 font-medium">Date of Birth</p>
-                    <p className="text-base font-semibold text-slate-900">
-                      {dobDate ? dobDate.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "-"}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-slate-500 font-medium">Gender</p>
-                    <p className="text-base font-semibold text-slate-900 capitalize">
-                      {formData.gender || "-"}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-slate-500 font-medium">Blood Type</p>
-                    <p className="text-base font-semibold text-red-600">
-                      {formData.bloodType || "-"}
-                    </p>
-                  </div>
-
-                  <div className="col-span-2">
-                    <p className="text-sm text-slate-500 font-medium">Emergency Contact</p>
-                    <p className="text-base font-semibold text-slate-900">
-                      {formData.contactName && formData.contactNumber
-                        ? `${formData.contactName}${formData.relationship ? ` (${formData.relationship})` : ""} - +961${formData.contactNumber}`
-                        : "-"}
-                    </p>
-                  </div>
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
+            
+            {/* LEFT: DETAILS */}
+            <div className="xl:col-span-7 space-y-6 w-full order-2 xl:order-1">
+              {/* Personal Info Card */}
+              <div className="bg-white border border-slate-200/60 rounded-[2rem] shadow-sm hover:shadow-md transition-shadow duration-300 p-6 sm:p-8 flex flex-col h-full">
+                <div className="flex justify-between items-center mb-8 pb-4 border-b border-slate-100">
+                   <h3 className="text-xl font-bold text-slate-900 flex items-center gap-3">
+                     <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl"><UserCircle2 className="w-6 h-6" /></div> 
+                     Personal Details
+                   </h3>
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-8 gap-x-8 mb-8">
+                   <div><p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1.5">Full Name</p><p className="text-xl text-slate-900 font-bold">{formData.fullName || "-"}</p></div>
+                   <div><p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1.5">Date of Birth</p><p className="text-xl text-slate-900 font-bold">{dobDate ? dobDate.toLocaleDateString() : "-"}</p></div>
+                   <div><p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1.5">Gender</p><p className="text-xl text-slate-900 font-bold capitalize">{formData.gender || "-"}</p></div>
+                   <div><p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1.5">Blood Type</p><p className="text-3xl font-black text-red-600">{formData.bloodType || "-"}</p></div>
+                   <div className="sm:col-span-2 pt-6 mt-2 border-t border-dashed border-slate-200">
+                      <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-3">Emergency Contact</p>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                         <div className="flex-1"><span className="text-slate-900 font-bold text-lg block">{formData.contactName || "Not Set"}</span><span className="text-sm text-slate-500 font-medium">{formData.relationship || ""}</span></div>
+                         {formData.contactNumber && <div className="bg-white px-5 py-2 rounded-xl border border-slate-200 font-mono text-slate-700 font-bold shadow-sm text-lg">+961 {formData.contactNumber}</div>}
+                      </div>
+                   </div>
                 </div>
               </div>
 
-              {/* MEDICAL */}
-              <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-green-600" />
-                  Medical Information
+              {/* Medical Data Card */}
+              <div className="bg-white border border-slate-200/60 rounded-[2rem] shadow-sm hover:shadow-md transition-shadow duration-300 p-6 sm:p-8">
+                <h3 className="text-xl font-bold text-slate-900 flex items-center gap-3 mb-8 pb-4 border-b border-slate-100">
+                  <div className="p-2.5 bg-green-50 text-green-600 rounded-xl"><Activity className="w-6 h-6" /></div> 
+                  Medical Data
                 </h3>
-
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm text-slate-500 font-medium mb-1">Allergies</p>
-                    <p className="text-base text-slate-900">
-                      {formData.conditions || "None reported"}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-slate-500 font-medium mb-1">Medications</p>
-                    {formData.medications.length ? (
-                      <ul className="list-disc list-inside space-y-1">
-                        {formData.medications.map((m, idx) => (
-                          <li key={idx} className="text-base text-slate-900">
-                            {m}
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="text-base text-slate-900">None reported</p>
-                    )}
-                  </div>
-
-                  {(formData.height || formData.weight) && (
-                    <div className="flex gap-6">
-                      {formData.height && (
-                        <div>
-                          <p className="text-sm text-slate-500 font-medium">Height</p>
-                          <p className="text-base text-slate-900">{formData.height} cm</p>
+                <div className="space-y-8">
+                   <div>
+                      <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-3">Known Allergies / Conditions</p>
+                      <div className="bg-amber-50 text-amber-900 p-5 rounded-2xl border border-amber-100 text-base leading-relaxed font-medium shadow-sm">
+                        {formData.conditions || "No known allergies or conditions reported."}
+                      </div>
+                   </div>
+                   <div>
+                      <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-3">Current Medications</p>
+                      {formData.medications.length > 0 ? (
+                        <div className="flex flex-wrap gap-2.5">
+                          {formData.medications.map((m, i) => (
+                            <span key={i} className="bg-slate-100 text-slate-800 px-4 py-2.5 rounded-xl text-sm font-bold border border-slate-200 flex items-center gap-2">
+                              <HeartPulse className="w-4 h-4 text-red-500" /> {m}
+                            </span>
+                          ))}
                         </div>
+                      ) : (
+                        <p className="text-slate-400 italic font-medium pl-2 border-l-2 border-slate-200">No active medications listed.</p>
                       )}
-                      {formData.weight && (
-                        <div>
-                          <p className="text-sm text-slate-500 font-medium">Weight</p>
-                          <p className="text-base text-slate-900">{formData.weight} kg</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
+                   </div>
+                   {(formData.height || formData.weight) && (
+                     <div className="flex gap-12 pt-6 border-t border-dashed border-slate-200">
+                        {formData.height && (
+                          <div>
+                            <p className="text-xs text-slate-400 font-bold uppercase">Height</p>
+                            <p className="text-2xl font-black text-slate-900">{formData.height} <span className="text-sm font-bold text-slate-500">cm</span></p>
+                          </div>
+                        )}
+                        {formData.weight && (
+                          <div>
+                            <p className="text-xs text-slate-400 font-bold uppercase">Weight</p>
+                            <p className="text-2xl font-black text-slate-900">{formData.weight} <span className="text-sm font-bold text-slate-500">kg</span></p>
+                          </div>
+                        )}
+                     </div>
+                   )}
                 </div>
               </div>
+            </div>
+
+            {/* RIGHT: CARD */}
+            <div className="xl:col-span-5 flex flex-col items-center xl:items-start pt-2 order-1 xl:order-2 mb-8 xl:mb-0">
+               <div className="sticky top-8 w-full flex flex-col items-center">
+                 <div className="scale-90 sm:scale-100 origin-top w-full flex justify-center">
+                    <DigitalIdCard 
+                        ref={qrCodeRef}
+                        fullName={formData.fullName}
+                        bloodType={formData.bloodType}
+                        gender={formData.gender}
+                        dob={dobDate ? dobDate.toLocaleDateString() : undefined}
+                        qrCodeUrl={qrCodeUrl}
+                        // 👇 PASSING THE ID PROP
+                        profileId={profileId} 
+                    />
+                 </div>
+                 <div className="mt-8 text-center w-full max-w-[380px]">
+                    <Button 
+                      onClick={handleExportQR} 
+                      className="w-full bg-[#0F172A] hover:bg-slate-800 text-white h-14 rounded-2xl font-bold shadow-xl shadow-slate-900/20 transition-all hover:scale-[1.02] active:scale-98 flex items-center justify-center gap-3 text-lg group"
+                    >
+                       <Download className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" /> Save to Photos
+                    </Button>
+                    <p className="text-xs text-slate-500 mt-4 px-4 leading-relaxed font-medium">
+                      Keep this image on your phone. First responders can scan it to see your medical details.
+                    </p>
+                 </div>
+               </div>
             </div>
           </div>
         )}
 
-        {/* EDIT/CREATE DIALOG */}
+        {/* DIALOG FORM */}
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button variant="default" size="lg" className="mb-6">
-              {hasProfile ? "Edit Profile" : "Create Health Profile"}
-            </Button>
-          </DialogTrigger>
-
-          <DialogContent className="max-w-3xl max-h-[95vh] overflow-y-auto p-0 rounded-xl shadow-xl border bg-white">
-            <div className="px-8 py-6 border-b bg-gray-50 rounded-t-xl">
+          <DialogContent className="max-w-3xl max-h-[95vh] overflow-y-auto p-0 rounded-3xl bg-white/95 backdrop-blur-md shadow-2xl border-0">
+             
+             {/* PROFESSIONAL DIALOG HEADER */}
+             <div className="px-8 py-6 border-b border-slate-100 bg-white/95 backdrop-blur-md sticky top-0 z-50">
               <DialogHeader>
-                <DialogTitle className="text-2xl font-bold text-slate-800">
-                  {hasProfile ? "Edit Your Health Profile" : "Create Your Health Profile"}
-                </DialogTitle>
-                <DialogDescription className="text-slate-600 mt-1">
-                  Fill in your personal and medical details. These will help doctors better understand your needs.
-                </DialogDescription>
+                <div className="flex items-center gap-5">
+                  <div className="h-12 w-12 rounded-2xl bg-[#119abf]/10 flex items-center justify-center border border-[#119abf]/20 shadow-sm shrink-0">
+                    <Pencil className="w-6 h-6 text-[#119abf]" />
+                  </div>
+                  <div className="space-y-1">
+                    <DialogTitle className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Edit Health Profile</DialogTitle>
+                    <DialogDescription className="text-slate-500 text-sm font-medium">Update your medical details & emergency contacts.</DialogDescription>
+                  </div>
+                </div>
               </DialogHeader>
             </div>
 
-            <form onSubmit={handleSave} className="space-y-10 p-8">
-              {/* PERSONAL */}
-              <div className="space-y-4">
-                <h2 className="text-xl font-semibold text-slate-800 flex items-center gap-2">
-                  <UserCircle2 className="w-5 h-5 text-blue-600" />
-                  Personal Information
-                </h2>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-5 rounded-xl border">
-                  <div>
-                    <Label className="font-medium text-slate-700">Full Name</Label>
-                    <Input
-                      name="fullName"
-                      value={formData.fullName}
-                      onChange={handleChange}
-                      className="mt-1 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[#119abf]/40 focus-visible:border-[#119abf]"
-                    />
-                  </div>
-
-                  {/* ✅ REPLACED CALENDAR (reusable + dropdown month/year) */}
-                  <div>
-                    <Label className="font-medium text-slate-700">Date of Birth</Label>
-                    <DatePicker
-                      value={dobDate}
-                      onChange={(d) => {
-                        setFormData((p) => ({
-                          ...p,
-                          dob: d ? format(d, "yyyy-MM-dd") : "",
-                        }));
-                      }}
-                      fromYear={1900}
-                      toYear={new Date().getFullYear()}
-                    />
-
-
-                  </div>
-
-                  <div className="space-y-1">
-                    <Label className="font-medium text-slate-700">Gender</Label>
-                    <div className="overflow-visible relative z-[60]">
-                      <Select
-                        value={formData.gender}
-                        onValueChange={(val) => setFormData((p) => ({ ...p, gender: val }))}
-                      >
-                        <SelectTrigger className="mt-1 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[#119abf]/40 focus-visible:border-[#119abf]">
-                          <SelectValue placeholder="Select gender" />
-                        </SelectTrigger>
-                        <SelectContent position="popper" sideOffset={5} className="z-[99999] bg-white">
-                          <SelectItem value="male">Male</SelectItem>
-                          <SelectItem value="female">Female</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <Label className="font-medium text-slate-700">Blood Type</Label>
-                    <div className="overflow-visible relative z-[60]">
-                      <Select
-                        value={formData.bloodType}
-                        onValueChange={(val) => setFormData((p) => ({ ...p, bloodType: val }))}
-                      >
-                        <SelectTrigger className="mt-1 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[#119abf]/40 focus-visible:border-[#119abf]">
-                          <SelectValue placeholder="Select blood type" />
-                        </SelectTrigger>
-                        <SelectContent position="popper" sideOffset={5} className="z-[99999] bg-white">
-                          {["A+","A-","B+","B-","AB+","AB-","O+","O-"].map((b) => (
-                            <SelectItem key={b} value={b}>
-                              {b}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label className="font-medium text-slate-700">Height (cm)</Label>
-                    <Input
-                      type="number"
-                      name="height"
-                      value={formData.height}
-                      onChange={handleChange}
-                      className="mt-1 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[#119abf]/40 focus-visible:border-[#119abf]"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="font-medium text-slate-700">Weight (kg)</Label>
-                    <Input
-                      type="number"
-                      name="weight"
-                      value={formData.weight}
-                      onChange={handleChange}
-                      className="mt-1 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[#119abf]/40 focus-visible:border-[#119abf]"
-                    />
-                  </div>
+            <form onSubmit={handleSave} className="p-8 space-y-10">
+              {/* Form content remains the same... */}
+              <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-1"><Label className="font-semibold text-slate-700">Full Name</Label><Input name="fullName" value={formData.fullName} onChange={handleChange} className="bg-white focus:ring-2 focus:ring-[#119abf] border-slate-200 h-11" /></div>
+                  <div className="space-y-1"><Label className="font-semibold text-slate-700">Date of Birth</Label><DatePicker value={dobDate} onChange={(d) => setFormData((p) => ({ ...p, dob: d ? format(d, "yyyy-MM-dd") : "" }))} fromYear={1900} toYear={new Date().getFullYear()} /></div>
+                  <div className="space-y-1"><Label className="font-semibold text-slate-700">Gender</Label><Select value={formData.gender} onValueChange={(val) => setFormData((p) => ({ ...p, gender: val }))}><SelectTrigger className="h-11 bg-white border-slate-200"><SelectValue placeholder="Select" /></SelectTrigger><SelectContent><SelectItem value="male">Male</SelectItem><SelectItem value="female">Female</SelectItem></SelectContent></Select></div>
+                  <div className="space-y-1"><Label className="font-semibold text-slate-700">Blood Type</Label><Select value={formData.bloodType} onValueChange={(val) => setFormData((p) => ({ ...p, bloodType: val }))}><SelectTrigger className="h-11 bg-white border-slate-200"><SelectValue placeholder="Select" /></SelectTrigger><SelectContent>{["A+","A-","B+","B-","AB+","AB-","O+","O-"].map((b) => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent></Select></div>
+                  <div className="space-y-1"><Label className="font-semibold text-slate-700">Height (cm)</Label><Input type="number" name="height" value={formData.height} onChange={handleChange} className="bg-white h-11 border-slate-200" /></div>
+                  <div className="space-y-1"><Label className="font-semibold text-slate-700">Weight (kg)</Label><Input type="number" name="weight" value={formData.weight} onChange={handleChange} className="bg-white h-11 border-slate-200" /></div>
                 </div>
-              </div>
 
-              {/* CONDITIONS */}
-              <div className="space-y-4">
-                <h2 className="text-xl font-semibold text-slate-800 flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-green-600" />
-                  Medical Conditions
-                </h2>
-
-                <div className="bg-gray-50 p-5 rounded-xl border">
-                  <Label className="font-medium text-slate-700">Conditions</Label>
-                  <Textarea
-                    name="conditions"
-                    value={formData.conditions}
-                    onChange={handleChange}
-                    className="mt-1 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[#119abf]/30 focus-visible:border-[#119abf]"
-                    rows={4}
-                  />
+                <div className="space-y-6">
+                  <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2 pb-2 border-b border-slate-100"><Activity className="w-5 h-5 text-green-600" /> Medical History</h2>
+                  <div className="space-y-1"><Label className="font-semibold text-slate-700">Conditions & Allergies</Label><Textarea name="conditions" value={formData.conditions} onChange={handleChange} rows={3} className="resize-none bg-white border-slate-200 focus:ring-2 focus:ring-green-500" placeholder="e.g., Peanut Allergy, Asthma..." /></div>
                 </div>
-              </div>
 
-              {/* MEDICATIONS */}
-              <div className="space-y-4">
-                <h2 className="text-xl font-semibold text-slate-800 flex items-center gap-2">
-                  <HeartPulse className="w-5 h-5 text-red-600" />
-                  Current Medications
-                </h2>
+                <div className="space-y-6">
+                  <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2 pb-2 border-b border-slate-100"><HeartPulse className="w-5 h-5 text-red-600" /> Medications</h2>
+                  <div className="space-y-4 bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                    <Label className="font-semibold text-slate-700">Add Medication</Label>
+                    <Input 
+                      placeholder="Search medicines (e.g. Panadol)..." 
+                      value={search} 
+                      onChange={(e) => { setSearch(e.target.value); setShowDropdown(true); }} 
+                      className="bg-white h-12 border-slate-200 focus:ring-2 focus:ring-red-500 shadow-sm" 
+                    />
+                    
+                    {showDropdown && search && (
+                      <ul className="border rounded-xl shadow-xl bg-white max-h-56 overflow-auto z-50 relative divide-y divide-slate-100">
+                        {filteredMedicines.length === 0 ? (
+                          <li className="px-4 py-3 text-sm text-gray-500 italic">No matching medicines found.</li>
+                        ) : (
+                          filteredMedicines.map((med) => (
+                            <li 
+                              key={med.id} 
+                              className="px-4 py-3 hover:bg-red-50 cursor-pointer transition-colors group" 
+                              onMouseDown={() => handleSelectMedicine(med)}
+                            >
+                              <div className="font-bold text-slate-800 group-hover:text-red-700">{med.name}</div>
+                              <div className="text-xs text-slate-500 flex gap-2">
+                                <span>{med.strength}</span>
+                                <span className="text-slate-300">•</span>
+                                <span className="italic">{med.form}</span>
+                              </div>
+                            </li>
+                          ))
+                        )}
+                      </ul>
+                    )}
 
-                <div className="bg-gray-50 p-5 rounded-xl border space-y-4">
-                  <Input
-                    placeholder="Search medicines..."
-                    value={search}
-                    onChange={(e) => {
-                      setSearch(e.target.value);
-                      setShowDropdown(true);
-                    }}
-                    className="transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[#119abf]/40 focus-visible:border-[#119abf]"
-                  />
-
-                  {showDropdown && search && (
-                    <ul className="border rounded-lg shadow bg-white max-h-40 overflow-auto">
-                      {filteredMedicines.length === 0 && (
-                        <li className="px-3 py-2 text-sm text-gray-500">
-                          No medicines found
-                        </li>
-                      )}
-
-                      {filteredMedicines.map((med) => (
-                        <li
-                          key={med.id}
-                          className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm transition-colors"
-                          onMouseDown={() => handleSelectMedicine(med)}
-                        >
-                          <span className="font-medium text-slate-900">{med.name}</span>
-                          {(med.strength || med.form) && (
-                            <span className="text-slate-500">
-                              {" "}
-                              — {med.strength || ""} {med.form ? `(${med.form})` : ""}
-                            </span>
-                          )}
-                        </li>
+                    <div className="flex flex-wrap gap-2 pt-2">
+                      {formData.medications.map((m, idx) => (
+                        <span key={idx} className="bg-white text-slate-700 pl-3 pr-1 py-1.5 rounded-full text-sm font-bold border border-slate-200 shadow-sm flex items-center gap-2">
+                          <Pill className="w-4 h-4 text-red-500" /> {m} 
+                          <button type="button" onClick={() => removeMedication(m)} className="p-1 hover:bg-red-100 text-slate-400 hover:text-red-500 rounded-full transition-colors"><X className="w-4 h-4"/></button>
+                        </span>
                       ))}
-                    </ul>
-                  )}
-
-                  <div className="flex flex-wrap gap-2">
-                    {formData.medications.map((m, idx) => (
-                      <span
-                        key={idx}
-                        className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm flex items-center gap-2"
-                      >
-                        {m}
-                        <button
-                          type="button"
-                          onClick={() => removeMedication(m)}
-                          className="text-red-500 font-bold hover:scale-110 transition-transform"
-                        >
-                          ×
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* EMERGENCY */}
-              <div className="space-y-4">
-                <h2 className="text-xl font-semibold text-slate-800 flex items-center gap-2">
-                  <Phone className="w-5 h-5 text-purple-600" />
-                  Emergency Contact
-                </h2>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-gray-50 p-5 rounded-xl border">
-                  <div>
-                    <Label className="font-medium text-slate-700">Name</Label>
-                    <Input
-                      name="contactName"
-                      value={formData.contactName}
-                      onChange={handleChange}
-                      className="mt-1 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[#119abf]/40 focus-visible:border-[#119abf]"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="font-medium text-slate-700">Relationship</Label>
-                    <Input
-                      name="relationship"
-                      value={formData.relationship}
-                      onChange={handleChange}
-                      className="mt-1 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[#119abf]/40 focus-visible:border-[#119abf]"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="font-medium text-slate-700">Phone Number</Label>
-                    <div className="mt-1 flex items-center gap-2">
-                      <div className="h-10 px-3 rounded-md border bg-white text-slate-600 flex items-center text-sm select-none">
-                        +961
-                      </div>
-
-                      <Input
-                        name="contactNumber"
-                        value={formData.contactNumber}
-                        onChange={(e) => {
-                          const onlyDigits = e.target.value.replace(/\D/g, "").slice(0, 8);
-                          setFormData((p) => ({ ...p, contactNumber: onlyDigits }));
-                        }}
-                        placeholder="e.g. 70123456"
-                        inputMode="numeric"
-                        className="transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[#119abf]/40 focus-visible:border-[#119abf]"
-                      />
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <Button
-                type="submit"
-                className="w-full text-white text-lg py-3 rounded-lg bg-[#119abf] hover:bg-[#0e8cae] transition-all"
-                disabled={saving}
-              >
-                {saving ? <Loader className="animate-spin h-5 w-5" /> : "Save Profile"}
-              </Button>
+                <div className="space-y-6">
+                  <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2 pb-2 border-b border-slate-100"><Phone className="w-5 h-5 text-purple-600" /> Emergency Contact</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-5 bg-purple-50/50 rounded-2xl border border-purple-100">
+                    <div className="space-y-1"><Label className="font-semibold text-slate-700">Name</Label><Input name="contactName" value={formData.contactName} onChange={handleChange} className="bg-white border-purple-200 focus:ring-2 focus:ring-purple-500 h-11" /></div>
+                    <div className="space-y-1"><Label className="font-semibold text-slate-700">Relationship</Label><Input name="relationship" value={formData.relationship} onChange={handleChange} className="bg-white border-purple-200 focus:ring-2 focus:ring-purple-500 h-11" placeholder="e.g., Spouse" /></div>
+                    <div className="space-y-1"><Label className="font-semibold text-slate-700">Phone</Label><div className="flex items-center gap-2"><div className="h-11 px-3 border border-purple-200 bg-white text-slate-600 font-bold rounded-md flex items-center text-sm select-none">+961</div><Input name="contactNumber" value={formData.contactNumber} onChange={(e) => { const d = e.target.value.replace(/\D/g, "").slice(0, 8); setFormData((p) => ({ ...p, contactNumber: d })); }} placeholder="70123456" className="bg-white border-purple-200 focus:ring-2 focus:ring-purple-500 h-11 font-mono font-bold" /></div></div>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-slate-100">
+                    <Button type="submit" className="w-full bg-[#119abf] hover:bg-[#0e8cae] text-white h-14 text-lg font-bold rounded-xl shadow-lg shadow-cyan-500/20 transition-all hover:scale-[1.01]" disabled={saving}>
+                      {saving ? <Loader className="animate-spin h-6 w-6" /> : "Save Changes"}
+                    </Button>
+                </div>
             </form>
           </DialogContent>
         </Dialog>
-
-        {/* HEALTH CARD */}
-        {hasProfile && (
-          <div className="mt-10 bg-white border border-gray-200 rounded-xl shadow-lg p-8">
-            <h2 className="text-3xl font-bold text-slate-900 mb-6">Health Card</h2>
-
-            <div className="flex justify-center">
-              <div className="bg-white rounded-lg p-8 border-2 border-gray-300 shadow-md max-w-md w-full">
-                <div className="bg-gradient-to-r from-teal-50 to-blue-50 border-2 border-teal-200 rounded-lg p-4 mb-6">
-                  <p className="text-sm text-slate-700">
-                    This card contains essential medical information for emergencies.
-                  </p>
-                </div>
-
-                <div
-                  ref={qrCodeRef}
-                  className="bg-white p-6 rounded-lg border border-gray-200 mb-6"
-                  style={{ backgroundColor: "#ffffff", border: "none" }}
-                >
-                  <div className="flex items-center justify-between gap-6">
-                    <div>
-                      <div className="mb-3">
-                        <div className="text-xs text-slate-500">Name</div>
-                        <div className="text-lg font-bold text-slate-900">
-                          {formData.fullName || "-"}
-                        </div>
-                      </div>
-                      <div className="mb-3">
-                        <div className="text-xs text-slate-500">Blood type</div>
-                        <div className="text-lg font-bold text-red-600">
-                          {formData.bloodType || "-"}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-slate-500">Gender</div>
-                        <div className="text-lg font-bold text-slate-900 capitalize">
-                          {formData.gender || "-"}
-                        </div>
-                      </div>
-                    </div>
-
-                    <QRCodeCanvas value={qrCodeUrl} size={170} level="H" includeMargin={false} />
-                  </div>
-                </div>
-
-                <Button
-                  onClick={handleExportQR}
-                  className="w-full bg-slate-700 hover:bg-slate-800 text-white flex items-center justify-center gap-2 py-3 text-base"
-                >
-                  <Download size={18} />
-                  Export QR Code
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
