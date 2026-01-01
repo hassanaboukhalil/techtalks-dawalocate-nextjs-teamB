@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { createPortal } from "react-dom";
 import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -22,11 +21,6 @@ export function CityAutocomplete({
 }: CityAutocompleteProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [dropdownPosition, setDropdownPosition] = useState({
-    top: 0,
-    left: 0,
-    width: 0,
-  });
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -34,33 +28,23 @@ export function CityAutocomplete({
     city.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Update dropdown position when opened
-  useEffect(() => {
-    if (isOpen && containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect();
-      setDropdownPosition({
-        top: rect.bottom + window.scrollY + 4,
-        left: rect.left + window.scrollX,
-        width: rect.width,
-      });
-    }
-  }, [isOpen]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         containerRef.current &&
-        !containerRef.current.contains(event.target as Node) &&
-        !(event.target as Element).closest("[data-city-dropdown]")
+        !containerRef.current.contains(event.target as Node)
       ) {
         setIsOpen(false);
         setSearchTerm("");
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isOpen]);
 
   const handleSelect = (city: string) => {
     onChange(city);
@@ -95,80 +79,73 @@ export function CityAutocomplete({
         <ChevronDown className="h-4 w-4 opacity-50" />
       </button>
 
-      {/* Dropdown - rendered in portal to avoid overflow clipping */}
-      {isOpen &&
-        typeof document !== "undefined" &&
-        createPortal(
-          <div
-            data-city-dropdown
-            className="fixed z-[9999] rounded-lg border border-gray-200 bg-white shadow-lg"
-            style={{
-              top: dropdownPosition.top,
-              left: dropdownPosition.left,
-              width: dropdownPosition.width,
-            }}
-          >
-            {/* Search Input */}
-            <div className="border-b border-gray-200 p-2">
-              <input
-                ref={inputRef}
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search cities..."
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              />
-            </div>
+      {/* Dropdown - positioned relative to avoid modal clipping */}
+      {isOpen && (
+        <div
+          className="absolute top-full left-0 right-0 z-[10000] mt-1 rounded-lg border border-gray-200 bg-white shadow-lg"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Search Input */}
+          <div className="border-b border-gray-200 p-2">
+            <input
+              ref={inputRef}
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search cities..."
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
 
-            {/* Cities List */}
-            <div className="max-h-[300px] overflow-y-auto p-1">
-              {/* All Cities Option */}
-              <button
-                type="button"
-                onClick={handleSelectAll}
-                className={cn(
-                  "flex w-full items-center rounded-sm px-3 py-2 text-sm text-gray-900 hover:bg-primary-hover cursor-pointer transition-colors",
-                  value === "" && "bg-primary-hover"
-                )}
-              >
-                <Check
-                  className={cn(
-                    "mr-2 h-4 w-4",
-                    value === "" ? "opacity-100" : "opacity-0"
-                  )}
-                />
-                All Cities
-              </button>
-
-              {filteredCities.length === 0 ? (
-                <div className="px-3 py-6 text-center text-sm text-gray-500">
-                  No city found.
-                </div>
-              ) : (
-                filteredCities.map((city) => (
-                  <button
-                    key={city}
-                    type="button"
-                    onClick={() => handleSelect(city)}
-                    className={cn(
-                      "flex w-full items-center rounded-sm px-3 py-2 text-sm text-gray-900 hover:bg-primary-hover cursor-pointer transition-colors",
-                      value === city && "bg-primary-hover"
-                    )}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        value === city ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                    {city}
-                  </button>
-                ))
+          {/* Cities List */}
+          <div className="max-h-[200px] overflow-y-auto p-1">
+            {/* All Cities Option */}
+            <button
+              type="button"
+              onClick={handleSelectAll}
+              className={cn(
+                "flex w-full items-center rounded-sm px-3 py-2 text-sm text-gray-900 hover:bg-primary-hover cursor-pointer transition-colors",
+                value === "" && "bg-primary-hover"
               )}
-            </div>
-          </div>,
-          document.body
-        )}
+            >
+              <Check
+                className={cn(
+                  "mr-2 h-4 w-4",
+                  value === "" ? "opacity-100" : "opacity-0"
+                )}
+              />
+              All Cities
+            </button>
+
+            {filteredCities.length === 0 ? (
+              <div className="px-3 py-6 text-center text-sm text-gray-500">
+                No city found.
+              </div>
+            ) : (
+              filteredCities.map((city) => (
+                <button
+                  key={city}
+                  type="button"
+                  onClick={() => handleSelect(city)}
+                  className={cn(
+                    "flex w-full items-center rounded-sm px-3 py-2 text-sm text-gray-900 hover:bg-primary-hover cursor-pointer transition-colors",
+                    value === city && "bg-primary-hover"
+                  )}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      value === city ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {city}
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
