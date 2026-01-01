@@ -253,7 +253,7 @@ export default function MedicinesManagementPage() {
       }
       await fetchMedicines();
       setDialogOpen(false);
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (axios.isAxiosError(err) && err.response?.status === 409) {
         alert("⚠️ This medicine already exists.");
       } else {
