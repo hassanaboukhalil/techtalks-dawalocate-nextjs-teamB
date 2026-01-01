@@ -1,12 +1,15 @@
 'use client';
 
 import React, { useState, FormEvent } from 'react';
+import Link from 'next/link';
 import axios from 'axios';
 import { Card } from '@/components/ui/card';
 import { MedicineAutocomplete } from '@/components/ui/MedicineAutocomplete';
 import { CityAutocomplete } from '@/components/ui/CityAutocomplete';
 import { PharmacyAutocomplete } from '@/components/ui/PharmacyAutocomplete';
-import { Search, MapPin, Truck, AlertCircle, Loader2, Package, Pill } from 'lucide-react';
+import { Search, MapPin, Truck, AlertCircle, Loader2, Package, Pill, ExternalLink, Building2 } from 'lucide-react';
+import { LEBANON_CITIES } from '@/constants/lebanon-cities';
+import { useSession } from 'next-auth/react';
 
 interface Medicine { id: number; name: string; genericName?: string; strength?: string; form?: string; }
 interface PharmacyMedicine { id: number; medicine: Medicine; status: 'IN_STOCK' | 'LOW' | 'OUT'; quantity: number; expiresAt: string | null; }
@@ -14,6 +17,9 @@ interface Pharmacy { id: number; name: string; city: string | null; phone: strin
 interface SearchResponse { success: boolean; data?: { results: Pharmacy[]; total: number }; error?: string; }
 
 export default function PatientSearchPage() {
+  const { data: session, status: sessionStatus } = useSession();
+  const isAuthenticatedPatient = session?.user && sessionStatus === 'authenticated';
+
   const [medicine, setMedicine] = useState('');
   const [city, setCity] = useState('');
   const [pharmacyName, setPharmacyName] = useState('');
@@ -103,7 +109,7 @@ export default function PatientSearchPage() {
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2 ml-1">City</label>
                 <CityAutocomplete
-                  cities={["Akkar", "Tripoli", "Beirut", "Saida", "Sour", "Jbeil", "Batroun", "Zahle", "Baalbek"]}
+                  cities={LEBANON_CITIES}
                   value={city}
                   onChange={setCity}
                   placeholder="Select location..."
@@ -164,10 +170,21 @@ export default function PatientSearchPage() {
             <Card key={pharmacy.id} className="overflow-hidden hover:shadow-md transition-shadow duration-300 border border-gray-100 group">
               <div className="p-6">
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6 border-b border-gray-100 pb-4">
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors">
-                      {pharmacy.name}
-                    </h3>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors">
+                        {pharmacy.name}
+                      </h3>
+                      {isAuthenticatedPatient && (
+                        <Link
+                          href={`/patient/pharmacy/${pharmacy.id}`}
+                          className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary/80 font-medium transition-colors"
+                        >
+                          <Building2 className="h-3.5 w-3.5" />
+                          Check pharmacy profile
+                        </Link>
+                      )}
+                    </div>
                     {(pharmacy.city || pharmacy.phone) && (
                       <div className="flex flex-wrap gap-4 mt-2 text-sm text-gray-500">
                         {pharmacy.city && (
