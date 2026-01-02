@@ -419,7 +419,7 @@ export default function PharmacySettingsPage() {
 
               <p className="text-xs text-slate-400 flex items-center gap-2">
                 <span className="w-1 h-1 rounded-full bg-blue-400 inline-block"></span>
-                You&apos;ll be logged out if you change your email or password.
+                Phone number is very important for faster contact and emergency communications.
               </p>
             </div>
 
