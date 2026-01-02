@@ -46,11 +46,14 @@ export async function GET() {
       success: true,
       data: requests,
     });
-
   } catch (error) {
     console.error("[PATIENT_REQUESTS_GET]", error);
     return NextResponse.json(
-      { success: false, error: "Failed to fetch medicine requests", details: error instanceof Error ? error.message : "Unknown error" },
+      {
+        success: false,
+        error: "Failed to fetch medicine requests",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 }
     );
   }
@@ -83,7 +86,11 @@ export async function POST(request: NextRequest) {
     // Validate required fields
     if (!medicines || !Array.isArray(medicines) || medicines.length === 0) {
       return NextResponse.json(
-        { success: false, error: "At least one medicine is required", details: "At least one medicine is required" },
+        {
+          success: false,
+          error: "At least one medicine is required",
+          details: "At least one medicine is required",
+        },
         { status: 400 }
       );
     }
@@ -92,7 +99,11 @@ export async function POST(request: NextRequest) {
     for (const medicine of medicines) {
       if (!medicine.name || typeof medicine.name !== "string") {
         return NextResponse.json(
-          { success: false, error: "Each medicine must have a valid name", details: "Each medicine must have a valid name" },
+          {
+            success: false,
+            error: "Each medicine must have a valid name",
+            details: "Each medicine must have a valid name",
+          },
           { status: 400 }
         );
       }
@@ -136,14 +147,16 @@ export async function POST(request: NextRequest) {
         });
 
         if (existingRequest) {
-          throw new Error(`You already have a pending request for "${medicine.name}"`);
+          throw new Error(
+            `You already have a pending request for "${medicine.name}"`
+          );
         }
 
         // Determine city: use medicine.city if provided, otherwise fall back to user.city
-        const requestCity = (medicine.city && medicine.city.trim()) 
-          ? medicine.city.trim() 
-          : (user?.city || undefined);
-        }
+        const requestCity =
+          medicine.city && medicine.city.trim()
+            ? medicine.city.trim()
+            : user?.city || undefined;
 
         // Create the request
         const newRequest = await tx.donationRequest.create({
@@ -197,7 +210,10 @@ export async function POST(request: NextRequest) {
 
     // Handle specific validation errors
     if (error instanceof Error) {
-      if (error.message.includes("not found") || error.message.includes("pending request")) {
+      if (
+        error.message.includes("not found") ||
+        error.message.includes("pending request")
+      ) {
         return NextResponse.json(
           { success: false, error: error.message, details: error.message },
           { status: 400 }
@@ -205,9 +221,14 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { success: false, error: "Failed to create medicine requests", details: errorMessage },
+      {
+        success: false,
+        error: "Failed to create medicine requests",
+        details: errorMessage,
+      },
       { status: 500 }
     );
   }

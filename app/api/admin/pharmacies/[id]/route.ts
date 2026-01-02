@@ -499,7 +499,7 @@ export async function PATCH(
         } else if (phone.trim().length > 20) {
           validationErrors.push("Phone must not exceed 20 characters.");
         } else {
-          updateData.phone = phone.trim() || null;
+          updateData.phone = phone.trim() || undefined;
         }
       } else {
         updateData.phone = null;

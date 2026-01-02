@@ -18,11 +18,13 @@ export async function GET(request: NextRequest) {
     const patient = searchParams.get("patient") || "";
 
     // Build query filters
-    const where: import("@/lib/generated/prisma/client").Prisma.DonationRequestWhereInput = {};
+    const where: import("@/lib/generated/prisma/client").Prisma.DonationRequestWhereInput =
+      {};
 
     // Filter by status
     if (status && status !== "all") {
-      where.status = status.toUpperCase();
+      where.status =
+        status.toUpperCase() as import("@/lib/generated/prisma/client").DonationRequestStatus;
     }
 
     // Filter by city
@@ -113,4 +115,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

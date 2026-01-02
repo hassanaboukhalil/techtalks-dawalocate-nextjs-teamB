@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import type { UserWhereInput } from "@/lib/generated/prisma/client";
+import { Prisma } from "@/lib/generated/prisma/client";
 
 /**
  * GET /api/global/pharmacies
@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     const query = searchParams.get("query")?.trim();
     const limit = parseInt(searchParams.get("limit") || "10");
 
-    const where: UserWhereInput = {
+    const where: Prisma.UserWhereInput = {
       userType: { name: "pharmacy" },
       status: "APPROVED",
     };
