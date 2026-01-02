@@ -11,6 +11,7 @@ interface CityAutocompleteProps {
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
+  disablePortal?: boolean;
 }
 
 export function CityAutocomplete({
@@ -19,6 +20,7 @@ export function CityAutocomplete({
   onChange,
   placeholder = "Select a city",
   className,
+  disablePortal = false,
 }: CityAutocompleteProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -36,7 +38,7 @@ export function CityAutocomplete({
 
   // Update dropdown position when opened
   useEffect(() => {
-    if (isOpen && containerRef.current) {
+    if (!disablePortal && isOpen && containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect();
       setDropdownPosition({
         top: rect.bottom + window.scrollY + 4,
@@ -44,7 +46,7 @@ export function CityAutocomplete({
         width: rect.width,
       });
     }
-  }, [isOpen]);
+  }, [isOpen, disablePortal]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -73,6 +75,66 @@ export function CityAutocomplete({
     setTimeout(() => inputRef.current?.focus(), 0);
   };
 
+  const dropdownContent = (
+    <div
+      data-city-dropdown
+      className={cn(
+        "rounded-lg border border-gray-200 bg-white shadow-lg",
+        disablePortal ? "absolute left-0 right-0 mt-1 z-50" : "fixed z-[9999]"
+      )}
+      style={
+        disablePortal
+          ? undefined
+          : {
+              top: dropdownPosition.top,
+              left: dropdownPosition.left,
+              width: dropdownPosition.width,
+            }
+      }
+    >
+      {/* Search Input */}
+      <div className="border-b border-gray-200 p-2">
+        <input
+          ref={inputRef}
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Search cities..."
+          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+        />
+      </div>
+
+      {/* Cities List */}
+      <div className="max-h-[300px] overflow-y-auto p-1">
+        {filteredCities.length === 0 ? (
+          <div className="px-3 py-6 text-center text-sm text-gray-500">
+            No city found.
+          </div>
+        ) : (
+          filteredCities.map((city) => (
+            <button
+              key={city}
+              type="button"
+              onClick={() => handleSelect(city)}
+              className={cn(
+                "flex w-full items-center rounded-sm px-3 py-2 text-sm text-gray-900 hover:bg-primary-hover cursor-pointer transition-colors",
+                value === city && "bg-primary-hover"
+              )}
+            >
+              <Check
+                className={cn(
+                  "mr-2 h-4 w-4",
+                  value === city ? "opacity-100" : "opacity-0"
+                )}
+              />
+              {city}
+            </button>
+          ))
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div ref={containerRef} className="relative w-full">
       {/* Trigger Button */}
@@ -91,60 +153,9 @@ export function CityAutocomplete({
 
       {/* Dropdown - rendered in portal to avoid overflow clipping */}
       {isOpen &&
-        typeof document !== "undefined" &&
-        createPortal(
-          <div
-            data-city-dropdown
-            className="fixed z-[9999] rounded-lg border border-gray-200 bg-white shadow-lg"
-            style={{
-              top: dropdownPosition.top,
-              left: dropdownPosition.left,
-              width: dropdownPosition.width,
-            }}
-          >
-            {/* Search Input */}
-            <div className="border-b border-gray-200 p-2">
-              <input
-                ref={inputRef}
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search cities..."
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              />
-            </div>
-
-            {/* Cities List */}
-            <div className="max-h-[300px] overflow-y-auto p-1">
-              {filteredCities.length === 0 ? (
-                <div className="px-3 py-6 text-center text-sm text-gray-500">
-                  No city found.
-                </div>
-              ) : (
-                filteredCities.map((city) => (
-                  <button
-                    key={city}
-                    type="button"
-                    onClick={() => handleSelect(city)}
-                    className={cn(
-                      "flex w-full items-center rounded-sm px-3 py-2 text-sm text-gray-900 hover:bg-primary-hover cursor-pointer transition-colors",
-                      value === city && "bg-primary-hover"
-                    )}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        value === city ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                    {city}
-                  </button>
-                ))
-              )}
-            </div>
-          </div>,
-          document.body
-        )}
+        (disablePortal || typeof document === "undefined"
+          ? dropdownContent
+          : createPortal(dropdownContent, document.body))}
     </div>
   );
 }
