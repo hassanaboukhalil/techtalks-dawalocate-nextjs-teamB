@@ -224,9 +224,9 @@ export async function PUT(request: NextRequest) {
     } = {
       name: name.trim(),
       email: email.trim().toLowerCase(),
-      phone: phone || null,
-      city: city || null,
-      address: address || null,
+      phone: phone || undefined,
+      city: city || undefined,
+      address: address || undefined,
       openingHours: processedOpeningHours,
       hasDelivery: hasDelivery || false,
       updatedAt: new Date(),

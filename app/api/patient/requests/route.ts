@@ -142,10 +142,7 @@ export async function POST(request: NextRequest) {
         // Determine city: use medicine.city if provided, otherwise fall back to user.city
         const requestCity = (medicine.city && medicine.city.trim()) 
           ? medicine.city.trim() 
-          : (user?.city || null);
-
-        if (!requestCity) {
-          throw new Error("City is required. Please provide a city or update your profile.");
+          : (user?.city || undefined);
         }
 
         // Create the request
@@ -189,13 +186,12 @@ export async function POST(request: NextRequest) {
       success: true,
       data: {
         requests: createdRequests,
-        notes: notes || null,
+        notes: notes || undefined,
         totalMedicines: medicines.length,
       },
     };
 
     return NextResponse.json(response, { status: 201 });
-
   } catch (error) {
     console.error("[PATIENT_REQUESTS_POST]", error);
 
