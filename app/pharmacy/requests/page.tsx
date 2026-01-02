@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
@@ -79,7 +79,7 @@ interface InventoryItem {
   medicine: Medicine;
 }
 
-export default function PharmacyRequestsPage() {
+function PharmacyRequestsContent() {
   const { data: session, status: sessionStatus } = useSession();
   const searchParams = useSearchParams();
 
@@ -641,3 +641,14 @@ export default function PharmacyRequestsPage() {
   );
 }
 
+export default function PharmacyRequestsPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    }>
+      <PharmacyRequestsContent />
+    </Suspense>
+  );
+}

@@ -18,7 +18,8 @@ export async function GET(request: NextRequest) {
     const charity = searchParams.get("charity") || "";
 
     // Build query filters
-    const where: any = {};
+    // Use explicit type for where filter
+    const where: import("@/lib/generated/prisma/client").Prisma.CampaignWhereInput = {};
 
     const now = new Date();
 
@@ -44,7 +45,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Build charity filter object properly - merge all conditions
-    const charityFilter: any = {
+    const charityFilter: import("@/lib/generated/prisma/client").Prisma.UserWhereInput = {
       status: "APPROVED",
       userType: {
         name: "charity",

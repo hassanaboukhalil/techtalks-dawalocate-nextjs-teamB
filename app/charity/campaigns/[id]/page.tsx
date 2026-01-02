@@ -106,8 +106,20 @@ export default function CampaignDetailsPage() {
       if (response.data.success) {
         setCampaign(response.data.data);
       }
-    } catch (err: any) {
-      setError(err.response?.data?.error || "Failed to fetch campaign details");
+    } catch (err: unknown) {
+      if (
+        typeof err === "object" &&
+        err !== null &&
+        "response" in err &&
+        typeof (err as { response?: unknown }).response === "object"
+      ) {
+        setError(
+          (err as { response?: { data?: { error?: string } } }).response?.data?.error ||
+            "Failed to fetch campaign details"
+        );
+      } else {
+        setError("Failed to fetch campaign details");
+      }
     } finally {
       setLoading(false);
     }
@@ -236,13 +248,21 @@ export default function CampaignDetailsPage() {
         setCampaign(response.data.data);
         closeEditDialog();
       }
-    } catch (err: any) {
-      const errorData = err.response?.data;
-      
+    } catch (err: unknown) {
+      let errorData: { error?: string; details?: string[] } | undefined;
+      if (
+        typeof err === "object" &&
+        err !== null &&
+        "response" in err &&
+        typeof (err as { response?: unknown }).response === "object"
+      ) {
+        errorData = (err as { response?: { data?: { error?: string; details?: string[] } } }).response?.data;
+      }
+
       if (errorData?.details && Array.isArray(errorData.details)) {
         setEditValidationErrors(errorData.details);
       }
-      
+
       setEditError(errorData?.error || "Failed to update campaign. Please try again.");
     } finally {
       setEditLoading(false);
