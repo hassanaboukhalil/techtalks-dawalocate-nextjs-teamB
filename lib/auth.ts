@@ -31,7 +31,10 @@ export const authOptions: NextAuthOptions = {
           user.passwordHash
         );
 
+        console.log("Login attempt for user:", credentials.email, "Password valid:", isValid);
+
         if (!isValid) {
+          console.log("Login failed: Invalid password for user:", credentials.email);
           throw new Error("Invalid credentials");
         }
 

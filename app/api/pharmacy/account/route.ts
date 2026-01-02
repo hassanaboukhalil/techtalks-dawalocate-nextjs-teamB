@@ -539,7 +539,9 @@ export async function PATCH(request: NextRequest) {
       }
 
       // Hash new password
-      updateData.passwordHash = await bcrypt.hash(newPassword, 10);
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      updateData.passwordHash = hashedPassword;
+      console.log("Password successfully hashed and updated for user:", pharmacyId);
     }
 
     // Update the pharmacy account
