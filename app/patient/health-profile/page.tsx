@@ -349,19 +349,22 @@ export default function HealthProfilePage() {
             {/* RIGHT: CARD */}
             <div className="xl:col-span-5 flex flex-col items-center xl:items-start pt-2 order-1 xl:order-2 mb-8 xl:mb-0">
                <div className="sticky top-8 w-full flex flex-col items-center">
-                 <div className="scale-90 sm:scale-100 origin-top w-full flex justify-center">
-                    <DigitalIdCard 
-                        ref={qrCodeRef}
-                        fullName={formData.fullName}
-                        bloodType={formData.bloodType}
-                        gender={formData.gender}
-                        dob={dobDate ? dobDate.toLocaleDateString() : undefined}
-                        qrCodeUrl={qrCodeUrl}
-                        // 👇 PASSING THE ID PROP
-                        profileId={profileId} 
+               <div className="w-full flex justify-center">
+                  <div className="w-full max-w-[340px] sm:max-w-[380px]">
+                    <DigitalIdCard
+                      ref={qrCodeRef}
+                      fullName={formData.fullName}
+                      bloodType={formData.bloodType}
+                      gender={formData.gender}
+                      dob={dobDate ? dobDate.toLocaleDateString() : undefined}
+                      qrCodeUrl={qrCodeUrl}
+                      profileId={profileId}
                     />
-                 </div>
-                 <div className="mt-8 text-center w-full max-w-[380px]">
+                  </div>
+                </div>
+
+                <div className="mt-4 sm:mt-5 text-center w-full max-w-[300px] sm:max-w-[340px]">
+
                     <Button 
                       onClick={handleExportQR} 
                       className="w-full bg-[#0F172A] hover:bg-slate-800 text-white h-14 rounded-2xl font-bold shadow-xl shadow-slate-900/20 transition-all hover:scale-[1.02] active:scale-98 flex items-center justify-center gap-3 text-lg group"
