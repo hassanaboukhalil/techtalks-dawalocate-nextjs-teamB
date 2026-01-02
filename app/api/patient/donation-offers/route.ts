@@ -221,7 +221,7 @@ export async function POST(request: NextRequest) {
         medicineId,
         city: city.trim(),
         expiry: expiryDate,
-        notes: notes?.trim() || null,
+        notes: notes?.trim() || undefined,
         status: "OPEN"
       },
       include: {

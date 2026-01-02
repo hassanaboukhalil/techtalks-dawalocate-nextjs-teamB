@@ -237,7 +237,7 @@ export async function POST(request: NextRequest) {
               name: user.name,
               email: user.email,
             },
-            reason: reason?.trim() || null,
+            reason: reason?.trim() || undefined,
           },
         },
       },

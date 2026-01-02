@@ -485,7 +485,7 @@ export async function PATCH(
         } else if (city.trim().length > 100) {
           validationErrors.push("City must not exceed 100 characters.");
         } else {
-          updateData.city = city.trim() || null;
+          updateData.city = city.trim() || undefined;
         }
       } else {
         updateData.city = null;
@@ -499,7 +499,7 @@ export async function PATCH(
         } else if (phone.trim().length > 20) {
           validationErrors.push("Phone must not exceed 20 characters.");
         } else {
-          updateData.phone = phone.trim() || null;
+          updateData.phone = phone.trim() || undefined;
         }
       } else {
         updateData.phone = null;
@@ -513,7 +513,7 @@ export async function PATCH(
         } else if (address.trim().length > 255) {
           validationErrors.push("Address must not exceed 255 characters.");
         } else {
-          updateData.address = address.trim() || null;
+          updateData.address = address.trim() || undefined;
         }
       } else {
         updateData.address = null;
@@ -529,7 +529,7 @@ export async function PATCH(
             "Opening hours must not exceed 100 characters."
           );
         } else {
-          updateData.openingHours = openingHours.trim() || null;
+          updateData.openingHours = openingHours.trim() || undefined;
         }
       } else {
         updateData.openingHours = null;

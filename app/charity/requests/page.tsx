@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
@@ -77,14 +77,16 @@ interface PaginationInfo {
   hasMore: boolean;
 }
 
-export default function CharityRequestsPage() {
+function CharityRequestsContent() {
   const { data: session, status: sessionStatus } = useSession();
   const searchParams = useSearchParams();
 
   // --- STATE ---
   const [loading, setLoading] = useState(true);
   const [requests, setRequests] = useState<DonationRequest[]>([]);
-  const [filteredRequests, setFilteredRequests] = useState<DonationRequest[]>([]);
+  const [filteredRequests, setFilteredRequests] = useState<DonationRequest[]>(
+    []
+  );
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
 
   // Filter & Search State
@@ -103,7 +105,8 @@ export default function CharityRequestsPage() {
   const [isLoadingPage, setIsLoadingPage] = useState(false);
 
   // Modal State
-  const [selectedRequest, setSelectedRequest] = useState<DonationRequest | null>(null);
+  const [selectedRequest, setSelectedRequest] =
+    useState<DonationRequest | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
   // Get requestId from URL query parameter
@@ -121,20 +124,20 @@ export default function CharityRequestsPage() {
         setIsLoadingPage(true);
         const offset = (page - 1) * ITEMS_PER_PAGE;
         const params = new URLSearchParams({
-          status: 'OPEN',
+          status: "OPEN",
           limit: ITEMS_PER_PAGE.toString(),
           offset: offset.toString(),
         });
 
         // Add separate search filters
         if (medicineSearch.trim()) {
-          params.append('medicine', medicineSearch.trim());
+          params.append("medicine", medicineSearch.trim());
         }
         if (patientSearch.trim()) {
-          params.append('patient', patientSearch.trim());
+          params.append("patient", patientSearch.trim());
         }
         if (cityFilter) {
-          params.append('city', cityFilter);
+          params.append("city", cityFilter);
         }
 
         const response = await axios.get(`/api/global/requests?${params}`);
@@ -159,20 +162,20 @@ export default function CharityRequestsPage() {
       try {
         setIsLoadingPage(true);
         const params = new URLSearchParams({
-          status: 'OPEN',
+          status: "OPEN",
           limit: ITEMS_PER_PAGE.toString(),
-          offset: '0', // Always start from page 1 when filtering
+          offset: "0", // Always start from page 1 when filtering
         });
 
         // Add separate search filters
         if (medicineSearch.trim()) {
-          params.append('medicine', medicineSearch.trim());
+          params.append("medicine", medicineSearch.trim());
         }
         if (patientSearch.trim()) {
-          params.append('patient', patientSearch.trim());
+          params.append("patient", patientSearch.trim());
         }
         if (cityFilter) {
-          params.append('city', cityFilter);
+          params.append("city", cityFilter);
         }
 
         const response = await axios.get(`/api/global/requests?${params}`);
@@ -214,7 +217,7 @@ export default function CharityRequestsPage() {
   useEffect(() => {
     const fetchMedicines = async () => {
       try {
-        const response = await axios.get('/api/global/medicines');
+        const response = await axios.get("/api/global/medicines");
         if (response.data.success) {
           setMedicines(response.data.data);
         }
@@ -232,19 +235,21 @@ export default function CharityRequestsPage() {
   }, []);
 
   // --- PAGINATION HELPERS ---
-  const totalPages = pagination ? Math.ceil(pagination.total / ITEMS_PER_PAGE) : 1;
+  const totalPages = pagination
+    ? Math.ceil(pagination.total / ITEMS_PER_PAGE)
+    : 1;
   const hasNextPage = pagination?.hasMore || false;
   const hasPreviousPage = currentPage > 1;
 
   const handleNextPage = () => {
     if (hasNextPage) {
-      setCurrentPage(prev => prev + 1);
+      setCurrentPage((prev) => prev + 1);
     }
   };
 
   const handlePreviousPage = () => {
     if (hasPreviousPage) {
-      setCurrentPage(prev => prev - 1);
+      setCurrentPage((prev) => prev - 1);
     }
   };
 
@@ -358,8 +363,10 @@ export default function CharityRequestsPage() {
       {!requestIdParam && pagination && (
         <div className="flex justify-between items-center mb-4 text-sm text-gray-600">
           <div>
-            Showing {requests.length > 0 ? ((currentPage - 1) * ITEMS_PER_PAGE) + 1 : 0} to{' '}
-            {Math.min(currentPage * ITEMS_PER_PAGE, pagination.total)} of {pagination.total} requests
+            Showing{" "}
+            {requests.length > 0 ? (currentPage - 1) * ITEMS_PER_PAGE + 1 : 0}{" "}
+            to {Math.min(currentPage * ITEMS_PER_PAGE, pagination.total)} of{" "}
+            {pagination.total} requests
           </div>
           <div className="text-xs">
             Page {currentPage} of {totalPages}
@@ -377,141 +384,155 @@ export default function CharityRequestsPage() {
         ) : (
           <>
             <div className="max-h-[calc(100vh-300px)] overflow-y-auto">
-            <Table>
-              <TableHeader className="sticky top-0 z-10 bg-card">
-                <TableRow className="border-b-2 border-gray-300">
-                  <TableHead className="bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
-                    Medicine
-                  </TableHead>
-                  <TableHead className="bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
-                    Patient
-                  </TableHead>
-                  <TableHead className="bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
-                    Location
-                  </TableHead>
-                  <TableHead className="text-center bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
-                    Status
-                  </TableHead>
-                  <TableHead className="bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
-                    Requested
-                  </TableHead>
-                  <TableHead className="text-center w-[120px] bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
-                    Actions
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredRequests.length === 0 ? (
-                  <TableEmpty
-                    message={
-                      requestIdParam
-                        ? "Request not found."
-                        : isLoadingPage
-                        ? "Loading..."
-                        : medicineSearch || patientSearch || cityFilter
-                        ? "No matching requests found."
-                        : "No open medicine requests available yet."
-                    }
-                    icon={<Package className="h-10 w-10 text-gray-400" />}
-                  />
-                ) : (
-                  filteredRequests.map((request) => (
-                    <TableRow key={request.id} className="group">
-                      <TableCell>
-                        <div className="flex flex-col">
-                          <span className="font-medium text-gray-900">{request.medicine.name}</span>
-                          {request.medicine.genericName && (
-                            <span className="text-sm text-gray-600">{request.medicine.genericName}</span>
-                          )}
-                          {(request.medicine.strength || request.medicine.form) && (
-                            <span className="text-xs text-gray-500">
-                              {[request.medicine.strength, request.medicine.form]
-                                .filter(Boolean)
-                                .join(" • ")}
+              <Table>
+                <TableHeader className="sticky top-0 z-10 bg-card">
+                  <TableRow className="border-b-2 border-gray-300">
+                    <TableHead className="bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
+                      Medicine
+                    </TableHead>
+                    <TableHead className="bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
+                      Patient
+                    </TableHead>
+                    <TableHead className="bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
+                      Location
+                    </TableHead>
+                    <TableHead className="text-center bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
+                      Status
+                    </TableHead>
+                    <TableHead className="bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
+                      Requested
+                    </TableHead>
+                    <TableHead className="text-center w-[120px] bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
+                      Actions
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredRequests.length === 0 ? (
+                    <TableEmpty
+                      message={
+                        requestIdParam
+                          ? "Request not found."
+                          : isLoadingPage
+                          ? "Loading..."
+                          : medicineSearch || patientSearch || cityFilter
+                          ? "No matching requests found."
+                          : "No open medicine requests available yet."
+                      }
+                      icon={<Package className="h-10 w-10 text-gray-400" />}
+                    />
+                  ) : (
+                    filteredRequests.map((request) => (
+                      <TableRow key={request.id} className="group">
+                        <TableCell>
+                          <div className="flex flex-col">
+                            <span className="font-medium text-gray-900">
+                              {request.medicine.name}
                             </span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col">
-                          <span className="font-medium text-gray-900">{request.user.name}</span>
-                          {request.user.email && (
-                            <span className="text-sm text-gray-600">{request.user.email}</span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1.5 text-gray-600">
-                          <MapPin className="h-4 w-4" />
-                          <span>{request.city}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">{getStatusBadge(request.status)}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1.5 text-gray-600 text-sm">
-                          <Calendar className="h-4 w-4" />
-                          <span>{formatDate(request.createdAt)}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center justify-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedRequest(request);
-                              setModalOpen(true);
-                            }}
-                            className="text-xs"
-                          >
-                            View Details
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-
-          {/* --- PAGINATION CONTROLS --- */}
-          {!requestIdParam && pagination && totalPages > 1 && (
-            <div className="flex items-center justify-between px-6 py-4 bg-gray-50 border-t">
-              <div className="text-sm text-gray-600">
-                {isLoadingPage ? (
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Loading...
-                  </div>
-                ) : (
-                  `Page ${currentPage} of ${totalPages}`
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handlePreviousPage}
-                  disabled={!hasPreviousPage || isLoadingPage}
-                  className="flex items-center gap-1"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleNextPage}
-                  disabled={!hasNextPage || isLoadingPage}
-                  className="flex items-center gap-1"
-                >
-                  Next
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
+                            {request.medicine.genericName && (
+                              <span className="text-sm text-gray-600">
+                                {request.medicine.genericName}
+                              </span>
+                            )}
+                            {(request.medicine.strength ||
+                              request.medicine.form) && (
+                              <span className="text-xs text-gray-500">
+                                {[
+                                  request.medicine.strength,
+                                  request.medicine.form,
+                                ]
+                                  .filter(Boolean)
+                                  .join(" • ")}
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col">
+                            <span className="font-medium text-gray-900">
+                              {request.user.name}
+                            </span>
+                            {request.user.email && (
+                              <span className="text-sm text-gray-600">
+                                {request.user.email}
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1.5 text-gray-600">
+                            <MapPin className="h-4 w-4" />
+                            <span>{request.city}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {getStatusBadge(request.status)}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1.5 text-gray-600 text-sm">
+                            <Calendar className="h-4 w-4" />
+                            <span>{formatDate(request.createdAt)}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center justify-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedRequest(request);
+                                setModalOpen(true);
+                              }}
+                              className="text-xs"
+                            >
+                              View Details
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
             </div>
-          )}
+
+            {/* --- PAGINATION CONTROLS --- */}
+            {!requestIdParam && pagination && totalPages > 1 && (
+              <div className="flex items-center justify-between px-6 py-4 bg-gray-50 border-t">
+                <div className="text-sm text-gray-600">
+                  {isLoadingPage ? (
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Loading...
+                    </div>
+                  ) : (
+                    `Page ${currentPage} of ${totalPages}`
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handlePreviousPage}
+                    disabled={!hasPreviousPage || isLoadingPage}
+                    className="flex items-center gap-1"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Previous
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleNextPage}
+                    disabled={!hasNextPage || isLoadingPage}
+                    className="flex items-center gap-1"
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
@@ -533,7 +554,9 @@ export default function CharityRequestsPage() {
             {selectedRequest && (
               <>
                 <div className="flex justify-between items-center mb-6">
-                  <Dialog.Title className="text-h3 text-primary">Request Details</Dialog.Title>
+                  <Dialog.Title className="text-h3 text-primary">
+                    Request Details
+                  </Dialog.Title>
                   <Dialog.Close asChild>
                     <button className="text-gray-500 hover:text-gray-700 transition-colors">
                       <X size={24} />
@@ -550,22 +573,34 @@ export default function CharityRequestsPage() {
                     </h3>
                     <div className="space-y-2">
                       <div>
-                        <span className="text-sm font-medium text-gray-700">Name:</span>
-                        <span className="ml-2 text-gray-900">{selectedRequest.medicine.name}</span>
+                        <span className="text-sm font-medium text-gray-700">
+                          Name:
+                        </span>
+                        <span className="ml-2 text-gray-900">
+                          {selectedRequest.medicine.name}
+                        </span>
                       </div>
                       {selectedRequest.medicine.genericName && (
                         <div>
-                          <span className="text-sm font-medium text-gray-700">Generic Name:</span>
+                          <span className="text-sm font-medium text-gray-700">
+                            Generic Name:
+                          </span>
                           <span className="ml-2 text-gray-900">
                             {selectedRequest.medicine.genericName}
                           </span>
                         </div>
                       )}
-                      {(selectedRequest.medicine.strength || selectedRequest.medicine.form) && (
+                      {(selectedRequest.medicine.strength ||
+                        selectedRequest.medicine.form) && (
                         <div>
-                          <span className="text-sm font-medium text-gray-700">Details:</span>
+                          <span className="text-sm font-medium text-gray-700">
+                            Details:
+                          </span>
                           <span className="ml-2 text-gray-900">
-                            {[selectedRequest.medicine.strength, selectedRequest.medicine.form]
+                            {[
+                              selectedRequest.medicine.strength,
+                              selectedRequest.medicine.form,
+                            ]
                               .filter(Boolean)
                               .join(" • ")}
                           </span>
@@ -582,24 +617,34 @@ export default function CharityRequestsPage() {
                     </h3>
                     <div className="space-y-2">
                       <div>
-                        <span className="text-sm font-medium text-gray-700">Name:</span>
-                        <span className="ml-2 text-gray-900">{selectedRequest.user.name}</span>
+                        <span className="text-sm font-medium text-gray-700">
+                          Name:
+                        </span>
+                        <span className="ml-2 text-gray-900">
+                          {selectedRequest.user.name}
+                        </span>
                       </div>
                       {selectedRequest.user.email && (
                         <div className="flex items-center gap-2">
                           <Mail className="h-4 w-4 text-gray-500" />
-                          <span className="text-sm text-gray-900">{selectedRequest.user.email}</span>
+                          <span className="text-sm text-gray-900">
+                            {selectedRequest.user.email}
+                          </span>
                         </div>
                       )}
                       {selectedRequest.user.phone && (
                         <div className="flex items-center gap-2">
                           <Phone className="h-4 w-4 text-gray-500" />
-                          <span className="text-sm text-gray-900">{selectedRequest.user.phone}</span>
+                          <span className="text-sm text-gray-900">
+                            {selectedRequest.user.phone}
+                          </span>
                         </div>
                       )}
                       <div className="flex items-center gap-2">
                         <MapPin className="h-4 w-4 text-gray-500" />
-                        <span className="text-sm text-gray-900">{selectedRequest.city}</span>
+                        <span className="text-sm text-gray-900">
+                          {selectedRequest.city}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -612,19 +657,29 @@ export default function CharityRequestsPage() {
                     </h3>
                     <div className="space-y-3">
                       <div>
-                        <span className="text-sm font-medium text-gray-700">Status:</span>
-                        <div className="mt-1">{getStatusBadge(selectedRequest.status)}</div>
+                        <span className="text-sm font-medium text-gray-700">
+                          Status:
+                        </span>
+                        <div className="mt-1">
+                          {getStatusBadge(selectedRequest.status)}
+                        </div>
                       </div>
                       <div>
-                        <span className="text-sm font-medium text-gray-700">Requested On:</span>
-                        <span className="ml-2 text-gray-900">{formatDate(selectedRequest.createdAt)}</span>
+                        <span className="text-sm font-medium text-gray-700">
+                          Requested On:
+                        </span>
+                        <span className="ml-2 text-gray-900">
+                          {formatDate(selectedRequest.createdAt)}
+                        </span>
                       </div>
                       <div className="mt-4 p-3 bg-primary/10 border border-primary/20 rounded-md">
                         <p className="text-sm text-gray-700 mb-2">
-                          As a charity, you can help coordinate medicine access for this patient.
+                          As a charity, you can help coordinate medicine access
+                          for this patient.
                         </p>
                         <p className="text-xs text-gray-600">
-                          Contact the patient directly or work with your network of pharmacies and donors to fulfill this request.
+                          Contact the patient directly or work with your network
+                          of pharmacies and donors to fulfill this request.
                         </p>
                       </div>
                     </div>
@@ -653,5 +708,19 @@ export default function CharityRequestsPage() {
         </Dialog.Portal>
       </Dialog.Root>
     </div>
+  );
+}
+
+export default function CharityRequestsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      }
+    >
+      <CharityRequestsContent />
+    </Suspense>
   );
 }

@@ -1,7 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Trash2, X, Calendar, MapPin, Pill, AlertCircle, CheckCircle } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  X,
+  Calendar,
+  MapPin,
+  Pill,
+  AlertCircle,
+  CheckCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -35,23 +44,22 @@ function ConfirmActionModal({
   confirmVariant = "destructive",
   onCancel,
   onConfirm,
-  loading
+  loading,
 }: ConfirmActionModalProps) {
   return (
-    <Dialog open={open} onOpenChange={(openState) => {
-      if (!openState) onCancel();
-    }}>
+    <Dialog
+      open={open}
+      onOpenChange={(openState) => {
+        if (!openState) onCancel();
+      }}
+    >
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         <p className="text-gray-600">{description}</p>
         <div className="flex justify-end gap-3 mt-6 pointer-events-auto">
-          <Button
-            variant="outline"
-            onClick={onCancel}
-            disabled={loading}
-          >
+          <Button variant="outline" onClick={onCancel} disabled={loading}>
             Cancel
           </Button>
           <Button
@@ -71,11 +79,11 @@ function ConfirmActionModal({
 interface Medicine {
   id: number;
   name: string;
-  genericName?: string;
-  strength?: string;
-  form?: string;
-  imageUrl?: string;
-  description?: string;
+  genericName?: string | null;
+  strength?: string | null;
+  form?: string | null;
+  imageUrl?: string | null;
+  description?: string | null;
 }
 
 interface DonationOffer {
@@ -113,7 +121,9 @@ export default function PatientDonationsPage() {
 
   // Form states
   const [medicineSearchTerm, setMedicineSearchTerm] = useState("");
-  const [selectedMedicine, setSelectedMedicine] = useState<Medicine | null>(null);
+  const [selectedMedicine, setSelectedMedicine] = useState<Medicine | null>(
+    null
+  );
   const [city, setCity] = useState("");
   const [formLoading, setFormLoading] = useState(false);
 
@@ -168,7 +178,7 @@ export default function PatientDonationsPage() {
 
       const offerData = {
         medicineId: selectedMedicine.id,
-        city: city.trim()
+        city: city.trim(),
       };
 
       const response = await fetch("/api/patient/donation-offers", {
@@ -215,7 +225,9 @@ export default function PatientDonationsPage() {
         throw new Error(result.error || "Failed to close donation offer");
       }
 
-      setSuccessMessage(result.message || "Donation offer closed successfully!");
+      setSuccessMessage(
+        result.message || "Donation offer closed successfully!"
+      );
       setIsCloseDialogOpen(false);
       setSelectedOfferId(null);
       fetchOffers(); // Refresh the list
@@ -235,13 +247,16 @@ export default function PatientDonationsPage() {
         method: "DELETE",
       });
 
-      const result: ApiResponse<{ deletedId: number; medicineName: string }> = await response.json();
+      const result: ApiResponse<{ deletedId: number; medicineName: string }> =
+        await response.json();
 
       if (!result.success) {
         throw new Error(result.error || "Failed to delete donation offer");
       }
 
-      setSuccessMessage(result.message || "Donation offer deleted successfully!");
+      setSuccessMessage(
+        result.message || "Donation offer deleted successfully!"
+      );
       setIsDeleteDialogOpen(false);
       setSelectedOfferId(null);
       fetchOffers(); // Refresh the list
@@ -290,7 +305,9 @@ export default function PatientDonationsPage() {
       {/* Header with Create Button */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">My Donation Offers</h1>
+          <h1 className="text-3xl font-bold text-gray-900">
+            My Donation Offers
+          </h1>
           <p className="text-gray-600 mt-2">
             Create and manage your medicine donation offers for charities
           </p>
@@ -325,7 +342,8 @@ export default function PatientDonationsPage() {
               No donation offers yet
             </h3>
             <p className="text-gray-600 mb-6">
-              Create your first donation offer to help charities with medicine donations
+              Create your first donation offer to help charities with medicine
+              donations
             </p>
             <Button onClick={() => setIsCreateDialogOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
@@ -339,7 +357,9 @@ export default function PatientDonationsPage() {
             <Card key={offer.id} className="hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
-                  <CardTitle className="text-lg">{offer.medicine.name}</CardTitle>
+                  <CardTitle className="text-lg">
+                    {offer.medicine.name}
+                  </CardTitle>
                   {getStatusBadge(offer.status)}
                 </div>
               </CardHeader>
@@ -399,10 +419,13 @@ export default function PatientDonationsPage() {
       )}
 
       {/* Create Offer Dialog */}
-      <Dialog open={isCreateDialogOpen} onOpenChange={(open) => {
-        setIsCreateDialogOpen(open);
-        if (!open) resetForm();
-      }}>
+      <Dialog
+        open={isCreateDialogOpen}
+        onOpenChange={(open) => {
+          setIsCreateDialogOpen(open);
+          if (!open) resetForm();
+        }}
+      >
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Create Donation Offer</DialogTitle>
@@ -419,7 +442,7 @@ export default function PatientDonationsPage() {
                   medicines={medicines}
                   value={medicineSearchTerm}
                   onChange={setMedicineSearchTerm}
-                  onSelect={setSelectedMedicine}
+                  onSelect={(medicine) => setSelectedMedicine(medicine)}
                   placeholder="Search for a medicine..."
                 />
               )}
@@ -449,7 +472,11 @@ export default function PatientDonationsPage() {
             >
               Cancel
             </Button>
-            <Button onClick={createOffer} disabled={formLoading} className="sm:ml-2">
+            <Button
+              onClick={createOffer}
+              disabled={formLoading}
+              className="sm:ml-2"
+            >
               {formLoading ? "Creating..." : "Create Offer"}
             </Button>
           </div>

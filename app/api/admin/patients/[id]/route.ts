@@ -11,7 +11,10 @@ export async function PATCH(
     const id = parseInt(resolvedParams.id);
 
     if (isNaN(id)) {
-      return NextResponse.json({ message: "Invalid ID format" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Invalid ID format" },
+        { status: 400 }
+      );
     }
 
     const body = await req.json();
@@ -19,13 +22,19 @@ export async function PATCH(
 
     const existingUser = await db.user.findUnique({ where: { id } });
     if (!existingUser) {
-      return NextResponse.json({ message: "Patient not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Patient not found" },
+        { status: 404 }
+      );
     }
 
     if (email && email !== existingUser.email) {
       const emailCheck = await db.user.findUnique({ where: { email } });
       if (emailCheck) {
-        return NextResponse.json({ message: "Email is already taken" }, { status: 409 });
+        return NextResponse.json(
+          { message: "Email is already taken" },
+          { status: 409 }
+        );
       }
     }
 
@@ -35,6 +44,7 @@ export async function PATCH(
       phone: string | null;
       city: string | null;
       address: string | null;
+      passwordHash?: string;
     } = { name, email, phone, city, address };
 
     if (password && password.trim() !== "") {
@@ -47,10 +57,12 @@ export async function PATCH(
     });
 
     return NextResponse.json(updatedUser);
-
   } catch (error) {
     console.error("[PATCH] Error:", error);
-    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }
 
@@ -63,20 +75,28 @@ export async function DELETE(
     const id = parseInt(resolvedParams.id);
 
     if (isNaN(id)) {
-        return NextResponse.json({ message: "Invalid ID format" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Invalid ID format" },
+        { status: 400 }
+      );
     }
 
     const existingUser = await db.user.findUnique({ where: { id } });
     if (!existingUser) {
-        return NextResponse.json({ message: "Patient not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Patient not found" },
+        { status: 404 }
+      );
     }
 
     await db.user.delete({ where: { id } });
 
     return NextResponse.json({ message: "Patient deleted successfully" });
-
   } catch (error) {
     console.error("[DELETE] Error:", error);
-    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }
