@@ -467,7 +467,7 @@ export async function PATCH(request: NextRequest) {
           { status: 400 }
         );
       }
-      updateData.city = city.trim() || null;
+      updateData.city = city.trim() || undefined;
     }
 
     // Handle address if provided
@@ -478,7 +478,7 @@ export async function PATCH(request: NextRequest) {
           { status: 400 }
         );
       }
-      updateData.address = address.trim() || null;
+      updateData.address = address.trim() || undefined;
     }
 
     // Handle password update if newPassword is provided
