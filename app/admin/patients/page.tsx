@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import axios from "axios";
 import { useSearchParams } from "next/navigation";
 import {
@@ -51,7 +51,7 @@ interface Patient {
   healthProfile: { id: number } | null;
 }
 
-export default function PatientsManagementPage() {
+function PatientsManagementContent() {
   // --- STATE ---
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
@@ -579,5 +579,17 @@ export default function PatientsManagementPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+export default function PatientsManagementPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    }>
+      <PatientsManagementContent />
+    </Suspense>
   );
 }

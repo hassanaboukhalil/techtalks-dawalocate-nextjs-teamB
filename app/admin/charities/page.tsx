@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { CharitiesTable } from "@/components/admin/CharitiesTable";
 import { CharityFilters } from "@/components/admin/CharityFilters";
 import { CharityStats } from "@/components/admin/CharityStats";
@@ -39,7 +39,7 @@ interface PaginationData {
   hasMore: boolean;
 }
 
-export default function AdminCharitiesPage() {
+function AdminCharitiesContent() {
   const [charities, setCharities] = useState<Charity[]>([]);
   const [stats, setStats] = useState<CharityStats>({
     PENDING: 0,
@@ -259,5 +259,17 @@ export default function AdminCharitiesPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function AdminCharitiesPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <RefreshCw className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    }>
+      <AdminCharitiesContent />
+    </Suspense>
   );
 }

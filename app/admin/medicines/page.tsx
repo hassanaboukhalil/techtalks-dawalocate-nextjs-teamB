@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, Suspense } from "react";
 import axios from "axios";
 import { useSearchParams } from "next/navigation";
 import {
@@ -97,7 +97,7 @@ const FORM_STYLES: Record<string, { bg: string; text: string; icon: React.ReactN
 };
 
 /* ================= PAGE ================= */
-export default function MedicinesManagementPage() {
+function MedicinesManagementContent() {
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -548,5 +548,17 @@ export default function MedicinesManagementPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+export default function MedicinesManagementPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    }>
+      <MedicinesManagementContent />
+    </Suspense>
   );
 }
