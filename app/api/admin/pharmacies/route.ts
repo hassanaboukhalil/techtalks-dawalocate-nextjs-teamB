@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
+import type { UserStatus, Prisma } from "@/lib/generated/prisma/client";
 
 /**
  * GET /api/admin/pharmacies
@@ -72,13 +73,13 @@ export async function GET(request: NextRequest) {
     }
 
     // 5. Build query filters
-    const where: any = {
+    const where: Prisma.UserWhereInput = {
       userTypeId: pharmacyType.id,
     };
 
     // Filter by status
     if (status && ["PENDING", "APPROVED", "REJECTED"].includes(status)) {
-      where.status = status;
+      where.status = status as UserStatus;
     }
 
     // Filter by city
@@ -110,8 +111,14 @@ export async function GET(request: NextRequest) {
     }
 
     // 6. Build orderBy clause
-    const orderBy: any = {};
-    const validSortFields = ["createdAt", "name", "city", "status", "updatedAt"];
+    const orderBy: Record<string, "asc" | "desc"> = {};
+    const validSortFields = [
+      "createdAt",
+      "name",
+      "city",
+      "status",
+      "updatedAt",
+    ];
     const sortField = validSortFields.includes(sortBy) ? sortBy : "createdAt";
     const order = sortOrder === "asc" ? "asc" : "desc";
     orderBy[sortField] = order;
@@ -341,4 +348,3 @@ export async function PATCH(request: NextRequest) {
     );
   }
 }
-

@@ -148,7 +148,15 @@ export async function PUT(request: NextRequest) {
 
     // Get request body
     const body = await request.json();
-    const { email, phone, city, address, currentPassword, newPassword, confirmPassword } = body;
+    const {
+      email,
+      phone,
+      city,
+      address,
+      currentPassword,
+      newPassword,
+      confirmPassword,
+    } = body;
 
     // Validate email if provided
     if (email !== undefined) {
@@ -176,7 +184,10 @@ export async function PUT(request: NextRequest) {
     if (phone !== undefined) {
       if (typeof phone !== "string" || sanitizePhone(phone).length < 8) {
         return NextResponse.json(
-          { success: false, error: "Phone number must be at least 8 characters." },
+          {
+            success: false,
+            error: "Phone number must be at least 8 characters.",
+          },
           { status: 400 }
         );
       }
@@ -203,7 +214,14 @@ export async function PUT(request: NextRequest) {
     }
 
     // Prepare update data
-    const updateData: any = {
+    const updateData: {
+      updatedAt: Date;
+      email?: string;
+      phone?: string;
+      city?: string | null;
+      address?: string | null;
+      passwordHash?: string;
+    } = {
       updatedAt: new Date(),
     };
 
@@ -214,7 +232,8 @@ export async function PUT(request: NextRequest) {
         return NextResponse.json(
           {
             success: false,
-            error: "Current password, new password, and confirm password are required for password update.",
+            error:
+              "Current password, new password, and confirm password are required for password update.",
           },
           { status: 400 }
         );
@@ -223,7 +242,10 @@ export async function PUT(request: NextRequest) {
       // Validate new password length
       if (newPassword.length < 8) {
         return NextResponse.json(
-          { success: false, error: "New password must be at least 8 characters long." },
+          {
+            success: false,
+            error: "New password must be at least 8 characters long.",
+          },
           { status: 400 }
         );
       }
@@ -231,7 +253,10 @@ export async function PUT(request: NextRequest) {
       // Check if new password matches confirm password
       if (newPassword !== confirmPassword) {
         return NextResponse.json(
-          { success: false, error: "New password and confirm password do not match." },
+          {
+            success: false,
+            error: "New password and confirm password do not match.",
+          },
           { status: 400 }
         );
       }
@@ -361,10 +386,27 @@ export async function PATCH(request: NextRequest) {
 
     // Get request body
     const body = await request.json();
-    const { email, phone, city, address, currentPassword, newPassword, confirmPassword, name } = body;
+    const {
+      email,
+      phone,
+      city,
+      address,
+      currentPassword,
+      newPassword,
+      confirmPassword,
+      name,
+    } = body;
 
     // Prepare update data
-    const updateData: any = {
+    const updateData: {
+      updatedAt: Date;
+      email?: string;
+      phone?: string;
+      city?: string;
+      address?: string;
+      name?: string;
+      passwordHash?: string;
+    } = {
       updatedAt: new Date(),
     };
 
@@ -396,7 +438,10 @@ export async function PATCH(request: NextRequest) {
     if (phone !== undefined) {
       if (typeof phone !== "string" || sanitizePhone(phone).length < 8) {
         return NextResponse.json(
-          { success: false, error: "Phone number must be at least 8 characters." },
+          {
+            success: false,
+            error: "Phone number must be at least 8 characters.",
+          },
           { status: 400 }
         );
       }
@@ -422,7 +467,7 @@ export async function PATCH(request: NextRequest) {
           { status: 400 }
         );
       }
-      updateData.city = city.trim() || null;
+      updateData.city = city.trim() || undefined;
     }
 
     // Handle address if provided
@@ -433,7 +478,7 @@ export async function PATCH(request: NextRequest) {
           { status: 400 }
         );
       }
-      updateData.address = address.trim() || null;
+      updateData.address = address.trim() || undefined;
     }
 
     // Handle password update if newPassword is provided
@@ -443,7 +488,8 @@ export async function PATCH(request: NextRequest) {
         return NextResponse.json(
           {
             success: false,
-            error: "Current password, new password, and confirm password are required for password update.",
+            error:
+              "Current password, new password, and confirm password are required for password update.",
           },
           { status: 400 }
         );
@@ -452,7 +498,10 @@ export async function PATCH(request: NextRequest) {
       // Validate new password length
       if (newPassword.length < 8) {
         return NextResponse.json(
-          { success: false, error: "New password must be at least 8 characters long." },
+          {
+            success: false,
+            error: "New password must be at least 8 characters long.",
+          },
           { status: 400 }
         );
       }
@@ -460,7 +509,10 @@ export async function PATCH(request: NextRequest) {
       // Check if new password matches confirm password
       if (newPassword !== confirmPassword) {
         return NextResponse.json(
-          { success: false, error: "New password and confirm password do not match." },
+          {
+            success: false,
+            error: "New password and confirm password do not match.",
+          },
           { status: 400 }
         );
       }

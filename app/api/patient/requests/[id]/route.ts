@@ -4,9 +4,9 @@ import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export async function PUT(request: NextRequest, { params }: RouteParams) {
@@ -30,8 +30,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
 
     // Get request ID from params
-    const resolvedParams = await Promise.resolve(params);
-    const requestId = resolvedParams.id;
+    const { id: requestId } = await params;
     if (!requestId || isNaN(Number(requestId))) {
       return NextResponse.json(
         { success: false, error: "Invalid request ID" },
@@ -46,7 +45,12 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     // Validate medicines array
     if (!medicines || !Array.isArray(medicines) || medicines.length !== 1) {
       return NextResponse.json(
-        { success: false, error: "Exactly one medicine must be provided for updating a request", details: "Exactly one medicine must be provided for updating a request" },
+        {
+          success: false,
+          error: "Exactly one medicine must be provided for updating a request",
+          details:
+            "Exactly one medicine must be provided for updating a request",
+        },
         { status: 400 }
       );
     }
@@ -54,7 +58,11 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const medicine = medicines[0];
     if (!medicine.name || typeof medicine.name !== "string") {
       return NextResponse.json(
-        { success: false, error: "Medicine must have a valid name", details: "Medicine must have a valid name" },
+        {
+          success: false,
+          error: "Medicine must have a valid name",
+          details: "Medicine must have a valid name",
+        },
         { status: 400 }
       );
     }
@@ -62,7 +70,11 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     // Validate city if provided
     if (medicine.city && typeof medicine.city !== "string") {
       return NextResponse.json(
-        { success: false, error: "City must be a valid string", details: "City must be a valid string" },
+        {
+          success: false,
+          error: "City must be a valid string",
+          details: "City must be a valid string",
+        },
         { status: 400 }
       );
     }
@@ -89,7 +101,11 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     // Check ownership
     if (existingRequest.userId !== userId) {
       return NextResponse.json(
-        { success: false, error: "You can only edit your own requests", details: "You can only edit your own requests" },
+        {
+          success: false,
+          error: "You can only edit your own requests",
+          details: "You can only edit your own requests",
+        },
         { status: 403 }
       );
     }
@@ -97,7 +113,11 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     // Check if request can be edited (not fulfilled)
     if (existingRequest.status === "FULFILLED") {
       return NextResponse.json(
-        { success: false, error: "Cannot edit a fulfilled request", details: "Cannot edit a fulfilled request" },
+        {
+          success: false,
+          error: "Cannot edit a fulfilled request",
+          details: "Cannot edit a fulfilled request",
+        },
         { status: 400 }
       );
     }
@@ -115,7 +135,11 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     if (!newMedicine) {
       return NextResponse.json(
-        { success: false, error: `Medicine "${medicine.name}" not found`, details: `Medicine "${medicine.name}" not found` },
+        {
+          success: false,
+          error: `Medicine "${medicine.name}" not found`,
+          details: `Medicine "${medicine.name}" not found`,
+        },
         { status: 400 }
       );
     }
@@ -133,7 +157,11 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
       if (duplicateRequest) {
         return NextResponse.json(
-          { success: false, error: `You already have a pending request for "${medicine.name}"`, details: `You already have a pending request for "${medicine.name}"` },
+          {
+            success: false,
+            error: `You already have a pending request for "${medicine.name}"`,
+            details: `You already have a pending request for "${medicine.name}"`,
+          },
           { status: 400 }
         );
       }
@@ -180,13 +208,16 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       { success: true, data: updatedRequest },
       { status: 200 }
     );
-
   } catch (error) {
     console.error("[PATIENT_REQUEST_PUT]", error);
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error("[PATIENT_REQUEST_PUT] Error details:", errorMessage);
     return NextResponse.json(
-      { success: false, error: "Failed to update medicine request", details: errorMessage },
+      {
+        success: false,
+        error: "Failed to update medicine request",
+        details: errorMessage,
+      },
       { status: 500 }
     );
   }
@@ -213,8 +244,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     // Get request ID from params
-    const resolvedParams = await Promise.resolve(params);
-    const requestId = resolvedParams.id;
+    const { id: requestId } = await params;
     if (!requestId || isNaN(Number(requestId))) {
       return NextResponse.json(
         { success: false, error: "Invalid request ID" },
@@ -229,7 +259,10 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     // Validate status
     if (!status || !["OPEN", "IN_PROGRESS", "FULFILLED"].includes(status)) {
       return NextResponse.json(
-        { success: false, error: "Invalid status. Must be OPEN, IN_PROGRESS, or FULFILLED" },
+        {
+          success: false,
+          error: "Invalid status. Must be OPEN, IN_PROGRESS, or FULFILLED",
+        },
         { status: 400 }
       );
     }
@@ -252,7 +285,11 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     // Check ownership
     if (existingRequest.userId !== userId) {
       return NextResponse.json(
-        { success: false, error: "You can only update your own requests", details: "You can only update your own requests" },
+        {
+          success: false,
+          error: "You can only update your own requests",
+          details: "You can only update your own requests",
+        },
         { status: 403 }
       );
     }
@@ -278,12 +315,15 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       { success: true, data: updatedRequest },
       { status: 200 }
     );
-
   } catch (error) {
     console.error("[PATIENT_REQUEST_PATCH]", error);
     const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { success: false, error: "Failed to update request status", details: errorMessage },
+      {
+        success: false,
+        error: "Failed to update request status",
+        details: errorMessage,
+      },
       { status: 500 }
     );
   }
@@ -310,8 +350,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     }
 
     // Get request ID from params
-    const resolvedParams = await Promise.resolve(params);
-    const requestId = resolvedParams.id;
+    const { id: requestId } = await params;
     if (!requestId || isNaN(Number(requestId))) {
       return NextResponse.json(
         { success: false, error: "Invalid request ID" },
@@ -347,7 +386,11 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     // Check ownership
     if (existingRequest.userId !== userId) {
       return NextResponse.json(
-        { success: false, error: "You can only delete your own requests", details: "You can only delete your own requests" },
+        {
+          success: false,
+          error: "You can only delete your own requests",
+          details: "You can only delete your own requests",
+        },
         { status: 403 }
       );
     }
@@ -355,7 +398,11 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     // Check if request can be deleted (must be OPEN)
     if (existingRequest.status !== "OPEN") {
       return NextResponse.json(
-        { success: false, error: `Cannot delete a ${existingRequest.status.toLowerCase()} request`, details: `Cannot delete a ${existingRequest.status.toLowerCase()} request` },
+        {
+          success: false,
+          error: `Cannot delete a ${existingRequest.status.toLowerCase()} request`,
+          details: `Cannot delete a ${existingRequest.status.toLowerCase()} request`,
+        },
         { status: 400 }
       );
     }
@@ -365,16 +412,17 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       where: { id: requestIdNum },
     });
 
-    return NextResponse.json(
-      { success: true },
-      { status: 200 }
-    );
-
+    return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     console.error("[PATIENT_REQUEST_DELETE]", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { success: false, error: "Failed to delete medicine request", details: errorMessage },
+      {
+        success: false,
+        error: "Failed to delete medicine request",
+        details: errorMessage,
+      },
       { status: 500 }
     );
   }

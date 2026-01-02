@@ -179,7 +179,7 @@ export async function POST(request: NextRequest) {
             email: user.email,
           },
           rejectedAt: rejectedPharmacy.updatedAt,
-          reason: reason?.trim() || null,
+          reason: reason?.trim() || undefined,
         },
       },
       { status: 200 }

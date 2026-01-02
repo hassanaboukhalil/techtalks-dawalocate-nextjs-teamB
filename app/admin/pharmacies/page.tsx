@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { PharmaciesTable } from "@/components/admin/PharmaciesTable";
 import { PharmacyFilters } from "@/components/admin/PharmacyFilters";
 import { PharmacyStats } from "@/components/admin/PharmacyStats";
@@ -40,7 +40,7 @@ interface PaginationData {
   hasMore: boolean;
 }
 
-export default function AdminPharmaciesPage() {
+function AdminPharmaciesContent() {
   const [pharmacies, setPharmacies] = useState<Pharmacy[]>([]);
   const [stats, setStats] = useState<PharmacyStats>({
     PENDING: 0,
@@ -266,3 +266,16 @@ export default function AdminPharmaciesPage() {
   );
 }
 
+export default function AdminPharmaciesPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen">
+          <RefreshCw className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      }
+    >
+      <AdminPharmaciesContent />
+    </Suspense>
+  );
+}
