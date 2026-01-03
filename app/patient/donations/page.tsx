@@ -1,16 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Plus,
-  Trash2,
-  X,
-  Calendar,
-  MapPin,
-  Pill,
-  AlertCircle,
-  CheckCircle,
-} from "lucide-react";
+import { Plus, Edit, X, Calendar, MapPin, Pill, AlertCircle, CheckCircle, CheckCircle2, XCircle, Loader2, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -23,58 +14,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MedicineAutocomplete } from "@/components/ui/MedicineAutocomplete";
 import { CityAutocomplete } from "@/components/ui/CityAutocomplete";
 import { LEBANON_CITIES } from "@/constants/lebanon-cities";
-
-// Reusable confirmation modal component
-interface ConfirmActionModalProps {
-  open: boolean;
-  title: string;
-  description: string;
-  confirmLabel: string;
-  confirmVariant?: "destructive" | "default";
-  onCancel: () => void;
-  onConfirm: () => void;
-  loading: boolean;
-}
-
-function ConfirmActionModal({
-  open,
-  title,
-  description,
-  confirmLabel,
-  confirmVariant = "destructive",
-  onCancel,
-  onConfirm,
-  loading,
-}: ConfirmActionModalProps) {
-  return (
-    <Dialog
-      open={open}
-      onOpenChange={(openState) => {
-        if (!openState) onCancel();
-      }}
-    >
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-        </DialogHeader>
-        <p className="text-gray-600">{description}</p>
-        <div className="flex justify-end gap-3 mt-6 pointer-events-auto">
-          <Button variant="outline" onClick={onCancel} disabled={loading}>
-            Cancel
-          </Button>
-          <Button
-            variant="outline"
-            onClick={onConfirm}
-            disabled={loading}
-            className="text-red-600 hover:text-red-700"
-          >
-            {confirmLabel}
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 interface Medicine {
   id: number;
@@ -112,12 +51,13 @@ export default function PatientDonationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "OPEN" | "CLOSED">("ALL");
 
-  // Dialog states
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isCloseDialogOpen, setIsCloseDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedOfferId, setSelectedOfferId] = useState<number | null>(null);
+  // Dialog & action states
+  const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
+  const [formMode, setFormMode] = useState<"create" | "edit">("create");
+  const [editingOfferId, setEditingOfferId] = useState<number | null>(null);
+  const [togglingOfferId, setTogglingOfferId] = useState<number | null>(null);
 
   // Form states
   const [medicineSearchTerm, setMedicineSearchTerm] = useState("");
@@ -196,9 +136,9 @@ export default function PatientDonationsPage() {
       }
 
       setSuccessMessage("Donation offer created successfully!");
-      setIsCreateDialogOpen(false);
+      setIsFormDialogOpen(false);
       resetForm();
-      fetchOffers(); // Refresh the list
+      await fetchOffers();
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -206,31 +146,37 @@ export default function PatientDonationsPage() {
     }
   };
 
-  const closeOffer = async (offerId: number) => {
+  const updateOffer = async () => {
+    if (!editingOfferId || !selectedMedicine || !city.trim()) {
+      setError("Please select a medicine and enter a city");
+      return;
+    }
+
     try {
       setFormLoading(true);
       setError(null);
 
-      const response = await fetch(`/api/patient/donation-offers/${offerId}`, {
+      const response = await fetch(`/api/patient/donation-offers/${editingOfferId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ status: "CLOSED" }),
+        body: JSON.stringify({
+          medicineId: selectedMedicine.id,
+          city: city.trim(),
+        }),
       });
 
       const result: ApiResponse<DonationOffer> = await response.json();
 
       if (!result.success) {
-        throw new Error(result.error || "Failed to close donation offer");
+        throw new Error(result.error || "Failed to update donation offer");
       }
 
-      setSuccessMessage(
-        result.message || "Donation offer closed successfully!"
-      );
-      setIsCloseDialogOpen(false);
-      setSelectedOfferId(null);
-      fetchOffers(); // Refresh the list
+      setSuccessMessage(result.message || "Donation offer updated successfully!");
+      setIsFormDialogOpen(false);
+      resetForm();
+      await fetchOffers();
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -238,32 +184,40 @@ export default function PatientDonationsPage() {
     }
   };
 
-  const deleteOffer = async (offerId: number) => {
+  const toggleOfferStatus = async (offer: DonationOffer) => {
+    const newStatus = offer.status === "OPEN" ? "CLOSED" : "OPEN";
+
     try {
-      setFormLoading(true);
+      setTogglingOfferId(offer.id);
       setError(null);
 
-      const response = await fetch(`/api/patient/donation-offers/${offerId}`, {
-        method: "DELETE",
+      const response = await fetch(`/api/patient/donation-offers/${offer.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
       });
 
-      const result: ApiResponse<{ deletedId: number; medicineName: string }> =
-        await response.json();
+      const result: ApiResponse<DonationOffer> = await response.json();
 
       if (!result.success) {
-        throw new Error(result.error || "Failed to delete donation offer");
+        throw new Error(
+          result.error || `Failed to ${newStatus === "CLOSED" ? "close" : "reopen"} donation offer`
+        );
       }
 
       setSuccessMessage(
-        result.message || "Donation offer deleted successfully!"
+        result.message ||
+          (newStatus === "CLOSED"
+            ? "Donation offer closed successfully!"
+            : "Donation offer reopened successfully!")
       );
-      setIsDeleteDialogOpen(false);
-      setSelectedOfferId(null);
-      fetchOffers(); // Refresh the list
+      await fetchOffers();
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
-      setFormLoading(false);
+      setTogglingOfferId(null);
     }
   };
 
@@ -271,6 +225,8 @@ export default function PatientDonationsPage() {
     setMedicineSearchTerm("");
     setSelectedMedicine(null);
     setCity("");
+    setEditingOfferId(null);
+    setFormMode("create");
     setError(null);
   };
 
@@ -292,13 +248,48 @@ export default function PatientDonationsPage() {
     );
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center py-12">
-        <div className="text-gray-500">Loading donation offers...</div>
-      </div>
-    );
-  }
+  const filteredOffers = offers.filter((offer) => {
+    if (statusFilter === "ALL") {
+      return true;
+    }
+    return offer.status === statusFilter;
+  });
+
+  const statusCounts = offers.reduce<{ ALL: number; OPEN: number; CLOSED: number }>(
+    (acc, offer) => {
+      if (offer.status === "OPEN") {
+        acc.OPEN += 1;
+      }
+      if (offer.status === "CLOSED") {
+        acc.CLOSED += 1;
+      }
+      return acc;
+    },
+    { ALL: offers.length, OPEN: 0, CLOSED: 0 }
+  );
+
+  const handleOpenCreate = () => {
+    resetForm();
+    setFormMode("create");
+    setIsFormDialogOpen(true);
+  };
+
+  const handleEditOffer = (offer: DonationOffer) => {
+    setFormMode("edit");
+    setEditingOfferId(offer.id);
+    setSelectedMedicine(offer.medicine);
+    setMedicineSearchTerm(offer.medicine.name);
+    setCity(offer.city);
+    setIsFormDialogOpen(true);
+  };
+
+  const handleDialogSubmit = () => {
+    if (formMode === "edit") {
+      updateOffer();
+    } else {
+      createOffer();
+    }
+  };
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -312,54 +303,189 @@ export default function PatientDonationsPage() {
             Create and manage your medicine donation offers for charities
           </p>
         </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          Create Offer
+        <Button
+          onClick={handleOpenCreate}
+          className="flex items-center gap-2"
+        >
+          <Plus className="h-4 w-4" />
+          New Offer
         </Button>
       </div>
 
+      {offers.length > 0 && (
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <Filter className="h-4 w-4 text-gray-500" />
+            <span className="text-sm font-medium text-gray-700">Filter by status:</span>
+          </div>
+          <div className="inline-flex bg-gray-100 rounded-lg p-1 shadow-sm border border-gray-200">
+            <button
+              onClick={() => setStatusFilter("ALL")}
+              className={`px-4 py-2 rounded-md text-sm font-semibold transition-all duration-200 ${
+                statusFilter === "ALL"
+                  ? "bg-white text-gray-900 shadow-md"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              All
+              <span
+                className={`ml-2 px-1.5 py-0.5 rounded-full text-xs ${
+                  statusFilter === "ALL"
+                    ? "bg-blue-100 text-blue-700"
+                    : "bg-gray-200 text-gray-600"
+                }`}
+              >
+                {statusCounts.ALL}
+              </span>
+            </button>
+            <button
+              onClick={() => setStatusFilter("OPEN")}
+              className={`px-4 py-2 rounded-md text-sm font-semibold transition-all duration-200 ${
+                statusFilter === "OPEN"
+                  ? "bg-white text-[#094A58] shadow-md"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              Open
+              <span
+                className={`ml-2 px-1.5 py-0.5 rounded-full text-xs ${
+                  statusFilter === "OPEN"
+                    ? "bg-[#E6F7FB] text-[#094A58]"
+                    : "bg-gray-200 text-gray-600"
+                }`}
+              >
+                {statusCounts.OPEN}
+              </span>
+            </button>
+            <button
+              onClick={() => setStatusFilter("CLOSED")}
+              className={`px-4 py-2 rounded-md text-sm font-semibold transition-all duration-200 ${
+                statusFilter === "CLOSED"
+                  ? "bg-white text-gray-900 shadow-md"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              Closed
+              <span
+                className={`ml-2 px-1.5 py-0.5 rounded-full text-xs ${
+                  statusFilter === "CLOSED"
+                    ? "bg-gray-200 text-gray-900"
+                    : "bg-gray-200 text-gray-600"
+                }`}
+              >
+                {statusCounts.CLOSED}
+              </span>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Error/Success Messages */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 flex items-center">
-          <AlertCircle className="w-5 h-5 text-red-500 mr-2" />
-          <span className="text-red-700">{error}</span>
+        <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
+          <div className="flex">
+            <AlertCircle className="h-4 w-4 text-red-400" />
+            <div className="ml-3">
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          </div>
         </div>
       )}
 
       {successMessage && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 flex items-center">
-          <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-          <span className="text-green-700">{successMessage}</span>
+        <div className="bg-green-50 border border-green-200 rounded-md p-4 mb-6">
+          <div className="flex">
+            <CheckCircle className="h-4 w-4 text-green-500" />
+            <div className="ml-3">
+              <p className="text-sm text-green-700">{successMessage}</p>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Offers List */}
-      {offers.length === 0 ? (
-        <Card className="text-center py-12">
-          <CardContent>
-            <Pill className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              No donation offers yet
-            </h3>
-            <p className="text-gray-600 mb-6">
-              Create your first donation offer to help charities with medicine
-              donations
-            </p>
-            <Button onClick={() => setIsCreateDialogOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Create Your First Offer
-            </Button>
-          </CardContent>
-        </Card>
+      {/* State Blocks */}
+      {loading ? (
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="text-gray-600 mt-4">Loading donation offers...</p>
+        </div>
+      ) : offers.length === 0 ? (
+        <div className="flex justify-center items-center min-h-96">
+          <Card className="text-center py-16 max-w-md w-full relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+              <div className="absolute top-8 left-10 w-8 h-8 bg-blue-100 rounded-full animate-float opacity-50"></div>
+              <div className="absolute top-20 right-12 w-6 h-6 bg-green-100 rounded-full animate-float-delayed opacity-50"></div>
+              <div className="absolute bottom-20 left-1/4 w-5 h-5 bg-pink-100 rounded-full animate-float-slow opacity-50"></div>
+            </div>
+            <CardContent className="relative z-10">
+              <div className="flex justify-center mb-6">
+                <div className="relative">
+                  <div className="animate-spin-slow absolute inset-0 border-2 border-transparent border-t-blue-300 border-r-blue-300 rounded-full"></div>
+                  <Pill className="h-16 w-16 text-gray-400 animate-bounce relative" />
+                </div>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2 animate-fade-in">
+                No donation offers yet
+              </h3>
+              <p className="text-gray-600 mb-2 animate-fade-in">
+                Your unused medicines could help someone today.
+              </p>
+              <p className="text-gray-500 mb-8 animate-fade-in text-sm">
+                Share what you can spare and track your offers here.
+              </p>
+              <Button
+                onClick={handleOpenCreate}
+                className="animate-pulse-soft hover:animate-pulse-faster relative overflow-hidden group"
+              >
+                <Plus className="h-4 w-4 mr-2 group-hover:rotate-90 transition-transform" />
+                Create Offer
+              </Button>
+              <p className="text-xs text-gray-400 mt-6 animate-blink">✨ Donate to make a difference ✨</p>
+            </CardContent>
+          </Card>
+        </div>
+      ) : filteredOffers.length === 0 ? (
+        <div className="flex justify-center items-center min-h-72">
+          <Card className="text-center py-12 max-w-md w-full relative">
+            <CardContent>
+              <div className="flex justify-center mb-6">
+                <div className="relative">
+                  <div className="animate-spin-slow absolute inset-0 border-2 border-transparent border-t-blue-300 border-r-blue-300 rounded-full"></div>
+                  <Filter className="h-16 w-16 text-gray-400 animate-bounce relative" />
+                </div>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2 animate-fade-in">
+                {statusFilter === "OPEN"
+                  ? "No open donation offers"
+                  : "No closed donation offers"}
+              </h3>
+              <p className="text-gray-600 mb-6 animate-fade-in">
+                {statusFilter === "OPEN"
+                  ? "You don't have any active offers right now."
+                  : "You haven't closed any offers yet."}
+              </p>
+              <Button
+                variant="outline"
+                onClick={() => setStatusFilter("ALL")}
+                className="animate-pulse-soft"
+              >
+                View All Offers
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {offers.map((offer) => (
+          {filteredOffers.map((offer) => (
             <Card key={offer.id} className="hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
-                  <CardTitle className="text-lg">
-                    {offer.medicine.name}
-                  </CardTitle>
+                  <div>
+                    <CardTitle className="text-lg">{offer.medicine.name}</CardTitle>
+                    {offer.medicine.genericName && (
+                      <p className="text-xs text-gray-500 mt-1">({offer.medicine.genericName})</p>
+                    )}
+                  </div>
                   {getStatusBadge(offer.status)}
                 </div>
               </CardHeader>
@@ -380,36 +506,47 @@ export default function PatientDonationsPage() {
                     </div>
                   )}
                   {offer.notes && (
-                    <p className="text-sm text-gray-500 mt-2">{offer.notes}</p>
+                    <p className="text-sm text-gray-500">Notes: {offer.notes}</p>
                   )}
                 </div>
 
                 <div className="flex gap-2 mt-4">
-                  {offer.status === "OPEN" && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedOfferId(offer.id);
-                        setIsCloseDialogOpen(true);
-                      }}
-                      className="flex-1"
-                    >
-                      <X className="h-4 w-4 mr-1" />
-                      Close
-                    </Button>
-                  )}
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      setSelectedOfferId(offer.id);
-                      setIsDeleteDialogOpen(true);
-                    }}
-                    className="flex-1 text-red-600 hover:text-red-700"
+                    onClick={() => handleEditOffer(offer)}
+                    disabled={offer.status !== "OPEN" || togglingOfferId === offer.id}
+                    className="flex-1"
                   >
-                    <Trash2 className="h-4 w-4 mr-1" />
-                    Delete
+                    <Edit className="h-4 w-4 mr-1" />
+                    Edit
+                  </Button>
+                  <Button
+                    onClick={() => toggleOfferStatus(offer)}
+                    disabled={togglingOfferId === offer.id}
+                    size="sm"
+                    className={`flex-1 transition-all duration-200 text-white shadow-md hover:shadow-lg ${
+                      offer.status === "OPEN"
+                        ? "bg-primary hover:bg-tertiary"
+                        : "bg-green hover:bg-[#1db34a]"
+                    }`}
+                  >
+                    {togglingOfferId === offer.id ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                        Updating...
+                      </>
+                    ) : offer.status === "OPEN" ? (
+                      <>
+                        <CheckCircle2 className="h-4 w-4 mr-1" />
+                        Mark Fulfilled
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="h-4 w-4 mr-1" />
+                        Reopen
+                      </>
+                    )}
                   </Button>
                 </div>
               </CardContent>
@@ -418,17 +555,30 @@ export default function PatientDonationsPage() {
         </div>
       )}
 
-      {/* Create Offer Dialog */}
-      <Dialog
-        open={isCreateDialogOpen}
-        onOpenChange={(open) => {
-          setIsCreateDialogOpen(open);
-          if (!open) resetForm();
-        }}
-      >
-        <DialogContent className="sm:max-w-[500px]">
+      {/* Create/Edit Offer Dialog */}
+      <Dialog open={isFormDialogOpen} onOpenChange={(open) => {
+        setIsFormDialogOpen(open);
+        if (!open) resetForm();
+      }}>
+        <DialogContent
+          className="sm:max-w-[500px]"
+          onPointerDownOutside={(event) => {
+            const target = event.target as HTMLElement | null;
+            if (target?.closest("[data-city-dropdown]")) {
+              event.preventDefault();
+            }
+          }}
+          onInteractOutside={(event) => {
+            const target = event.target as HTMLElement | null;
+            if (target?.closest("[data-city-dropdown]")) {
+              event.preventDefault();
+            }
+          }}
+        >
           <DialogHeader>
-            <DialogTitle>Create Donation Offer</DialogTitle>
+            <DialogTitle>
+              {formMode === "edit" ? "Edit Donation Offer" : "Create Donation Offer"}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
@@ -442,7 +592,10 @@ export default function PatientDonationsPage() {
                   medicines={medicines}
                   value={medicineSearchTerm}
                   onChange={setMedicineSearchTerm}
-                  onSelect={(medicine) => setSelectedMedicine(medicine)}
+                  onSelect={(medicine) => {
+                    setSelectedMedicine(medicine);
+                    setMedicineSearchTerm(medicine?.name ?? "");
+                  }}
                   placeholder="Search for a medicine..."
                 />
               )}
@@ -460,6 +613,7 @@ export default function PatientDonationsPage() {
                   value={city}
                   onChange={setCity}
                   placeholder="Select city..."
+                  disablePortal
                 />
               )}
             </div>
@@ -467,55 +621,22 @@ export default function PatientDonationsPage() {
           <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 mt-6">
             <Button
               variant="outline"
-              onClick={() => setIsCreateDialogOpen(false)}
+              onClick={() => {
+                setIsFormDialogOpen(false);
+                resetForm();
+              }}
               disabled={formLoading}
             >
               Cancel
             </Button>
-            <Button
-              onClick={createOffer}
-              disabled={formLoading}
-              className="sm:ml-2"
-            >
-              {formLoading ? "Creating..." : "Create Offer"}
+            <Button onClick={handleDialogSubmit} disabled={formLoading} className="sm:ml-2">
+              {formLoading
+                ? formMode === "edit" ? "Saving..." : "Creating..."
+                : formMode === "edit" ? "Save Changes" : "Create Offer"}
             </Button>
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* Close Offer Confirmation Modal */}
-      <ConfirmActionModal
-        open={isCloseDialogOpen}
-        title="Close Donation Offer"
-        description="Are you sure you want to close this donation offer? This will mark it as no longer available for charities to view."
-        confirmLabel="Yes, Close Offer"
-        confirmVariant="default"
-        onCancel={() => {
-          setIsCloseDialogOpen(false);
-          setSelectedOfferId(null);
-        }}
-        onConfirm={() => selectedOfferId && closeOffer(selectedOfferId)}
-        loading={formLoading}
-      />
-
-      {/* Delete Offer Confirmation Modal */}
-      <ConfirmActionModal
-        open={isDeleteDialogOpen}
-        title="Delete Donation Offer"
-        description="Are you sure you want to delete this donation offer? This action cannot be undone."
-        confirmLabel="Yes, Delete Offer"
-        confirmVariant="destructive"
-        onCancel={() => {
-          setIsDeleteDialogOpen(false);
-          setSelectedOfferId(null);
-        }}
-        onConfirm={() => {
-          if (selectedOfferId) {
-            deleteOffer(selectedOfferId);
-          }
-        }}
-        loading={formLoading}
-      />
     </div>
   );
 }
