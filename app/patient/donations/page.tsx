@@ -613,7 +613,6 @@ export default function PatientDonationsPage() {
                   value={city}
                   onChange={setCity}
                   placeholder="Select city..."
-                  disablePortal
                 />
               )}
             </div>

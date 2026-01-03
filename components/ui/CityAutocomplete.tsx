@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { createPortal } from "react-dom";
 import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -11,7 +10,6 @@ interface CityAutocompleteProps {
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
-  disablePortal?: boolean;
 }
 
 export function CityAutocomplete({
@@ -20,15 +18,9 @@ export function CityAutocomplete({
   onChange,
   placeholder = "Select a city",
   className,
-  disablePortal = false,
 }: CityAutocompleteProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [dropdownPosition, setDropdownPosition] = useState({
-    top: 0,
-    left: 0,
-    width: 0,
-  });
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -36,33 +28,25 @@ export function CityAutocomplete({
     city.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Update dropdown position when opened
-  useEffect(() => {
-    if (!disablePortal && isOpen && containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect();
-      setDropdownPosition({
-        top: rect.bottom + window.scrollY + 4,
-        left: rect.left + window.scrollX,
-        width: rect.width,
-      });
-    }
-  }, [isOpen, disablePortal]);
-
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         containerRef.current &&
-        !containerRef.current.contains(event.target as Node) &&
-        !(event.target as Element).closest("[data-city-dropdown]")
+        !containerRef.current.contains(event.target as Node)
       ) {
         setIsOpen(false);
         setSearchTerm("");
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      // Prevent dialog from closing when clicking inside dropdown
+      event?.stopPropagation?.();
+    }
+
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [isOpen]);
 
   const handleSelect = (city: string) => {
     onChange(city);
@@ -70,83 +54,22 @@ export function CityAutocomplete({
     setSearchTerm("");
   };
 
-  const handleSelectAll = () => {
-    onChange(""); // Empty string represents "All Cities"
-    setIsOpen(false);
-    setSearchTerm("");
+  const handleToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsOpen(!isOpen);
+    if (!isOpen) {
+      setTimeout(() => inputRef.current?.focus(), 0);
+    }
   };
-
-  const handleOpen = () => {
-    setIsOpen(true);
-    setTimeout(() => inputRef.current?.focus(), 0);
-  };
-
-  const dropdownContent = (
-    <div
-      data-city-dropdown
-      className={cn(
-        "rounded-lg border border-gray-200 bg-white shadow-lg",
-        disablePortal ? "absolute left-0 right-0 mt-1 z-50" : "fixed z-[9999]"
-      )}
-      style={
-        disablePortal
-          ? undefined
-          : {
-              top: dropdownPosition.top,
-              left: dropdownPosition.left,
-              width: dropdownPosition.width,
-            }
-      }
-    >
-      {/* Search Input */}
-      <div className="border-b border-gray-200 p-2">
-        <input
-          ref={inputRef}
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search cities..."
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-        />
-      </div>
-
-      {/* Cities List */}
-      <div className="max-h-[300px] overflow-y-auto p-1">
-        {filteredCities.length === 0 ? (
-          <div className="px-3 py-6 text-center text-sm text-gray-500">
-            No city found.
-          </div>
-        ) : (
-          filteredCities.map((city) => (
-            <button
-              key={city}
-              type="button"
-              onClick={() => handleSelect(city)}
-              className={cn(
-                "flex w-full items-center rounded-sm px-3 py-2 text-sm text-gray-900 hover:bg-primary-hover cursor-pointer transition-colors",
-                value === city && "bg-primary-hover"
-              )}
-            >
-              <Check
-                className={cn(
-                  "mr-2 h-4 w-4",
-                  value === city ? "opacity-100" : "opacity-0"
-                )}
-              />
-              {city}
-            </button>
-          ))
-        )}
-      </div>
-    </div>
-  );
 
   return (
     <div ref={containerRef} className="relative w-full">
       {/* Trigger Button */}
       <button
         type="button"
-        onClick={handleOpen}
+        onClick={handleToggle}
+        onMouseDown={(e) => e.preventDefault()} // Prevent dialog interference
         className={cn(
           "flex h-11 w-full items-center justify-between rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 hover:bg-gray-50 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary",
           !value && "text-gray-500",
@@ -157,80 +80,58 @@ export function CityAutocomplete({
         <ChevronDown className="h-4 w-4 opacity-50" />
       </button>
 
-      {/* Dropdown - rendered in portal to avoid overflow clipping */}
-      {isOpen &&
-        typeof document !== "undefined" &&
-        createPortal(
-          <div
-            data-city-dropdown
-            className="fixed z-[9999] rounded-lg border border-gray-200 bg-white shadow-lg"
-            style={{
-              top: dropdownPosition.top,
-              left: dropdownPosition.left,
-              width: dropdownPosition.width,
-            }}
-          >
-            {/* Search Input */}
-            <div className="border-b border-gray-200 p-2">
-              <input
-                ref={inputRef}
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search cities..."
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              />
-            </div>
+      {/* Dropdown - renders within component hierarchy */}
+      {isOpen && (
+        <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-lg border border-gray-200 bg-white shadow-lg">
+          {/* Search Input */}
+          <div className="border-b border-gray-200 p-2">
+            <input
+              ref={inputRef}
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
+              placeholder="Search cities..."
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+          </div>
 
-            {/* Cities List */}
-            <div className="max-h-[300px] overflow-y-auto p-1">
-              {/* All Cities Option */}
-              <button
-                type="button"
-                onClick={handleSelectAll}
-                className={cn(
-                  "flex w-full items-center rounded-sm px-3 py-2 text-sm text-gray-900 hover:bg-primary-hover cursor-pointer transition-colors",
-                  value === "" && "bg-primary-hover"
-                )}
-              >
-                <Check
+          {/* Cities List */}
+          <div className="max-h-[300px] overflow-y-auto p-1">
+            {filteredCities.length === 0 ? (
+              <div className="px-3 py-6 text-center text-sm text-gray-500">
+                No city found.
+              </div>
+            ) : (
+              filteredCities.map((city) => (
+                <button
+                  key={city}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleSelect(city);
+                  }}
+                  onMouseDown={(e) => e.stopPropagation()}
                   className={cn(
-                    "mr-2 h-4 w-4",
-                    value === "" ? "opacity-100" : "opacity-0"
+                    "flex w-full items-center rounded-sm px-3 py-2 text-sm text-gray-900 hover:bg-primary-hover cursor-pointer transition-colors",
+                    value === city && "bg-primary-hover"
                   )}
-                />
-                All Cities
-              </button>
-
-              {filteredCities.length === 0 ? (
-                <div className="px-3 py-6 text-center text-sm text-gray-500">
-                  No city found.
-                </div>
-              ) : (
-                filteredCities.map((city) => (
-                  <button
-                    key={city}
-                    type="button"
-                    onClick={() => handleSelect(city)}
+                >
+                  <Check
                     className={cn(
-                      "flex w-full items-center rounded-sm px-3 py-2 text-sm text-gray-900 hover:bg-primary-hover cursor-pointer transition-colors",
-                      value === city && "bg-primary-hover"
+                      "mr-2 h-4 w-4",
+                      value === city ? "opacity-100" : "opacity-0"
                     )}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        value === city ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                    {city}
-                  </button>
-                ))
-              )}
-            </div>
-          </div>,
-          document.body
-        )}
+                  />
+                  {city}
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
