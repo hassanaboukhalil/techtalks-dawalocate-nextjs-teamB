@@ -4,6 +4,8 @@ import { useMemo, useState, useEffect } from "react";
 import axios from "axios";
 import { Eye, EyeOff, Pencil, Shield, Mail, Phone, CheckCircle2, XCircle, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import lebanonFlag from "@/public/images/Lebanon.jpeg";
 
 type TabKey = "account" | "security";
 
@@ -389,18 +391,36 @@ export default function PharmacySettingsPage() {
 
               <div className="flex items-center gap-3 group">
                 <div className="flex-1 relative">
-                <input
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  disabled={!isEditingPhone}
-                  className={[
-                      "w-full h-12 rounded-xl border px-4 text-sm outline-none transition-all duration-300",
-                      "border-slate-200 focus:border-blue-400 focus:ring-4 focus:ring-blue-100/50",
-                      "hover:shadow-md transform hover:scale-[1.01]",
-                      !isEditingPhone ? "bg-gradient-to-r from-slate-50 to-slate-100 text-slate-700" : "bg-white shadow-lg",
-                  ].join(" ")}
-                    placeholder="+961 1 111 111"
-                />
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none z-10">
+                    <Image
+                      src={lebanonFlag}
+                      alt="Lebanon"
+                      className="w-6 h-4 object-cover rounded-sm"
+                      width={20}
+                      height={20}
+                    />
+                    <span className="text-gray-900 font-medium text-sm">
+                      +961
+                    </span>
+                    <span className="text-gray-300">|</span>
+                  </div>
+                  <input
+                    value={phone}
+                    onChange={(e) => {
+                      const inputValue = e.target.value.replace(/\D/g, "");
+                      if (inputValue.length <= 8) {
+                        setPhone(inputValue);
+                      }
+                    }}
+                    disabled={!isEditingPhone}
+                    className={[
+                        "w-full h-12 rounded-xl border pl-[110px] pr-4 text-sm outline-none transition-all duration-300",
+                        "border-slate-200 focus:border-blue-400 focus:ring-4 focus:ring-blue-100/50",
+                        "hover:shadow-md transform hover:scale-[1.01]",
+                        !isEditingPhone ? "bg-gradient-to-r from-slate-50 to-slate-100 text-slate-700" : "bg-white shadow-lg",
+                    ].join(" ")}
+                    placeholder="70123456"
+                  />
                   {!isEditingPhone && (
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer rounded-xl"></div>
                   )}
