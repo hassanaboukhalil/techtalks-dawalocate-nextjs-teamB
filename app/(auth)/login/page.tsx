@@ -47,11 +47,11 @@ export default function LoginPage() {
       // Fetch session to get user type
       const response = await fetch("/api/auth/session");
       const session = await response.json();
-      
+
       // Redirect to appropriate dashboard based on user type
       const userType = session?.user?.userType as keyof typeof DASHBOARD_ROUTES;
       const dashboardPath = DASHBOARD_ROUTES[userType] || "/patient";
-      
+
       router.push(dashboardPath);
       router.refresh();
     } catch {
