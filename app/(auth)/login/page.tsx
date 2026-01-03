@@ -6,16 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
-import { signIn, useSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import Logo from "@/components/layout/Logo";
 import AuthLeftPanel from "@/components/pages-components/auth/AuthLeftPanel";
-
-const DASHBOARD_ROUTES = {
-  patient: "/patient",
-  pharmacy: "/pharmacy",
-  charity: "/charity",
-  admin: "/admin",
-} as const;
 
 export default function LoginPage() {
   const router = useRouter();
@@ -44,15 +37,8 @@ export default function LoginPage() {
         return;
       }
 
-      // Fetch session to get user type
-      const response = await fetch("/api/auth/session");
-      const session = await response.json();
-
-      // Redirect to appropriate dashboard based on user type
-      const userType = session?.user?.userType as keyof typeof DASHBOARD_ROUTES;
-      const dashboardPath = DASHBOARD_ROUTES[userType] || "/patient";
-
-      router.push(dashboardPath);
+      // Success - redirect to root, middleware will route to correct dashboard
+      router.push("/");
       router.refresh();
     } catch {
       setError("Failed to connect to server");

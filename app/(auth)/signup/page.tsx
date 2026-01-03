@@ -167,8 +167,9 @@ export default function SignupPage() {
           return;
         }
 
-        // Success - redirect to dashboard
+        // Success - redirect to root, middleware will route to correct dashboard
         router.push("/");
+        router.refresh();
       }
     } catch (err) {
       setError("Failed to connect to server");
