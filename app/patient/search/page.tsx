@@ -7,6 +7,7 @@ import { MedicineAutocomplete } from '@/components/ui/MedicineAutocomplete';
 import { CityAutocomplete } from '@/components/ui/CityAutocomplete';
 import { PharmacyAutocomplete } from '@/components/ui/PharmacyAutocomplete';
 import { Search, MapPin, Truck, AlertCircle, Loader2, Package, Pill } from 'lucide-react';
+import { LEBANON_CITIES } from '@/constants/lebanon-cities';
 
 interface Medicine { id: number; name: string; genericName?: string; strength?: string; form?: string; }
 interface PharmacyMedicine { id: number; medicine: Medicine; status: 'IN_STOCK' | 'LOW' | 'OUT'; quantity: number; expiresAt: string | null; }
@@ -103,7 +104,7 @@ export default function PatientSearchPage() {
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2 ml-1">City</label>
                 <CityAutocomplete
-                  cities={["Akkar", "Tripoli", "Beirut", "Saida", "Sour", "Jbeil", "Batroun", "Zahle", "Baalbek"]}
+                  cities={LEBANON_CITIES}
                   value={city}
                   onChange={setCity}
                   placeholder="Select location..."
