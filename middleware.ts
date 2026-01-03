@@ -11,7 +11,13 @@ const DASHBOARD_ROUTES = {
 } as const;
 
 // Public routes that don't require authentication
-const PUBLIC_ROUTES = ["/", "/login", "/signup", "/campaigns", "/view-health-profile"];
+const PUBLIC_ROUTES = [
+  "/",
+  "/login",
+  "/signup",
+  "/campaigns",
+  "/view-health-profile",
+];
 
 // Auth routes that authenticated users shouldn't access
 const AUTH_ROUTES = ["/login", "/signup"];
@@ -22,12 +28,12 @@ function isPublicRoute(pathname: string): boolean {
   if (PUBLIC_ROUTES.includes(pathname)) {
     return true;
   }
-  
+
   // Check if it's a campaign detail page (e.g., /campaigns/123)
   if (pathname.startsWith("/campaigns/")) {
     return true;
   }
-  
+
   return false;
 }
 
