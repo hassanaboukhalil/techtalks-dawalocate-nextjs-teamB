@@ -7,9 +7,8 @@ import { Card } from '@/components/ui/card';
 import { MedicineAutocomplete } from '@/components/ui/MedicineAutocomplete';
 import { CityAutocomplete } from '@/components/ui/CityAutocomplete';
 import { PharmacyAutocomplete } from '@/components/ui/PharmacyAutocomplete';
-import { Search, MapPin, Truck, AlertCircle, Loader2, Package, Pill, ExternalLink, Building2 } from 'lucide-react';
+import { Search, MapPin, Truck, AlertCircle, Loader2, Package, Pill } from 'lucide-react';
 import { LEBANON_CITIES } from '@/constants/lebanon-cities';
-import { useSession } from 'next-auth/react';
 
 interface Medicine { id: number; name: string; genericName?: string; strength?: string; form?: string; }
 interface PharmacyMedicine { id: number; medicine: Medicine; status: 'IN_STOCK' | 'LOW' | 'OUT'; quantity: number; expiresAt: string | null; }

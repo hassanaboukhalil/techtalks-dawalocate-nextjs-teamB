@@ -28,7 +28,6 @@ export function CityAutocomplete({
     city.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -42,8 +41,11 @@ export function CityAutocomplete({
 
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
+      // Prevent dialog from closing when clicking inside dropdown
+      event?.stopPropagation?.();
     }
+
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
   const handleSelect = (city: string) => {
@@ -52,15 +54,13 @@ export function CityAutocomplete({
     setSearchTerm("");
   };
 
-  const handleSelectAll = () => {
-    onChange(""); // Empty string represents "All Cities"
-    setIsOpen(false);
-    setSearchTerm("");
-  };
-
-  const handleOpen = () => {
-    setIsOpen(true);
-    setTimeout(() => inputRef.current?.focus(), 0);
+  const handleToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsOpen(!isOpen);
+    if (!isOpen) {
+      setTimeout(() => inputRef.current?.focus(), 0);
+    }
   };
 
   return (
@@ -68,7 +68,8 @@ export function CityAutocomplete({
       {/* Trigger Button */}
       <button
         type="button"
-        onClick={handleOpen}
+        onClick={handleToggle}
+        onMouseDown={(e) => e.preventDefault()} // Prevent dialog interference
         className={cn(
           "flex h-11 w-full items-center justify-between rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 hover:bg-gray-50 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary",
           !value && "text-gray-500",
@@ -79,12 +80,9 @@ export function CityAutocomplete({
         <ChevronDown className="h-4 w-4 opacity-50" />
       </button>
 
-      {/* Dropdown - positioned relative to avoid modal clipping */}
+      {/* Dropdown - renders within component hierarchy */}
       {isOpen && (
-        <div
-          className="absolute top-full left-0 right-0 z-[10000] mt-1 rounded-lg border border-gray-200 bg-white shadow-lg"
-          onClick={(e) => e.stopPropagation()}
-        >
+        <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-lg border border-gray-200 bg-white shadow-lg">
           {/* Search Input */}
           <div className="border-b border-gray-200 p-2">
             <input
@@ -92,32 +90,15 @@ export function CityAutocomplete({
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
               placeholder="Search cities..."
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              onClick={(e) => e.stopPropagation()}
             />
           </div>
 
           {/* Cities List */}
-          <div className="max-h-[200px] overflow-y-auto p-1">
-            {/* All Cities Option */}
-            <button
-              type="button"
-              onClick={handleSelectAll}
-              className={cn(
-                "flex w-full items-center rounded-sm px-3 py-2 text-sm text-gray-900 hover:bg-primary-hover cursor-pointer transition-colors",
-                value === "" && "bg-primary-hover"
-              )}
-            >
-              <Check
-                className={cn(
-                  "mr-2 h-4 w-4",
-                  value === "" ? "opacity-100" : "opacity-0"
-                )}
-              />
-              All Cities
-            </button>
-
+          <div className="max-h-[300px] overflow-y-auto p-1">
             {filteredCities.length === 0 ? (
               <div className="px-3 py-6 text-center text-sm text-gray-500">
                 No city found.
@@ -127,7 +108,12 @@ export function CityAutocomplete({
                 <button
                   key={city}
                   type="button"
-                  onClick={() => handleSelect(city)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleSelect(city);
+                  }}
+                  onMouseDown={(e) => e.stopPropagation()}
                   className={cn(
                     "flex w-full items-center rounded-sm px-3 py-2 text-sm text-gray-900 hover:bg-primary-hover cursor-pointer transition-colors",
                     value === city && "bg-primary-hover"
