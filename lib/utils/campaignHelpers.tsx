@@ -117,16 +117,16 @@ export const formatWhatsAppNumber = (phone: string | null): string | null => {
   if (!phone) return null;
   // Remove all non-digit characters
   const cleaned = phone.replace(/\D/g, "");
-  // If it starts with 0, replace with country code 234 (Nigeria)
+  // If it starts with 0, replace with country code 961 (Lebanon)
   if (cleaned.startsWith("0")) {
-    return `234${cleaned.substring(1)}`;
+    return `961${cleaned.substring(1)}`;
   }
-  // If it already starts with 234, return as is
-  if (cleaned.startsWith("234")) {
+  // If it already starts with 961, return as is
+  if (cleaned.startsWith("961")) {
     return cleaned;
   }
-  // Otherwise, assume it's a local number and add 234
-  return `234${cleaned}`;
+  // Otherwise, assume it's a local number and add 961
+  return `961${cleaned}`;
 };
 
 export const getWhatsAppUrl = (
