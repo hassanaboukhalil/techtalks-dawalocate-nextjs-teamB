@@ -601,6 +601,5 @@ export default function PharmacyDashboard() {
         </div>
       </div>
     </div>
-  </div>
   );
 }
