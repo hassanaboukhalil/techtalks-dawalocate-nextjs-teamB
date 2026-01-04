@@ -63,12 +63,6 @@ export const CHARITY_NAV_ITEMS: NavItem[] = [
   { id: 1, label: "Dashboard", link: "/charity", icon: LayoutDashboard },
   { id: 2, label: "Campaigns", link: "/charity/campaigns", icon: Megaphone },
   { id: 3, label: "Medicine Requests", link: "/charity/requests", icon: Inbox },
-  {
-    id: 4,
-    label: "Donation Offers",
-    link: "/charity/donation-offers",
-    icon: Gift,
-  },
   { id: 5, label: "Account", link: "/charity/account", icon: Settings },
 ];
 
