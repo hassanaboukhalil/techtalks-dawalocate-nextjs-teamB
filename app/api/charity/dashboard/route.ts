@@ -26,7 +26,7 @@ export async function GET(req: Request) {
       requestStats,
       activeCampaignsList,
       topMedicinesRaw,
-      // 1. Fetch My Recent Campaigns (Title + Date)
+      // 1. Fetch My Recent Campaigns (Title + Date + EndDate)
       myRecentCampaigns 
     ] = await Promise.all([
       db.campaign.count({ where: { charityUserId: charityId } }),
@@ -56,12 +56,12 @@ export async function GET(req: Request) {
         include: { medicine: { select: { name: true } } }
       }),
 
-      // 🔥 NEW: Explicitly fetch my 5 recent campaigns for the list
+      // 🔥 FIXED: Added 'endDate' to selection to calculate status
       db.campaign.findMany({
         where: { charityUserId: charityId },
         orderBy: { createdAt: 'desc' },
         take: 5,
-        select: { id: true, title: true, startDate: true, createdAt: true }
+        select: { id: true, title: true, startDate: true, endDate: true, createdAt: true }
       })
     ]);
 
@@ -110,6 +110,12 @@ export async function GET(req: Request) {
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
 
+    // 🔥 NEW LOGIC: Calculate status based on endDate
+    const campaignsWithStatus = myRecentCampaigns.map(campaign => ({
+      ...campaign,
+      status: new Date(campaign.endDate) >= today ? "Active" : "Closed"
+    }));
+
     return NextResponse.json({
       success: true,
       data: {
@@ -121,8 +127,8 @@ export async function GET(req: Request) {
           campaignGoals: campaignGoals,
           topMedicines: topMedicines
         },
-        // 🔥 Send the explicit list to frontend
-        myCampaigns: myRecentCampaigns 
+        // 🔥 Send the processed list with the correct status
+        myCampaigns: campaignsWithStatus 
       }
     });
 
