@@ -22,7 +22,7 @@ const FOOTER_SOCIALS = [
     link: "https://www.instagram.com",
     icon: Instagram,
   },
-  { id: 3, label: "Email", link: "mailto:hassanak.cs@gmail.com", icon: Mail },
+  { id: 3, label: "Email", link: "mailto:info@dawalocate.com", icon: Mail },
 ];
 
 export { FOOTER_LINKS, FOOTER_SOCIALS };

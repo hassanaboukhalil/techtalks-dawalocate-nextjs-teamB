@@ -101,7 +101,7 @@ const FAQ = () => {
             Our team is here to help you get the most out of DawaLocate.
           </p>
           <a
-            href="mailto:info@dawalocate.com"
+            href="mailto:support@dawalocate.com"
             className="inline-flex items-center gap-2 text-primary font-semibold hover:underline"
           >
             Contact Support →
