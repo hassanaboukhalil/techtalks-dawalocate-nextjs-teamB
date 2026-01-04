@@ -138,7 +138,7 @@ export default function CharityDashboard() {
                   <Megaphone className="w-7 h-7" />
                </div>
             </div>
-            <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex items-center justify-between">
+            {/* <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex items-center justify-between">
                <div>
                   <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mb-1">Total Donations</p>
                   <h3 className="text-4xl font-black text-slate-800">{data.stats.donations}</h3>
@@ -147,7 +147,7 @@ export default function CharityDashboard() {
                <div className="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
                   <Gift className="w-7 h-7" />
                </div>
-            </div>
+            </div> */}
             <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex items-center justify-between">
                <div>
                   <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mb-1">Pending Requests</p>
@@ -162,7 +162,7 @@ export default function CharityDashboard() {
 
         {/* ROW 2: CHARTS */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 bg-white rounded-[2rem] border border-slate-100 shadow-sm p-8">
+            {/* <div className="lg:col-span-2 bg-white rounded-[2rem] border border-slate-100 shadow-sm p-8">
                <div className="flex items-center justify-between mb-8">
                   <div>
                     <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
@@ -193,7 +193,7 @@ export default function CharityDashboard() {
                     </AreaChart>
                  </ResponsiveContainer>
                </div>
-            </div>
+            </div> */}
 
            {/* PIE CHART SECTION */}
            <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-8 flex flex-col">
@@ -246,7 +246,7 @@ export default function CharityDashboard() {
         </div>
 
         {/* CAMPAIGN GOALS */}
-        <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-8">
+        {/* <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-8">
            <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2 mb-6">
               <BarChart3 className="w-5 h-5 text-purple-600" /> Campaign Goals
            </h3>
@@ -274,7 +274,7 @@ export default function CharityDashboard() {
                 </Link>
              </div>
            )}
-        </div>
+        </div> */}
 
         {/* ROW 3: TOP MEDICINES & NEW 'MY CAMPAIGNS' LIST */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
