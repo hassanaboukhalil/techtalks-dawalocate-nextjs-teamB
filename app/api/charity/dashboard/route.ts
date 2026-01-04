@@ -56,7 +56,7 @@ export async function GET(req: Request) {
         include: { medicine: { select: { name: true } } }
       }),
 
-      // 🔥 FIXED: Added 'endDate' to selection to calculate status
+      // Fetch my 5 recent campaigns
       db.campaign.findMany({
         where: { charityUserId: charityId },
         orderBy: { createdAt: 'desc' },
@@ -110,10 +110,10 @@ export async function GET(req: Request) {
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
 
-    // 🔥 NEW LOGIC: Calculate status based on endDate
+    // 🔥 FIXED LOGIC: Handle nullable endDate safely
     const campaignsWithStatus = myRecentCampaigns.map(campaign => ({
       ...campaign,
-      status: new Date(campaign.endDate) >= today ? "Active" : "Closed"
+      status: (campaign.endDate && new Date(campaign.endDate) >= today) ? "Active" : "Closed"
     }));
 
     return NextResponse.json({
@@ -127,7 +127,6 @@ export async function GET(req: Request) {
           campaignGoals: campaignGoals,
           topMedicines: topMedicines
         },
-        // 🔥 Send the processed list with the correct status
         myCampaigns: campaignsWithStatus 
       }
     });
