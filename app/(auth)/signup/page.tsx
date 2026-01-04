@@ -18,11 +18,10 @@ import { CityAutocomplete } from "@/components/ui/CityAutocomplete";
 import { LEBANON_CITIES } from "@/constants/lebanon-cities";
 import { OpeningHoursInput } from "@/components/ui/OpeningHoursInput";
 import { VerificationCodeInput } from "@/components/ui/VerificationCodeInput";
+import { PhoneInput } from "@/components/ui/PhoneInput";
 import Logo from "@/components/layout/Logo";
 import Image from "next/image";
 import AuthLeftPanel from "@/components/pages-components/auth/AuthLeftPanel";
-
-import lebanonFlag from "@/public/images/Lebanon.jpeg";
 
 type SignupStep = "details" | "verify";
 
@@ -167,8 +166,9 @@ export default function SignupPage() {
           return;
         }
 
-        // Success - redirect to dashboard
+        // Success - redirect to root, middleware will route to correct dashboard
         router.push("/");
+        router.refresh();
       }
     } catch (err) {
       setError("Failed to connect to server");
@@ -573,43 +573,11 @@ export default function SignupPage() {
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      Phone Number
-                    </label>
-                    <div className="relative">
-                      <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none z-10">
-                        <Image
-                          src={lebanonFlag}
-                          alt="Lebanon"
-                          className="w-6 h-4 object-cover rounded-sm"
-                          width={20}
-                          height={20}
-                        />
-                        <span className="text-gray-900 font-medium text-sm">
-                          +961
-                        </span>
-                        <span className="text-gray-300">|</span>
-                      </div>
-                      <Input
-                        type="tel"
-                        value={formData.phone}
-                        onChange={(e) => {
-                          const value = e.target.value.replace(/\D/g, "");
-                          if (value.length <= 8) {
-                            setFormData({ ...formData, phone: value });
-                          }
-                        }}
-                        pattern="^\d{8}$"
-                        className="h-11 rounded-lg border-gray-300 focus:border-primary focus:ring-primary text-gray-900 pl-[110px]"
-                        placeholder="70123456"
-                        required
-                        minLength={8}
-                        maxLength={8}
-                        title="Please enter exactly 8 digits (e.g., 70123456)"
-                      />
-                    </div>
-                  </div>
+                  <PhoneInput
+                    value={formData.phone}
+                    onChange={(phone) => setFormData({ ...formData, phone })}
+                    required
+                  />
                 </div>
 
                 {showExtraFields && (

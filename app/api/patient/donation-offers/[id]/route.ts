@@ -12,7 +12,7 @@ interface RouteParams {
 
 /**
  * PATCH /api/patient/donation-offers/[id]
- * Close a donation offer (change status from OPEN to CLOSED)
+ * Update donation offer details or toggle status
  */
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -48,14 +48,19 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
     // Parse request body
     const body = await request.json();
-    const { status } = body;
+    const { status, medicineId, city, expiry, notes } = body;
 
-    // Validate status - only allow closing offers
-    if (status !== "CLOSED") {
+    if (
+      status === undefined &&
+      medicineId === undefined &&
+      city === undefined &&
+      expiry === undefined &&
+      notes === undefined
+    ) {
       return NextResponse.json(
         {
           success: false,
-          error: "Invalid status. Only closing offers is allowed."
+          error: "No updates provided."
         },
         { status: 400 }
       );
@@ -120,23 +125,136 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       );
     }
 
-    // Check if offer can be closed (must be OPEN)
-    if (existingOffer.status !== "OPEN") {
+    const updateData: Record<string, any> = {};
+
+    if (status !== undefined) {
+      if (status !== "OPEN" && status !== "CLOSED") {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Invalid status value."
+          },
+          { status: 400 }
+        );
+      }
+
+      if (status === existingOffer.status) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Offer is already ${status.toLowerCase()}.`
+          },
+          { status: 400 }
+        );
+      }
+
+      if (status === "CLOSED" && existingOffer.status !== "OPEN") {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Only open offers can be closed."
+          },
+          { status: 400 }
+        );
+      }
+
+      if (status === "OPEN" && existingOffer.status !== "CLOSED") {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Only closed offers can be reopened."
+          },
+          { status: 400 }
+        );
+      }
+
+      updateData.status = status as DonationOfferStatus;
+    }
+
+    if (medicineId !== undefined) {
+      if (typeof medicineId !== "number" || medicineId <= 0) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Invalid medicine ID."
+          },
+          { status: 400 }
+        );
+      }
+
+      const medicine = await db.medicine.findUnique({ where: { id: medicineId } });
+      if (!medicine) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Medicine not found."
+          },
+          { status: 404 }
+        );
+      }
+
+      updateData.medicineId = medicineId;
+    }
+
+    if (city !== undefined) {
+      if (typeof city !== "string" || city.trim().length === 0) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "City must be a non-empty string."
+          },
+          { status: 400 }
+        );
+      }
+
+      updateData.city = city.trim();
+    }
+
+    if (expiry !== undefined) {
+      if (!expiry) {
+        updateData.expiry = null;
+      } else {
+        const expiryDate = new Date(expiry);
+        if (isNaN(expiryDate.getTime())) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: "Invalid expiry date format."
+            },
+            { status: 400 }
+          );
+        }
+        updateData.expiry = expiryDate;
+      }
+    }
+
+    if (notes !== undefined) {
+      if (notes !== null && typeof notes !== "string") {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Notes must be a string or null."
+          },
+          { status: 400 }
+        );
+      }
+
+      updateData.notes = notes ? notes.trim() : null;
+    }
+
+    if (Object.keys(updateData).length === 0) {
       return NextResponse.json(
         {
           success: false,
-          error: `Cannot close an offer that is already ${existingOffer.status.toLowerCase()}.`
+          error: "Nothing to update."
         },
         { status: 400 }
       );
     }
 
-    // Update the donation offer status to CLOSED
     const updatedOffer = await db.donationOffer.update({
       where: { id: donationOfferId },
-      data: {
-        status: "CLOSED"
-      },
+      data: updateData,
       include: {
         medicine: {
           select: {
@@ -162,10 +280,17 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       }
     });
 
+    const medicineName = updatedOffer.medicine.name;
+    const message = status
+      ? status === "CLOSED"
+        ? `${medicineName} donation offer has been closed successfully.`
+        : `${medicineName} donation offer has been reopened successfully.`
+      : "Donation offer updated successfully.";
+
     return NextResponse.json(
       {
         success: true,
-        message: `${existingOffer.medicine.name} donation offer has been closed successfully.`,
+        message,
         data: updatedOffer
       },
       { status: 200 }

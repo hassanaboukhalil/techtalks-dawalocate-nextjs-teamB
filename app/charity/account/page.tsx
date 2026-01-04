@@ -380,7 +380,7 @@ function SoftInput(props: React.ComponentProps<typeof Input>) {
         transition-all duration-300
         hover:border-primary/50
         focus:border-primary
-        focus:shadow-[0_0_0_3px_rgba(59,130,246,0.25)]
+        focus:shadow-[0_0_0_3px_var(--color-primary)]
         focus:outline-none
       "
     />
@@ -400,7 +400,7 @@ function Section({
 }) {
   const styles =
     color === "blue"
-      ? "bg-blue-50 border-blue-200 text-primary"
+      ? "bg-primary/5 border-primary/20 text-primary"
       : "bg-orange-50 border-orange-200 text-orange-600";
 
   return (
