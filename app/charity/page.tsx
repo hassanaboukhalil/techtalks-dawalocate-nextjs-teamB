@@ -17,7 +17,7 @@ import {
 
 interface DashboardData {
   stats: { campaigns: number; requests: number; donations: number };
-  myCampaigns: any[]; // 🔥 New Type
+  myCampaigns: any[]; // Now contains the 'status' field from the API
   charityName: string;
   charts: {
     area: any[];
@@ -216,10 +216,8 @@ export default function CharityDashboard() {
                         </PieChart>
                       </ResponsiveContainer>
                       
-                      {/* 🔥 THE FIX IS HERE: Calculate the sum dynamically */}
                       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
                          <span className="text-3xl font-black text-slate-800">
-                            {/* Calculate Total: 28 + 20 = 48 */}
                             {data.charts.pie.reduce((acc: number, item: any) => acc + item.value, 0)}
                          </span>
                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Total</p>
@@ -303,7 +301,7 @@ export default function CharityDashboard() {
                )}
             </div>
 
-            {/* 🔥🔥 THE NEW 'MY RECENT CAMPAIGNS' LIST (Names & Dates) */}
+            {/* 🔥🔥 UPDATED 'MY RECENT CAMPAIGNS' LIST */}
             <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-8">
                <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-bold text-slate-800">Your Recent Campaigns</h3>
@@ -328,10 +326,16 @@ export default function CharityDashboard() {
                              </div>
                          </div>
                          
-                         {/* Status Badge */}
-                         <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-100">
-                            Active
-                         </span>
+                         {/* Status Badge Logic */}
+                         {camp.status === "Active" ? (
+                             <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-100">
+                                Active
+                             </span>
+                         ) : (
+                             <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-md border border-slate-200">
+                                Closed
+                             </span>
+                         )}
                       </div>
                    ))
                  ) : (
