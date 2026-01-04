@@ -62,7 +62,7 @@ interface PharmacyStats {
   }>;
 }
 
-const COLORS = ["#10b981", "#f59e0b", "#f43f5e"];
+const COLORS = ["#10b981", "#f59", "#f43f5e"];
 
 export default function PharmacyDashboard() {
   const [stats, setStats] = useState<PharmacyStats | null>(null);
@@ -372,21 +372,21 @@ export default function PharmacyDashboard() {
 
               if (daysLeft <= 30) {
                 // 🔴 0 - 1 Month (CRITICAL)
-                bgColor = "bg-red-50/50";
+                bgColor = "bg-red-50 bg-opacity-50";
                 borderColor = "border-red-100";
                 iconColor = "text-red-500";
                 textColor = "text-red-600";
                 statusText = "Critical";
               } else if (daysLeft <= 90) {
                 // 🟠 1 - 3 Months (WARNING)
-                bgColor = "bg-orange-50/50";
+                bgColor = "bg-orange-50 bg-opacity-50";
                 borderColor = "border-orange-100";
                 iconColor = "text-orange-500";
                 textColor = "text-orange-700";
                 statusText = "Warning";
               } else {
                 // 🔵 3 - 6 Months (NOTICE)
-                bgColor = "bg-blue-50/50";
+                bgColor = "bg-blue-50 bg-opacity-50";
                 borderColor = "border-blue-100";
                 iconColor = "text-blue-500";
                 textColor = "text-blue-700";

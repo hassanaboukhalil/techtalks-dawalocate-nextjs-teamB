@@ -144,9 +144,13 @@ export default function CharityAccountPage() {
       } else {
         alert(response.data.error || "Failed to update account");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error updating account:", error);
-      alert(error.response?.data?.error || "Failed to update account");
+      if (axios.isAxiosError(error)) {
+        alert(error.response?.data?.error || "Failed to update account");
+      } else {
+        alert("Failed to update account");
+      }
     } finally {
       setSaving(false);
     }
@@ -294,7 +298,7 @@ export default function CharityAccountPage() {
 
             <Section title="Security" icon={Lock} color="orange">
               <p className="text-sm italic text-gray-500 mb-4">
-                Leave empty if you don't want to change your password
+                Leave empty if you don&apos;t want to change your password
               </p>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -376,7 +380,7 @@ function SoftInput(props: React.ComponentProps<typeof Input>) {
         transition-all duration-300
         hover:border-primary/50
         focus:border-primary
-        focus:shadow-[0_0_0_3px_rgba(59,130,246,0.25)]
+        focus:shadow-[0_0_0_3px_var(--color-primary)]
         focus:outline-none
       "
     />
@@ -396,7 +400,7 @@ function Section({
 }) {
   const styles =
     color === "blue"
-      ? "bg-blue-50 border-blue-200 text-primary"
+      ? "bg-primary/5 border-primary/20 text-primary"
       : "bg-orange-50 border-orange-200 text-orange-600";
 
   return (

@@ -14,11 +14,17 @@ const badges = [
     title: "Real-Time Updates",
     description: "Live medicine availability tracking",
   },
+  // {
+  //   id: 3,
+  //   icon: Users,
+  //   title: "10K+ Active Users",
+  //   description: "Trusted by the Lebanese community",
+  // },
   {
     id: 3,
     icon: Users,
-    title: "10K+ Active Users",
-    description: "Trusted by the Lebanese community",
+    title: "Community Powered",
+    description: "Built by and for the Lebanese community",
   },
   {
     id: 4,

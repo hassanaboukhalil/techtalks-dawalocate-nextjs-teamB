@@ -37,8 +37,9 @@ export default function LoginPage() {
         return;
       }
 
-      // Redirect to home - middleware will handle routing to correct dashboard
+      // Success - redirect to root, middleware will route to correct dashboard
       router.push("/");
+      router.refresh();
     } catch {
       setError("Failed to connect to server");
     } finally {

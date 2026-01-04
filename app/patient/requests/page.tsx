@@ -46,7 +46,7 @@ export default function PatientRequestsPage() {
   const [error, setError] = useState<string | null>(null);
 
   // Autocomplete data
-  const [medicines, setMedicines] = useState<any[]>([]);
+  const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [cities, setCities] = useState<string[]>([]);
 
   // Dialog states
@@ -478,7 +478,7 @@ export default function PatientRequestsPage() {
               {statusFilter === "ALL" && (
                 <>
                   <p className="text-gray-500 mb-8 animate-fade-in text-sm">
-                    Let's change that!
+                    Let&apos;s change that!
                   </p>
                   <Button 
                     onClick={() => setIsNewDialogOpen(true)}

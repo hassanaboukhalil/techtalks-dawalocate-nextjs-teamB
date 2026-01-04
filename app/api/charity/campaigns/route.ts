@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
+import type { Prisma } from "@/lib/generated/prisma/client";
 
 /**
  * POST /api/charity/campaigns
@@ -49,7 +50,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: `Your charity account is ${user.status?.toLowerCase() || "pending"}. Only approved charities can create campaigns.`,
+          error: `Your charity account is ${
+            user.status?.toLowerCase() || "pending"
+          }. Only approved charities can create campaigns.`,
         },
         { status: 403 }
       );
@@ -141,7 +144,9 @@ export async function POST(request: NextRequest) {
       if (!Array.isArray(medicineIds)) {
         validationErrors.push("Medicine IDs must be an array.");
       } else if (medicineIds.some((id) => typeof id !== "number" || id <= 0)) {
-        validationErrors.push("All medicine IDs must be valid positive numbers.");
+        validationErrors.push(
+          "All medicine IDs must be valid positive numbers."
+        );
       }
     }
 
@@ -165,7 +170,9 @@ export async function POST(request: NextRequest) {
 
       if (medicines.length !== medicineIds.length) {
         const foundIds = medicines.map((m) => m.id);
-        const missingIds = medicineIds.filter((id: number) => !foundIds.includes(id));
+        const missingIds = medicineIds.filter(
+          (id: number) => !foundIds.includes(id)
+        );
         return NextResponse.json(
           {
             success: false,
@@ -317,7 +324,7 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get("offset") || "0");
 
     // 4. Build query filters
-    const where: any = {
+    const where: Prisma.CampaignWhereInput = {
       charityUserId: userId,
     };
 
@@ -385,4 +392,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-
