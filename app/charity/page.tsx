@@ -127,7 +127,8 @@ export default function CharityDashboard() {
         </div>
 
         {/* METRICS */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Changed grid-cols-3 to grid-cols-2 to balance the 2 remaining cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex items-center justify-between">
                <div>
                   <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mb-1">Total Campaigns</p>
@@ -161,7 +162,8 @@ export default function CharityDashboard() {
         </div>
 
         {/* ROW 2: CHARTS */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Changed lg:grid-cols-3 to lg:grid-cols-2 so the Pie Chart isn't squashed into a corner */}
+        <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
             {/* <div className="lg:col-span-2 bg-white rounded-[2rem] border border-slate-100 shadow-sm p-8">
                <div className="flex items-center justify-between mb-8">
                   <div>
@@ -196,6 +198,7 @@ export default function CharityDashboard() {
             </div> */}
 
            {/* PIE CHART SECTION */}
+           
            <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-8 flex flex-col">
                <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2 mb-2">
                   <PieIcon className="w-5 h-5 text-purple-500" /> Request Status
