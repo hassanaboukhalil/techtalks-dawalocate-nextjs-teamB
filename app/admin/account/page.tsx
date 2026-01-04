@@ -1,27 +1,17 @@
 "use client";
 
-import { useEffect, useState, ChangeEvent } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
-import {
-  User,
-  Mail,
-  Lock,
-  ShieldCheck,
-  ArrowRight,
-  CheckCircle2,
-  AlertCircle,
-  Eye,
-  EyeOff,
-  Loader2,
-} from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Mail, Phone, CheckCircle2, User } from "lucide-react";
+import SettingsLayout from "@/components/pages-components/settings/SettingsLayout";
+import SettingsTabs from "@/components/pages-components/settings/SettingsTabs";
+import EditableField from "@/components/pages-components/settings/EditableField";
+import PasswordChangeForm from "@/components/pages-components/settings/PasswordChangeForm";
+import MessageDisplay from "@/components/pages-components/settings/MessageDisplay";
+import LoadingSpinner from "@/components/pages-components/settings/LoadingSpinner";
 
-/* =====================
-   Types
- ===================== */
+type TabKey = "account" | "security";
+
 interface AdminAccount {
   id: number;
   name: string;
@@ -30,435 +20,242 @@ interface AdminAccount {
   createdAt: string;
 }
 
-interface FormState {
-  name: string;
-  email: string;
-  phoneDigits: string;
-  currentPassword?: string;
-  newPassword?: string;
-  confirmPassword?: string;
-}
-
 export default function AdminAccountPage() {
-  const [account, setAccount] = useState<AdminAccount | null>(null);
-  const [form, setForm] = useState<FormState | null>(null);
+  const [tab, setTab] = useState<TabKey>("account");
+
+  // Account info - initially empty, will be loaded from API
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [isEditingEmail, setIsEditingEmail] = useState(false);
+  const [isEditingPhone, setIsEditingPhone] = useState(false);
+
+  const [initial, setInitial] = useState({ name: "", email: "", phone: "" }); // initial values that can be updated
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
+  // Debug tab changes
   useEffect(() => {
-    const fetchAccount = async () => {
+    console.log("Current tab:", tab);
+  }, [tab]);
+
+  // Fetch account data on component mount
+  useEffect(() => {
+    const fetchAccountData = async () => {
       try {
-        const res = await axios.get<AdminAccount>("/api/admin/account");
-        setAccount(res.data);
-        setForm({
-          name: res.data.name,
-          email: res.data.email,
-          phoneDigits: res.data.phone?.replace("+961", "") ?? "",
-          currentPassword: "",
-          newPassword: "",
-          confirmPassword: "",
-        });
-      } catch (err) {
-        console.error(err);
+        setLoading(true);
+        setError(null);
+        const response = await axios.get<{ success: boolean; data: AdminAccount; error?: string }>("/api/admin/account");
+
+        if (response.data.success) {
+          const accountData = response.data.data;
+          setName(accountData.name || "");
+          setEmail(accountData.email || "");
+          setPhone(accountData.phone?.replace("+961", "") || "");
+          setInitial({
+            name: accountData.name || "",
+            email: accountData.email || "",
+            phone: accountData.phone?.replace("+961", "") || ""
+          });
+        } else {
+          setError(response.data.error || "Failed to load account data");
+        }
+      } catch (error: any) {
+        console.error("Error fetching account data:", error);
+        setError(error.response?.data?.error || "An error occurred while loading your account data");
       } finally {
         setLoading(false);
       }
     };
-    fetchAccount();
+
+    fetchAccountData();
   }, []);
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (!form) return;
-    setForm({ ...form, [e.target.name]: e.target.value });
-    if (message) setMessage(null);
+  const onResetAccount = () => {
+    setName(initial.name);
+    setEmail(initial.email);
+    setPhone(initial.phone);
+    setIsEditingName(false);
+    setIsEditingEmail(false);
+    setIsEditingPhone(false);
   };
 
-  const handlePhoneChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (!form) return;
-    const digits = e.target.value.replace(/\D/g, "");
-    if (digits.length <= 8) {
-      setForm({ ...form, phoneDigits: digits });
-    }
-    if (message) setMessage(null);
-  };
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form) return;
-
-    if (form.phoneDigits && form.phoneDigits.length !== 8) {
-      setMessage({
-        type: "error",
-        text: "Phone number must be exactly 8 digits",
-      });
-      return;
-    }
-
-    if (form.newPassword && form.newPassword !== form.confirmPassword) {
-      setMessage({ type: "error", text: "New passwords do not match" });
-      return;
-    }
+  const onSaveAccount = async () => {
+    setSaving(true);
+    setError(null);
+    setSuccess(null);
 
     try {
-      setSaving(true);
-      await axios.patch("/api/admin/account", {
-        name: form.name,
-        email: form.email,
-        phone: form.phoneDigits ? `+961${form.phoneDigits}` : null,
-        ...(form.newPassword && {
-          currentPassword: form.currentPassword,
-          newPassword: form.newPassword,
-        }),
+      const response = await axios.patch<{ success: boolean; data?: AdminAccount; error?: string }>("/api/admin/account", {
+        name,
+        email,
+        phone: phone ? `+961${phone}` : null,
       });
 
-      setMessage({
-        type: "success",
-        text: "Account settings updated successfully",
-      });
-
-      // Clear password fields
-      setForm({
-        ...form,
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      });
-
-      // Update local account data
-      setAccount({
-        ...account!,
-        name: form.name,
-        email: form.email,
-        phone: form.phoneDigits ? `+961${form.phoneDigits}` : null,
-      });
-    } catch (err: unknown) {
-      let errorMessage = "Failed to update account settings";
-      if (axios.isAxiosError(err)) {
-        console.error(
-          "Account update error:",
-          JSON.stringify(
-            {
-              data: err.response?.data,
-              status: err.response?.status,
-              headers: err.response?.headers,
-              message: err.message,
-              stack: err.stack,
-            },
-            null,
-            2
-          )
-        );
-        errorMessage = err.response?.data?.details
-          ? `${err.response.data.error}: ${err.response.data.details}`
-          : err.response?.data?.error || errorMessage;
+      if (response.data.success) {
+        // Update initial state with the new values
+        setInitial({ name, email, phone });
+        setIsEditingName(false);
+        setIsEditingEmail(false);
+        setIsEditingPhone(false);
+        setSuccess("Account information updated successfully!");
+        // Clear success message after 3 seconds
+        setTimeout(() => setSuccess(null), 3000);
       } else {
-        console.error(err);
+        setError(response.data.error || "Failed to update account");
       }
-      setMessage({
-        type: "error",
-        text: errorMessage,
-      });
+    } catch (error: any) {
+      console.error("Error updating account:", error);
+      setError(error.response?.data?.error || "An error occurred while updating your account");
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading || !form || !account) {
+  const handlePasswordChange = async (passwordData: { currentPassword: string; newPassword: string; confirmPassword: string }) => {
+    console.log("Frontend: Starting password update");
+    setSaving(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const response = await axios.patch<{ success: boolean; error?: string }>("/api/admin/account", passwordData);
+
+      console.log("Frontend: Password update response:", response.data);
+
+      if (response.data.success) {
+        setSuccess("Password updated successfully!");
+        console.log("Frontend: Password updated successfully");
+        // Clear success message after 3 seconds
+        setTimeout(() => setSuccess(null), 3000);
+      } else {
+        console.log("Frontend: Password update failed:", response.data.error);
+        setError(response.data.error || "Failed to update password");
+      }
+    } catch (error: any) {
+      console.error("Frontend: Error updating password:", error);
+      setError(error.response?.data?.error || "An error occurred while updating your password");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Add callback for password-specific errors
+  const handlePasswordError = (errorMessage: string) => {
+    // Only set error if there's actually an error message (not for locally handled errors)
+    if (errorMessage) {
+      setError(errorMessage);
+    }
+    setSaving(false); // Stop loading when password error occurs
+  };
+
+  // Show loading state while fetching data
+  if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
+      <SettingsLayout title="Account Settings" description="Manage your administrative profile and security credentials.">
+        <LoadingSpinner message="Loading account information..." />
+      </SettingsLayout>
     );
   }
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-700">
-      {/* HEADER */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
-            Account Settings
-          </h1>
-          <p className="text-slate-500 mt-1">
-            Manage your administrative profile and security credentials.
-          </p>
-        </div>
+    <SettingsLayout title="Account Settings" description="Manage your administrative profile and security credentials.">
+      <SettingsTabs activeTab={tab} onTabChange={setTab} />
 
-        <div className="flex items-center gap-3">
-          <div className="px-4 py-2 bg-slate-50 border rounded-lg flex items-center gap-3 shadow-sm">
-            <div className="h-8 w-8 rounded-full bg-[#119abf] flex items-center justify-center text-xs font-bold text-white shadow-sm">
-              {account.name[0].toUpperCase()}
-            </div>
-            <div>
-              <p className="font-bold text-sm text-slate-900 leading-none">
-                {account.name}
-              </p>
-              <p className="text-[10px] text-[#119abf] font-bold uppercase tracking-wider mt-1">
-                System Admin
-              </p>
+      {/* CONTENT CARD */}
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-xl backdrop-blur-sm animate-fade-in-up animation-delay-300">
+        {tab === "account" ? (
+          <div className="p-6 md:p-8 animate-fade-in animation-delay-400">
+            <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+              <div className="p-2 rounded-xl text-white shadow-lg" style={{ backgroundColor: "var(--color-primary)" }}>
+                <User className="w-5 h-5" />
+              </div>
+              Account Information
+            </h2>
+
+            <EditableField
+              label="Full name"
+              icon={<User className="w-4 h-4 text-blue-500" />}
+              value={name}
+              onChange={setName}
+              isEditing={isEditingName}
+              onToggleEdit={() => setIsEditingName((v) => !v)}
+              placeholder="Admin Name"
+              helperText="Your full name as it appears in the system."
+            />
+
+            <EditableField
+              label="Email address"
+              icon={<Mail className="w-4 h-4 text-blue-500" />}
+              value={email}
+              onChange={setEmail}
+              isEditing={isEditingEmail}
+              onToggleEdit={() => setIsEditingEmail((v) => !v)}
+              placeholder="admin@dawalocate.com"
+              helperText="Used for login and notifications."
+            />
+
+            <EditableField
+              label="Phone number"
+              icon={<Phone className="w-4 h-4 text-blue-500" />}
+              value={phone}
+              onChange={setPhone}
+              isEditing={isEditingPhone}
+              onToggleEdit={() => setIsEditingPhone((v) => !v)}
+              placeholder="70123456"
+              helperText="Phone number is very important for faster contact and emergency communications."
+              isPhoneField={true}
+            />
+
+            <MessageDisplay success={success} error={error} />
+
+            {/* Actions */}
+            <div className="mt-8 flex items-center justify-end gap-4 animate-fade-in animation-delay-700">
+              <button
+                type="button"
+                onClick={onResetAccount}
+                className="h-11 px-6 rounded-xl text-white text-sm font-semibold shadow-sm transition-all duration-300 transform hover:scale-105 hover:shadow-md"
+                style={{ backgroundColor: "var(--color-primary)" }}
+              >
+                Reset
+              </button>
+              <button
+                type="button"
+                onClick={onSaveAccount}
+                disabled={saving}
+                className="h-11 px-6 rounded-xl text-white text-sm font-semibold shadow-lg shadow-blue-200 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none transform hover:scale-105 hover:shadow-xl disabled:hover:scale-100"
+                style={{ backgroundColor: "var(--color-primary)" }}
+              >
+                <span className="flex items-center gap-2">
+                  {saving ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-4 h-4" />
+                      Save changes
+                    </>
+                  )}
+                </span>
+              </button>
             </div>
           </div>
-        </div>
+        ) : (
+          <PasswordChangeForm
+            onSubmit={handlePasswordChange}
+            onPasswordError={handlePasswordError}
+            loading={saving}
+            error={error}
+            success={success}
+          />
+        )}
       </div>
-
-      {/* FEEDBACK MESSAGE */}
-      {message && (
-        <div
-          className={`flex items-center gap-3 p-4 rounded-xl border animate-in slide-in-from-top-4 ${
-            message.type === "success"
-              ? "bg-emerald-50 border-emerald-100 text-emerald-700"
-              : "bg-rose-50 border-rose-100 text-rose-700"
-          }`}
-        >
-          {message.type === "success" ? (
-            <CheckCircle2 className="h-5 w-5" />
-          ) : (
-            <AlertCircle className="h-5 w-5" />
-          )}
-          <p className="text-sm font-medium">{message.text}</p>
-        </div>
-      )}
-
-      <form
-        onSubmit={handleSave}
-        className="grid grid-cols-1 lg:grid-cols-12 gap-8"
-      >
-        {/* GENERAL INFORMATION */}
-        <div className="lg:col-span-12">
-          <Card className="overflow-hidden border rounded-xl shadow-sm z-0">
-            <div className="p-6 border-b bg-slate-50/50">
-              <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                <User className="w-5 h-5 text-[#119abf]" />
-                General Information
-              </h2>
-            </div>
-            <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-2">
-                <Label
-                  htmlFor="name"
-                  className="text-sm font-semibold text-slate-700 ml-0.5"
-                >
-                  Full Name
-                </Label>
-                <div className="relative group">
-                  <User className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 group-focus-within:text-[#119abf] transition-colors" />
-                  <Input
-                    id="name"
-                    name="name"
-                    value={form.name}
-                    onChange={handleChange}
-                    placeholder="Admin Name"
-                    className="pl-9 h-11 rounded-lg border-slate-200 focus:ring-2 focus:ring-[#119abf]/20 focus:border-[#119abf] transition-all"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label
-                  htmlFor="email"
-                  className="text-sm font-semibold text-slate-700 ml-0.5"
-                >
-                  Email Address
-                </Label>
-                <div className="relative group">
-                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 group-focus-within:text-[#119abf] transition-colors" />
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={form.email}
-                    onChange={handleChange}
-                    placeholder="admin@dawalocate.com"
-                    className="pl-9 h-11 rounded-lg border-slate-200 focus:ring-2 focus:ring-[#119abf]/20 focus:border-[#119abf] transition-all"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2 md:col-span-2">
-                <Label
-                  htmlFor="phone"
-                  className="text-sm font-semibold text-slate-700 ml-0.5"
-                >
-                  Phone Number
-                </Label>
-                <div className="flex h-11 w-full rounded-lg border border-slate-200 bg-white focus-within:ring-2 focus-within:ring-[#119abf]/20 focus-within:border-[#119abf] overflow-hidden transition-all">
-                  <div className="flex items-center gap-2 px-3 bg-slate-50 border-r border-slate-200 shrink-0">
-                    <img
-                      src="https://flagcdn.com/w40/lb.png"
-                      alt="Lebanon Flag"
-                      className="w-6 h-4 object-cover rounded-sm shadow-sm"
-                    />
-                    <span className="text-sm font-bold text-slate-700">
-                      +961
-                    </span>
-                  </div>
-                  <input
-                    id="phone"
-                    name="phoneDigits"
-                    className="flex h-full w-full bg-transparent px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none"
-                    placeholder="70 123 456"
-                    value={form.phoneDigits}
-                    onChange={handlePhoneChange}
-                    maxLength={8}
-                  />
-                </div>
-              </div>
-            </div>
-          </Card>
-        </div>
-
-        {/* SECURITY SETTINGS */}
-        <div className="lg:col-span-12">
-          <Card className="overflow-hidden border rounded-xl shadow-sm z-0">
-            <div className="p-6 border-b bg-slate-50/50">
-              <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-[#119abf]" />
-                Security Credentials
-              </h2>
-            </div>
-            <div className="p-8 space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="currentPassword"
-                    title="Current Password"
-                    className="text-sm font-semibold text-slate-700 ml-0.5"
-                  >
-                    Current Password
-                  </Label>
-                  <div className="relative group">
-                    <Lock className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 group-focus-within:text-[#119abf] transition-colors" />
-                    <Input
-                      id="currentPassword"
-                      name="currentPassword"
-                      type={showCurrentPassword ? "text" : "password"}
-                      value={form.currentPassword}
-                      onChange={handleChange}
-                      placeholder="Enter current password"
-                      className="pl-9 h-11 rounded-lg border-slate-200 focus:ring-2 focus:ring-[#119abf]/20 focus:border-[#119abf] transition-all pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setShowCurrentPassword(!showCurrentPassword)
-                      }
-                      className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 transition-colors"
-                    >
-                      {showCurrentPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="newPassword"
-                    title="New Password"
-                    className="text-sm font-semibold text-slate-700 ml-0.5"
-                  >
-                    New Password
-                  </Label>
-                  <div className="relative group">
-                    <Lock className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 group-focus-within:text-[#119abf] transition-colors" />
-                    <Input
-                      id="newPassword"
-                      name="newPassword"
-                      type={showNewPassword ? "text" : "password"}
-                      value={form.newPassword}
-                      onChange={handleChange}
-                      placeholder="Create new password"
-                      className="pl-9 h-11 rounded-lg border-slate-200 focus:ring-2 focus:ring-[#119abf]/20 focus:border-[#119abf] transition-all pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowNewPassword(!showNewPassword)}
-                      className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 transition-colors"
-                    >
-                      {showNewPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="confirmPassword"
-                    title="Confirm Password"
-                    className="text-sm font-semibold text-slate-700 ml-0.5"
-                  >
-                    Confirm New Password
-                  </Label>
-                  <div className="relative group">
-                    <Lock className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 group-focus-within:text-[#119abf] transition-colors" />
-                    <Input
-                      id="confirmPassword"
-                      name="confirmPassword"
-                      type={showConfirmPassword ? "text" : "password"}
-                      value={form.confirmPassword}
-                      onChange={handleChange}
-                      placeholder="Confirm new password"
-                      className="pl-9 h-11 rounded-lg border-slate-200 focus:ring-2 focus:ring-[#119abf]/20 focus:border-[#119abf] transition-all pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setShowConfirmPassword(!showConfirmPassword)
-                      }
-                      className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 transition-colors"
-                    >
-                      {showConfirmPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Card>
-        </div>
-
-        {/* APPLY CHANGES */}
-        <div className="lg:col-span-12 flex items-center justify-between p-6 bg-slate-50 border rounded-xl shadow-sm border-slate-200/60">
-          <div className="hidden sm:block">
-            <h3 className="text-base font-bold text-slate-900 tracking-tight">
-              Apply Changes
-            </h3>
-            <p className="text-xs text-slate-500 font-medium">
-              Updates will be synchronized across the administrative system.
-            </p>
-          </div>
-          <Button
-            type="submit"
-            disabled={saving}
-            className="bg-[#119abf] hover:bg-[#0e8cae] px-10 h-12 rounded-lg font-bold shadow-md shadow-[#119abf]/20 transform transition-all active:scale-95 disabled:opacity-70"
-          >
-            {saving ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" /> saving...
-              </>
-            ) : (
-              <>
-                SUBMIT <ArrowRight className="ml-2 h-4 w-4" />
-              </>
-            )}
-          </Button>
-        </div>
-      </form>
-    </div>
+    </SettingsLayout>
   );
 }
