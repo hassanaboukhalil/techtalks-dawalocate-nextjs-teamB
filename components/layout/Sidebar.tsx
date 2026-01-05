@@ -67,8 +67,8 @@ const Sidebar = ({ navItems }: SidebarProps) => {
           "flex flex-col",
           // Start from top on both mobile and desktop
           "top-0",
-          // Full height on both
-          "h-screen",
+          // Use dvh (dynamic viewport height) for mobile browsers
+          "h-[100dvh] lg:h-screen",
           isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
@@ -77,8 +77,8 @@ const Sidebar = ({ navItems }: SidebarProps) => {
           <Logo withTitle width={32} height={32} />
         </div>
 
-        {/* Navigation items */}
-        <nav className="flex-1 overflow-y-auto p-4 pt-16 lg:pt-4">
+        {/* Navigation items - allow scrolling, account for logout button height */}
+        <nav className="flex-1 overflow-y-auto p-4 pt-16 lg:pt-4 pb-2">
           <ul className="space-y-2 pt-4">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -118,8 +118,8 @@ const Sidebar = ({ navItems }: SidebarProps) => {
           </ul>
         </nav>
 
-        {/* Logout button section */}
-        <div className="p-4 border-t border-gray-200">
+        {/* Logout button section - always visible at bottom */}
+        <div className="p-4 border-t border-gray-200 shrink-0">
           <LogoutButton
             variant="ghost"
             size="default"
