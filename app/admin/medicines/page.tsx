@@ -17,6 +17,7 @@ import {
   Layers,
   Check,
 } from "lucide-react";
+import { PageTitle } from "@/components/layout/PageTitle";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -276,7 +277,7 @@ function MedicinesManagementContent() {
       {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Medicines Inventory</h1>
+          <PageTitle>Medicines Inventory</PageTitle>
           <p className="text-slate-500 mt-1">Structured, searchable medicine catalog.</p>
           <div className="mt-2 text-sm text-slate-500">
             Total: <span className="font-semibold text-slate-900">{filteredMedicines.length}</span>
