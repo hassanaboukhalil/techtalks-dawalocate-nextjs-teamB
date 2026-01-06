@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
+import { PageTitle } from "@/components/layout/PageTitle";
 import {
   Package,
   CheckCircle2,
@@ -129,9 +130,9 @@ export default function PharmacyDashboard() {
       {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+          <PageTitle>
             Pharmacy Overview
-          </h1>
+          </PageTitle>
           <p className="text-slate-500 mt-1">
             Manage your inventory health and account status.
           </p>
