@@ -19,52 +19,99 @@ export function PharmacyStats({ stats, loading }: PharmacyStatsProps) {
       title: "Total Pharmacies",
       value: stats.total,
       icon: Building2,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
+      borderColor: "border-blue-200",
+      bgColor: "bg-blue-50/60",
+      textColor: "text-blue-700",
+      iconColor: "text-blue-600",
+      iconBg: "bg-blue-100",
+      shadowColor: "hover:shadow-blue-200",
     },
     {
       title: "Pending Review",
       value: stats.PENDING,
       icon: Clock,
-      color: "text-yellow-600",
-      bgColor: "bg-yellow-50",
+      borderColor: "border-amber-200",
+      bgColor: "bg-amber-50/60",
+      textColor: "text-amber-700",
+      iconColor: "text-amber-600",
+      iconBg: "bg-amber-100",
+      shadowColor: "hover:shadow-amber-200",
     },
     {
       title: "Approved",
       value: stats.APPROVED,
       icon: CheckCircle,
-      color: "text-green-600",
-      bgColor: "bg-green-50",
+      borderColor: "border-emerald-200",
+      bgColor: "bg-emerald-50/60",
+      textColor: "text-emerald-700",
+      iconColor: "text-emerald-600",
+      iconBg: "bg-emerald-100",
+      shadowColor: "hover:shadow-emerald-200",
     },
     {
       title: "Rejected",
       value: stats.REJECTED,
       icon: XCircle,
-      color: "text-red-600",
-      bgColor: "bg-red-50",
+      borderColor: "border-rose-200",
+      bgColor: "bg-rose-50/60",
+      textColor: "text-rose-700",
+      iconColor: "text-rose-600",
+      iconBg: "bg-rose-100",
+      shadowColor: "hover:shadow-rose-200",
     },
   ];
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {statCards.map((stat) => (
-        <Card key={stat.title}>
+      {statCards.map((stat, index) => (
+        <Card 
+          key={stat.title} 
+          className={`
+            border ${stat.borderColor} ${stat.bgColor} 
+            relative overflow-hidden group cursor-default
+            transition-all duration-300 ease-in-out
+            hover:-translate-y-2 hover:shadow-lg ${stat.shadowColor}
+            animate-in fade-in slide-in-from-bottom-4
+          `}
+          // Stagger effect: cards appear one after another
+          style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'backwards' }}
+        >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className={`text-sm font-bold uppercase tracking-wide ${stat.textColor}`}>
               {stat.title}
             </CardTitle>
-            <div className={`p-2 rounded-lg ${stat.bgColor}`}>
-              <stat.icon className={`h-4 w-4 ${stat.color}`} />
+            
+            {/* ✨ BIGGER & ANIMATED ICON CONTAINER ✨ */}
+            <div className={`
+                p-3 rounded-2xl ${stat.iconBg} 
+                transition-transform duration-500
+                group-hover:scale-110 group-hover:rotate-6
+            `}>
+              <stat.icon 
+                className={`
+                    h-8 w-8 ${stat.iconColor} 
+                    transition-all duration-300
+                    ${loading ? 'animate-spin' : 'group-hover:animate-pulse'}
+                `} 
+              />
             </div>
           </CardHeader>
+          
           <CardContent>
             {loading ? (
-              <div className="flex items-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Loading...</span>
+              <div className="flex items-center gap-2 py-1">
+                <Loader2 className={`h-5 w-5 animate-spin ${stat.iconColor}`} />
+                <span className={`text-sm font-medium ${stat.textColor} opacity-70`}>Syncing...</span>
               </div>
             ) : (
-              <div className="text-2xl font-bold">{stat.value}</div>
+              <div className="flex items-baseline gap-1 mt-1">
+                <div className={`text-4xl font-black ${stat.textColor} tabular-nums tracking-tight`}>
+                  {stat.value}
+                </div>
+                <span className={`text-xs font-bold ${stat.textColor} opacity-60 uppercase`}>
+                  Records
+                </span>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -72,4 +119,3 @@ export function PharmacyStats({ stats, loading }: PharmacyStatsProps) {
     </div>
   );
 }
-
