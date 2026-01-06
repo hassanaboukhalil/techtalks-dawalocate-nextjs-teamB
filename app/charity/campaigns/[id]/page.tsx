@@ -22,6 +22,7 @@ import {
   X,
   Save,
 } from "lucide-react";
+import { PageTitle } from "@/components/layout/PageTitle";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -335,7 +336,7 @@ export default function CampaignDetailsPage() {
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-3">
-                <h1 className="text-h2 text-primary">{campaign.title}</h1>
+                <PageTitle>{campaign.title}</PageTitle>
                 {getStatusBadge(status)}
               </div>
               <p className="text-gray-600">

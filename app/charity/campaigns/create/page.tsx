@@ -19,6 +19,7 @@ import {
   Info,
   Sparkles,
 } from "lucide-react";
+import { PageTitle } from "@/components/layout/PageTitle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -227,7 +228,7 @@ export default function CreateCampaignPage() {
               <Sparkles className="h-8 w-8 text-primary" />
             </div>
             <div>
-              <h1 className="text-h2 text-primary mb-2">Create New Campaign</h1>
+              <PageTitle>Create New Campaign</PageTitle>
               <p className="text-gray-600">
                 Launch a medicine donation drive to help communities in need
               </p>
