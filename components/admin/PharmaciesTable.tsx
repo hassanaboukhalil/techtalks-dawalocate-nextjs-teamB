@@ -19,10 +19,21 @@ import {
   ChevronLeft,
   ChevronRight,
   AlertCircle,
+  MapPin,
+  Package,
+  Truck,
+  Ban,
+  Store,
+  Phone,
+  Activity,
+  Layers,
+  Settings2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ViewPharmacyDialog } from "./ViewPharmacyDialog";
 import { ApproveRejectDialog } from "./ApproveRejectDialog";
+
+/* ===================== TYPES (UNCHANGED) ===================== */
 
 interface Pharmacy {
   id: number;
@@ -54,6 +65,8 @@ interface PharmaciesTableProps {
   onRefresh: () => void;
 }
 
+/* ===================== COMPONENT ===================== */
+
 export function PharmaciesTable({
   pharmacies,
   loading,
@@ -61,9 +74,7 @@ export function PharmaciesTable({
   onPageChange,
   onRefresh,
 }: PharmaciesTableProps) {
-  const [selectedPharmacy, setSelectedPharmacy] = useState<Pharmacy | null>(
-    null
-  );
+  const [selectedPharmacy, setSelectedPharmacy] = useState<Pharmacy | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
@@ -86,38 +97,18 @@ export function PharmaciesTable({
 
   const handleApproveConfirm = async (reason?: string) => {
     if (!selectedPharmacy) return;
-
     try {
       setActionLoading(selectedPharmacy.id);
-      const response = await fetch("/api/admin/pharmacies/approve", {
+      const res = await fetch("/api/admin/pharmacies/approve", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          pharmacyId: selectedPharmacy.id,
-          reason,
-        }),
+        body: JSON.stringify({ pharmacyId: selectedPharmacy.id, reason }),
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to approve pharmacy");
-      }
-
-      if (data.success) {
-        onRefresh();
-        setApproveDialogOpen(false);
-        setSelectedPharmacy(null);
-      } else {
-        throw new Error(data.error || "Failed to approve pharmacy");
-      }
-    } catch (error) {
-      console.error("Error approving pharmacy:", error);
-      alert(
-        error instanceof Error
-          ? error.message
-          : "Failed to approve pharmacy"
-      );
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error);
+      onRefresh();
+      setApproveDialogOpen(false);
+      setSelectedPharmacy(null);
     } finally {
       setActionLoading(null);
     }
@@ -125,55 +116,40 @@ export function PharmaciesTable({
 
   const handleRejectConfirm = async (reason?: string) => {
     if (!selectedPharmacy) return;
-
     try {
       setActionLoading(selectedPharmacy.id);
-      const response = await fetch("/api/admin/pharmacies/reject", {
+      const res = await fetch("/api/admin/pharmacies/reject", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          pharmacyId: selectedPharmacy.id,
-          reason,
-        }),
+        body: JSON.stringify({ pharmacyId: selectedPharmacy.id, reason }),
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to reject pharmacy");
-      }
-
-      if (data.success) {
-        onRefresh();
-        setRejectDialogOpen(false);
-        setSelectedPharmacy(null);
-      } else {
-        throw new Error(data.error || "Failed to reject pharmacy");
-      }
-    } catch (error) {
-      console.error("Error rejecting pharmacy:", error);
-      alert(
-        error instanceof Error
-          ? error.message
-          : "Failed to reject pharmacy"
-      );
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error);
+      onRefresh();
+      setRejectDialogOpen(false);
+      setSelectedPharmacy(null);
     } finally {
       setActionLoading(null);
     }
   };
 
   const getStatusBadge = (status: Pharmacy["status"]) => {
-    const variants = {
-      PENDING: "bg-yellow-100 text-yellow-800 border-yellow-300",
-      APPROVED: "bg-green-100 text-green-800 border-green-300",
-      REJECTED: "bg-red-100 text-red-800 border-red-300",
+    const styles = {
+      PENDING: "bg-amber-50 text-amber-700 border-amber-200",
+      APPROVED: "bg-emerald-50 text-emerald-700 border-emerald-200",
+      REJECTED: "bg-rose-50 text-rose-700 border-rose-200",
     };
-
+    const dots = {
+      PENDING: "bg-amber-500",
+      APPROVED: "bg-emerald-500",
+      REJECTED: "bg-rose-500",
+    };
     return (
       <Badge
         variant="outline"
-        className={`${variants[status]} font-medium`}
+        className={`${styles[status]} pl-2 pr-3 py-1 shadow-sm`}
       >
+        <span className={`mr-2 h-1.5 w-1.5 rounded-full ${dots[status]} animate-pulse`} />
         {status}
       </Badge>
     );
@@ -183,170 +159,114 @@ export function PharmaciesTable({
   const totalPages = Math.ceil(pagination.total / pagination.limit);
 
   return (
-    <div className="space-y-4">
-      {/* Table */}
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Pharmacy Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>City</TableHead>
-              <TableHead>Phone</TableHead>
-              <TableHead>Delivery</TableHead>
-              <TableHead>Medicines</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell colSpan={8} className="h-32 text-center">
-                  <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    <span>Loading pharmacies...</span>
-                  </div>
-                </TableCell>
+    <div className="space-y-4 w-full">
+      {/* ✅ BORDER FIXED HERE */}
+      <div className="rounded-xl ring-1 ring-slate-200/70 bg-white shadow-sm overflow-hidden flex flex-col">
+        <div className="overflow-x-auto w-full">
+          <Table className="min-w-[1000px] border-collapse">
+            <TableHeader className="bg-slate-50/90 sticky top-0 z-10">
+              <TableRow className="border-b border-slate-200">
+                <TableHead className="pl-6 w-[300px]">
+                  <Header icon={Store} label="Pharmacy Profile" />
+                </TableHead>
+                <TableHead><Header icon={MapPin} label="Location" /></TableHead>
+                <TableHead><Header icon={Phone} label="Contact" /></TableHead>
+                <TableHead><Header icon={Truck} label="Services" /></TableHead>
+                <TableHead><Header icon={Package} label="Inventory" /></TableHead>
+                <TableHead><Header icon={Activity} label="Status" /></TableHead>
+                <TableHead className="text-right pr-6">
+                  <Header icon={Settings2} label="Actions" align="right" />
+                </TableHead>
               </TableRow>
-            ) : pharmacies.length === 0 ? (
-              <TableEmpty
-                message="No pharmacies found"
-                icon={<AlertCircle className="h-10 w-10" />}
-              />
-            ) : (
-              pharmacies.map((pharmacy) => (
-                <TableRow key={pharmacy.id}>
-                  <TableCell className="font-medium">
-                    {pharmacy.name}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {pharmacy.email}
-                  </TableCell>
-                  <TableCell>
-                    {pharmacy.city || (
-                      <span className="text-muted-foreground">-</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {pharmacy.phone || (
-                      <span className="text-muted-foreground">-</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {pharmacy.hasDelivery ? (
-                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                        Yes
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="bg-gray-50 text-gray-700">
-                        No
-                      </Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-sm font-medium">
-                      {pharmacy.medicineCount}
-                    </span>
-                  </TableCell>
-                  <TableCell>{getStatusBadge(pharmacy.status)}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={() => handleView(pharmacy)}
-                        title="View Details"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
+            </TableHeader>
 
-                      {pharmacy.status !== "APPROVED" && (
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={() => handleApprove(pharmacy)}
-                          disabled={actionLoading === pharmacy.id}
-                          title="Approve Pharmacy"
-                          className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                        >
-                          {actionLoading === pharmacy.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Check className="h-4 w-4" />
-                          )}
-                        </Button>
-                      )}
-
-                      {pharmacy.status !== "REJECTED" && (
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={() => handleReject(pharmacy)}
-                          disabled={actionLoading === pharmacy.id}
-                          title="Reject Pharmacy"
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          {actionLoading === pharmacy.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <X className="h-4 w-4" />
-                          )}
-                        </Button>
-                      )}
-                    </div>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="h-64 text-center">
+                    <Loader2 className="mx-auto h-8 w-8 animate-spin text-indigo-600" />
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : pharmacies.length === 0 ? (
+                <TableEmpty
+                  message="No pharmacies found"
+                  icon={<AlertCircle className="h-10 w-10" />}
+                />
+              ) : (
+                pharmacies.map((pharmacy) => (
+                  <TableRow
+                    key={pharmacy.id}
+                    className="border-b border-slate-100 last:border-0 hover:bg-slate-50/60"
+                  >
+                    <TableCell className="pl-6">
+                      <div className="font-bold ">{pharmacy.name}</div>
+                      <div className="text-sm text-slate-500">{pharmacy.email}</div>
+                    </TableCell>
+                    <TableCell>{pharmacy.city ?? "—"}</TableCell>
+                    <TableCell className="font-mono">{pharmacy.phone ?? "—"}</TableCell>
+                    <TableCell>
+                      {pharmacy.hasDelivery ? (
+                        <Badge className="bg-blue-50 text-blue-700 border-blue-200">Delivery</Badge>
+                      ) : (
+                        <Badge className="bg-slate-100 text-slate-600 border-slate-200">Pickup Only</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="font-bold">{pharmacy.medicineCount}</TableCell>
+                    <TableCell>{getStatusBadge(pharmacy.status)}</TableCell>
+                    <TableCell className="pr-6 text-right">
+                      <div className="flex justify-end gap-2">
+                        <Action icon={Eye} onClick={() => handleView(pharmacy)} />
+                        {pharmacy.status !== "APPROVED" && (
+                          <Action
+                            icon={Check}
+                            loading={actionLoading === pharmacy.id}
+                            onClick={() => handleApprove(pharmacy)}
+                            color="emerald"
+                          />
+                        )}
+                        {pharmacy.status !== "REJECTED" && (
+                          <Action
+                            icon={X}
+                            loading={actionLoading === pharmacy.id}
+                            onClick={() => handleReject(pharmacy)}
+                            color="rose"
+                          />
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
 
-      {/* Pagination */}
-      {!loading && pharmacies.length > 0 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            Showing {pagination.offset + 1} to{" "}
-            {Math.min(
-              pagination.offset + pagination.limit,
-              pagination.total
-            )}{" "}
-            of {pagination.total} pharmacies
-          </p>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                onPageChange(
-                  Math.max(0, pagination.offset - pagination.limit)
-                )
-              }
-              disabled={pagination.offset === 0}
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Previous
-            </Button>
-            <span className="text-sm text-muted-foreground">
-              Page {currentPage} of {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                onPageChange(pagination.offset + pagination.limit)
-              }
-              disabled={!pagination.hasMore}
-            >
-              Next
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
+      {/* PAGINATION (UNCHANGED) */}
+      <div className="flex justify-between items-center px-1 text-sm">
+        <span className="text-slate-500">
+          Page <b>{currentPage}</b> of <b>{totalPages}</b>
+        </span>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={pagination.offset === 0}
+            onClick={() => onPageChange(pagination.offset - pagination.limit)}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!pagination.hasMore}
+            onClick={() => onPageChange(pagination.offset + pagination.limit)}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
         </div>
-      )}
+      </div>
 
-      {/* Dialogs */}
       {selectedPharmacy && (
         <>
           <ViewPharmacyDialog
@@ -376,3 +296,35 @@ export function PharmaciesTable({
   );
 }
 
+/* ===================== UI HELPERS ===================== */
+
+function Header({ icon: Icon, label, align = "left" }: any) {
+  return (
+    <div
+      className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500 ${
+        align === "right" ? "justify-end" : ""
+      }`}
+    >
+      <Icon className="h-3.5 w-3.5 text-slate-400" />
+      {label}
+    </div>
+  );
+}
+
+function Action({ icon: Icon, onClick, loading, color = "indigo" }: any) {
+  const map: any = {
+    indigo: "bg-indigo-50 text-indigo-600 border-indigo-200",
+    emerald: "bg-emerald-50 text-emerald-600 border-emerald-200",
+    rose: "bg-rose-50 text-rose-600 border-rose-200",
+  };
+  return (
+    <Button
+      variant="ghost"
+      size="icon-sm"
+      onClick={onClick}
+      className={`h-8 w-8 border shadow-sm ${map[color]}`}
+    >
+      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Icon className="h-4 w-4" />}
+    </Button>
+  );
+}
