@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MedicineAutocomplete } from "@/components/ui/MedicineAutocomplete";
 import { CityAutocomplete } from "@/components/ui/CityAutocomplete";
 import { LEBANON_CITIES } from "@/constants/lebanon-cities";
+import { PageTitle } from "@/components/layout/PageTitle";
 
 interface Medicine {
   id: number;
@@ -296,9 +297,9 @@ export default function PatientDonationsPage() {
       {/* Header with Create Button */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <PageTitle>
             My Donation Offers
-          </h1>
+          </PageTitle>
           <p className="text-gray-600 mt-2">
             Create and manage your medicine donation offers for charities
           </p>
