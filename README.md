@@ -13,25 +13,21 @@
 
 DawaLocate is a full-stack web application that helps patients in Lebanon locate essential medicines at nearby pharmacies while connecting donors, pharmacies, and charities to address medication shortages and accessibility challenges.
 
-## � Table of Contents
+## 📑 Table of Contents
 
-- [Overview](#-overview)
-- [Why DawaLocate?](#-why-dawalocate)
-- [Features](#-features)
-- [Tech Stack](#-tech-stack)
-- [Getting Started](#-getting-started)
-- [Project Structure](#-project-structure)
-- [Database Schema](#-database-schema)
-- [Authentication](#-authentication--authorization)
-- [Styling Guidelines](#-styling-guidelines)
-- [Development Guidelines](#-development-guidelines)
-- [Troubleshooting](#-troubleshooting)
-- [FAQ](#-faq)
-- [Security](#-security)
-- [Contributing](#-contributing)
-- [Support](#-support)
+- [Overview](#overview)
+- [Why DawaLocate?](#why-dawalocate)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+- [Project Structure](#project-structure)
+- [Database Schema](#database-schema)
+- [Authentication & Authorization](#authentication--authorization)
+- [Styling Guidelines](#styling-guidelines)
+- [Development Guidelines](#development-guidelines)
+- [Support](#🆘-support)
 
-## Overview
+## 🔎 Overview
 
 ![DawaLocate Hero Section](./readme-images/www.dawalocate.com_landing_hero.png)
 
@@ -42,7 +38,7 @@ DawaLocate serves as a bridge between patients seeking medications and pharmacie
 - **Charities** to create donation campaigns, manage requests, and coordinate medication distribution
 - **Administrators** to oversee the platform, approve pharmacy/charity registrations, and manage the medicine catalog
 
-## Why DawaLocate?
+## 💡 Why DawaLocate?
 
 Lebanon is facing severe medicine shortages and accessibility challenges. Patients struggle to find essential medications, while donations and resources remain disconnected from those who need them most.
 
@@ -54,9 +50,9 @@ DawaLocate bridges this gap by:
 - **Building transparency** - Clear tracking of medicine availability and donation impact
 - **Serving Lebanon** - Localized for Lebanese cities, phone formats, and healthcare context
 
-## Features
+## ✨ Features
 
-### For Patients
+### For Patients 🧑‍⚕️
 
 - Real-time medicine search across participating pharmacies
 - Pharmacy location mapping and filtering by city
@@ -65,7 +61,7 @@ DawaLocate bridges this gap by:
 - Participate in donation campaigns
 - Digital ID card generation for health profiles
 
-### For Pharmacies
+### For Pharmacies 🏥
 
 - Comprehensive inventory management with stock status tracking
 - Campaign participation and donation fulfillment
@@ -73,21 +69,21 @@ DawaLocate bridges this gap by:
 - Opening hours and profile management
 - Account approval workflow
 
-### For Charities
+### For Charities 🤝
 
 - Create and manage donation campaigns
 - Process medication requests from patients
 - Track donations and campaign progress
 - Verify patient eligibility through health profiles
 
-### For Administrators
+### For Administrators 🛡️
 
 - User approval system (pharmacies and charities)
 - Medicine catalog management
 - Platform oversight and monitoring
 - User role management
 
-## Tech Stack
+## 🛠️ Tech Stack
 
 - **Framework:** Next.js 15 (App Router)
 - **Language:** TypeScript
@@ -98,7 +94,7 @@ DawaLocate bridges this gap by:
 - **UI Components:** Custom component library with shadcn/ui patterns
 - **HTTP Client:** Axios
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 
@@ -161,7 +157,7 @@ DawaLocate bridges this gap by:
 
    Open [http://localhost:3000](http://localhost:3000) to see the application.
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 dawalocate/
@@ -188,7 +184,7 @@ dawalocate/
 └── constants/               # App constants and configuration
 ```
 
-## Database Schema
+## 🗄️ Database Schema
 
 The application uses PostgreSQL with Prisma ORM. Key models include:
 
@@ -207,7 +203,7 @@ Run migrations after schema changes:
 npx prisma migrate dev
 ```
 
-## Authentication & Authorization
+## 🔐 Authentication & Authorization
 
 - Email verification required for signup (6-digit code with 10-minute expiry)
 - Role-based access control with 4 user types
@@ -215,21 +211,21 @@ npx prisma migrate dev
 - Session management via NextAuth with JWT
 - Protected routes via middleware
 
-## Email Verification Flow
+## 📧 Email Verification Flow
 
 1. User submits signup → System sends 6-digit code via email
 2. Code stored in database with 10-minute expiry
 3. User verifies code → Account creation proceeds
 4. Resend available after 60-second cooldown
 
-## Styling Guidelines
+## 🎨 Styling Guidelines
 
 - **Color System:** Use CSS variable utilities (`bg-primary`, `text-secondary`, etc.)
 - **Components:** Always use components from `components/ui/` (never raw HTML elements)
 - **Responsive:** Mobile-first approach with Tailwind breakpoints
 - **Dark Mode:** (If implemented) Supported via CSS variables
 
-## Available Scripts
+## 📜 Available Scripts
 
 ```bash
 npm run dev          # Start development server
@@ -242,7 +238,7 @@ npx prisma db seed   # Seed database with initial data
 npx prisma studio    # Open Prisma Studio (database GUI)
 ```
 
-## Development Guidelines
+## 🏗️ Development Guidelines
 
 - **API Routes Only:** No Server Actions - use `app/api/*/route.ts` handlers
 - **Server Components:** Default for pages; use `"use client"` only when needed
