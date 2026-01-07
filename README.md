@@ -15,17 +15,17 @@ DawaLocate is a full-stack web application that helps patients in Lebanon locate
 
 ## 📑 Table of Contents
 
-- [Overview](#overview)
-- [Why DawaLocate?](#why-dawalocate)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Getting Started](#getting-started)
-- [Project Structure](#project-structure)
-- [Database Schema](#database-schema)
-- [Authentication & Authorization](#authentication--authorization)
-- [Styling Guidelines](#styling-guidelines)
-- [Development Guidelines](#development-guidelines)
-- [Support](#🆘-support)
+- [🔎 Overview](#🔎-overview)
+- [💡 Why DawaLocate?](#💡-why-dawalocate)
+- [✨ Features](#✨-features)
+- [🛠️ Tech Stack](#🛠️-tech-stack)
+- [🚀 Getting Started](#🚀-getting-started)
+- [📁 Project Structure](#📁-project-structure)
+- [🗄️ Database Schema](#🗄️-database-schema)
+- [🔐 Authentication & Authorization](#🔐-authentication--authorization)
+- [🎨 Styling Guidelines](#🎨-styling-guidelines)
+- [🏗️ Development Guidelines](#🏗️-development-guidelines)
+- [🆘 Support](#🆘-support)
 
 ## 🔎 Overview
 
