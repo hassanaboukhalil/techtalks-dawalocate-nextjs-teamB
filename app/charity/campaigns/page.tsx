@@ -59,6 +59,37 @@ export default function CampaignsPage() {
   const router = useRouter();
   const { data: session, status: sessionStatus } = useSession();
 
+  // ALL HOOKS MUST BE AT THE TOP - BEFORE ANY CONDITIONAL RETURNS
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [totalCount, setTotalCount] = useState(0);
+
+  // Edit dialog state
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
+  const [editLoading, setEditLoading] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [editValidationErrors, setEditValidationErrors] = useState<string[]>([]);
+  const [editFormData, setEditFormData] = useState({
+    title: "",
+    description: "",
+    targetAreas: "",
+    startDate: "",
+    endDate: "",
+    contactInfo: "",
+  });
+
+  useEffect(() => {
+    // Only fetch if user is approved
+    if (sessionStatus === "authenticated" && session?.user?.status === "APPROVED") {
+      fetchCampaigns();
+    }
+  }, [statusFilter, sessionStatus, session?.user?.status]);
+
+  // NOW WE CAN SAFELY DO CONDITIONAL RETURNS - AFTER ALL HOOKS
   // Show loading state while checking session
   if (sessionStatus === "loading") {
     return (
@@ -131,32 +162,6 @@ export default function CampaignsPage() {
       </div>
     );
   }
-
-  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [totalCount, setTotalCount] = useState(0);
-
-  // Edit dialog state
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
-  const [editLoading, setEditLoading] = useState(false);
-  const [editError, setEditError] = useState<string | null>(null);
-  const [editValidationErrors, setEditValidationErrors] = useState<string[]>([]);
-  const [editFormData, setEditFormData] = useState({
-    title: "",
-    description: "",
-    targetAreas: "",
-    startDate: "",
-    endDate: "",
-    contactInfo: "",
-  });
-
-  useEffect(() => {
-    fetchCampaigns();
-  }, [statusFilter]);
 
   const fetchCampaigns = async () => {
     setLoading(true);

@@ -31,8 +31,10 @@
  * - Don't use inside small UI components like modals or cards (too large)
  *
  * DESIGN SYSTEM:
- * - Uses .text-h2 typography class (4xl → 5xl responsive)
- * - Uses .text-primary color (#0AA6C8)
+ * - Uses .text-3xl typography class
+ * - Uses .font-bold weight
+ * - Uses .text-slate-900 color
+ * - Uses .tracking-tight letter spacing
  * - Can be overridden with className prop if needed
  */
 
@@ -51,7 +53,7 @@ export function PageTitle({
   as: Component = "h1",
 }: PageTitleProps) {
   return (
-    <Component className={cn("text-h2 text-primary", className)}>
+    <Component className={cn("text-3xl font-bold text-slate-900 tracking-tight", className)}>
       {children}
     </Component>
   );

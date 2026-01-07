@@ -22,6 +22,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import { PageTitle } from "@/components/layout/PageTitle";
 import {
   Table,
   TableBody,
@@ -262,9 +263,9 @@ function PharmacyRequestsContent() {
     <div className="p-6">
       {/* --- HEADER + FILTERS --- */}
       <div className="flex flex-col gap-6 mb-6">
-        <h1 className="text-h2 text-primary whitespace-nowrap">
+        <PageTitle>
           {requestIdParam ? "Request Details" : "Patients Medicines Requests"}
-        </h1>
+        </PageTitle>
 
         {/* Only show filters if not viewing a specific request */}
         {!requestIdParam && (

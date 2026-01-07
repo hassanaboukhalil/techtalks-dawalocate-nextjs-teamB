@@ -21,6 +21,7 @@ import {
 } from "@/components/pharmacy/profile";
 import { Button } from "@/components/ui/button";
 import { WhatsAppIcon, getWhatsAppUrl } from "@/lib/utils/campaignHelpers";
+import { PageTitle } from "@/components/layout/PageTitle";
 
 interface PharmacyProfile extends ProfileData {
   openingHours?: TimeSlot[] | string | null;
@@ -137,7 +138,7 @@ export default function PatientPharmacyProfilePage() {
 
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
             <div className="flex-1 min-w-0">
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">Pharmacy Profile</h1>
+              <PageTitle>Pharmacy Profile</PageTitle>
               <p className="text-sm sm:text-base text-gray-600 mt-1.5 sm:mt-2">
                 View pharmacy information and services available to patients.
               </p>

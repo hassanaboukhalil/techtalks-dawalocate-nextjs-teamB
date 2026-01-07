@@ -17,6 +17,7 @@ import {
   Trash2,
   Lock,
 } from "lucide-react";
+import { PageTitle } from "@/components/layout/PageTitle";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -205,9 +206,9 @@ function PatientsManagementContent() {
       {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+          <PageTitle>
             Patients Directory
-          </h1>
+          </PageTitle>
           <p className="text-slate-500 mt-1">
             View and manage registered patients.
           </p>

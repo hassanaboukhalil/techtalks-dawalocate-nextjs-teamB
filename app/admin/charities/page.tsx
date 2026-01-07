@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { RefreshCw, User, Phone, Mail } from "lucide-react";
 // import { Badge } from "@/components/ui/badge";
 import { useSearchParams } from "next/navigation";
+import { PageTitle } from "@/components/layout/PageTitle";
 
 interface Charity {
   id: number;
@@ -150,9 +151,9 @@ function AdminCharitiesContent() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <PageTitle>
             Charity Management
-          </h1>
+          </PageTitle>
           <p className="text-gray-600 mt-1">
             Review, approve, and manage charity organization accounts
           </p>
