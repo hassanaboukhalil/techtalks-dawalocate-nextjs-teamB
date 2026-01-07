@@ -1,3 +1,5 @@
+![DawaLocate Banner](./readme-images/readme-banner.png)
+
 # DawaLocate
 
 **Medicine Access Platform for Lebanon**
