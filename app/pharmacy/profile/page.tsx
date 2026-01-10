@@ -31,6 +31,7 @@ import { CityAutocomplete } from "@/components/ui/CityAutocomplete";
 import { OpeningHoursInput } from "@/components/ui/OpeningHoursInput";
 import { Button } from "@/components/ui/button";
 import { LEBANON_CITIES } from "@/constants/lebanon-cities";
+import { PageTitle } from "@/components/layout/PageTitle";
 
 interface PharmacyProfile extends ProfileData {
   openingHours?: TimeSlot[] | string | null;
@@ -187,7 +188,7 @@ export default function PharmacyProfilePage() {
 
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
             <div className="flex-1 min-w-0">
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">Your Profile</h1>
+              <PageTitle>Your Profile</PageTitle>
               <p className="text-sm sm:text-base text-gray-600 mt-1.5 sm:mt-2">
                 Manage your pharmacy information and settings to provide better service to your patients.
               </p>

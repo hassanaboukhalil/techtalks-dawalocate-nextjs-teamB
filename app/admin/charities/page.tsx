@@ -12,9 +12,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-import { RefreshCw, User, Phone, Mail, Sparkles, Filter } from "lucide-react";
+
+import {  Sparkles, Filter } from "lucide-react";
 
 /* ===================== Types ===================== */
+
+import { RefreshCw, User, Phone, Mail } from "lucide-react";
+// import { Badge } from "@/components/ui/badge";
+import { PageTitle } from "@/components/layout/PageTitle";
 
 interface Charity {
   id: number;
@@ -133,13 +138,20 @@ function AdminCharitiesContent() {
       {/* ================= HEADER ================= */}
       <div className="flex flex-col sm:flex-row justify-between gap-4 border-b border-slate-200 pb-6">
         <div>
-          <h1 className="text-3xl font-extrabold flex items-center gap-3 text-slate-900">
+
+          {/*<h1 className="text-3xl font-extrabold flex items-center gap-3 text-slate-900">
             <Sparkles className="h-8 w-8 text-rose-500" />
             Charities Management
           </h1>
-          <p className="text-slate-500 mt-2 text-lg">
-            Review, approve, and manage charity organizations
-          </p>
+          */}
+          <PageTitle>
+            Charity Management
+          </PageTitle>
+          
+           <p className="text-gray-600 mt-1">
+            Review, approve, and manage charity organization accounts
+           </p>
+         
         </div>
 
         <Button

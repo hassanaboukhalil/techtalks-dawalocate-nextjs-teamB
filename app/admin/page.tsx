@@ -9,6 +9,7 @@ import {
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend 
 } from "recharts";
+import { PageTitle } from "@/components/layout/PageTitle";
 
 // --- TYPES ---
 interface DashboardStats {
@@ -80,7 +81,7 @@ export default function AdminPage() {
       {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Dashboard Overview</h1>
+          <PageTitle>Dashboard Overview</PageTitle>
           <p className="text-slate-500 mt-1">Real-time platform statistics and verification queue.</p>
         </div>
         <div className="text-sm font-medium text-slate-500 bg-white px-4 py-2 rounded-full border border-slate-200 shadow-sm">

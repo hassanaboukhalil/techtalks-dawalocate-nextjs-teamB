@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { RefreshCw, User, Phone, Mail, Sparkles, Filter } from "lucide-react";
+import {  Sparkles, Filter } from "lucide-react";
 
 // Components
 import { PharmaciesTable } from "@/components/admin/PharmaciesTable";
@@ -13,7 +13,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+
 /* ===================== Interfaces ===================== */
+
+import { RefreshCw, User, Phone, Mail } from "lucide-react";
+
+import { PageTitle } from "@/components/layout/PageTitle";
+
 
 interface Pharmacy {
   id: number;
@@ -133,11 +139,18 @@ function AdminPharmaciesContent() {
       {/* ================= HEADER ================= */}
       <div className="flex flex-col sm:flex-row justify-between gap-4 border-b border-slate-200 pb-6">
         <div>
-          <h1 className="text-3xl font-extrabold flex items-center gap-3 text-slate-900">
+
+          {/*<h1 className="text-3xl font-extrabold flex items-center gap-3 text-slate-900">
             <Sparkles className="h-8 w-8 text-indigo-500" />
             Pharmacies Management
           </h1>
           <p className="text-slate-500 mt-2 text-lg">
+          </p>
+         */}
+          <PageTitle>Pharmacies Management</PageTitle>
+          
+          <p className="text-gray-600 mt-1">
+
             Review, approve, and manage pharmacy accounts
           </p>
         </div>

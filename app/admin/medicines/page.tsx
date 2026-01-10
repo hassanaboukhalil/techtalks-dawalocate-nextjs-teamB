@@ -20,6 +20,7 @@ import {
   Sparkles,
   LayoutGrid
 } from "lucide-react";
+import { PageTitle } from "@/components/layout/PageTitle";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -279,13 +280,24 @@ function MedicinesManagementContent() {
       {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-slate-200 pb-6">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-3">
+
+         {/* <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-3">
             <LayoutGrid className="w-8 h-8 text-[#119abf] fill-blue-50" />
             Medicines Inventory
-          </h1>
+          </h1> 
           <p className="text-slate-500 mt-2 text-lg font-medium">
             Manage your pharmaceutical database and product details.
           </p>
+          */}
+
+          
+          <PageTitle>Medicines Inventory</PageTitle>
+        
+          <p className="text-slate-500 mt-1">Structured, searchable medicine catalog.</p>
+          <div className="mt-2 text-sm text-slate-500">
+            Total: <span className="font-semibold text-slate-900">{filteredMedicines.length}</span>
+          </div>
+
         </div>
 
         <div className="flex items-center gap-4">

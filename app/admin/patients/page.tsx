@@ -19,6 +19,7 @@ import {
   Filter,
   Sparkles
 } from "lucide-react";
+import { PageTitle } from "@/components/layout/PageTitle";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -223,12 +224,22 @@ function PatientsManagementContent() {
       {/* --- HEADER SECTION --- */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-slate-200 pb-6">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-3">
+
+          {/*<h1 className="text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-3">
             <LayoutGrid className="w-8 h-8 text-[#119abf] fill-blue-50" />
             Patients Directory
           </h1>
           <p className="text-slate-500 mt-2 text-lg font-medium">
             Manage your patient cohort, update records, and monitor health profiles.
+          </p>
+         */}
+          <PageTitle>
+            Patients Directory
+          </PageTitle>
+         
+          <p className="text-slate-500 mt-1">
+            View and manage registered patients.
+
           </p>
         </div>
 

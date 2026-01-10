@@ -18,6 +18,7 @@ import {
   XCircle,
   Filter,
 } from "lucide-react";
+import { PageTitle } from "@/components/layout/PageTitle";
 import {
   Table,
   TableBody,
@@ -366,7 +367,7 @@ function PharmacyInventoryContent() {
     <div className="p-6">
       {/* --- HEADER + MAIN SEARCH BAR --- */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-        <h1 className="text-h2 text-primary whitespace-nowrap">Inventory</h1>
+        <PageTitle>Inventory</PageTitle>
 
         <div className="flex w-full md:w-auto items-center gap-4 flex-1 justify-end">
           {/* 🔍 Main Table Search */}
