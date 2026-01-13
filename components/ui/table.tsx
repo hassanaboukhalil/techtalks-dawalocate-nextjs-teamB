@@ -4,25 +4,45 @@ import { Pencil, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
-// ==================== Base Table Components ====================
+/* ======================================================
+   BASE TABLE CONTAINER
+====================================================== */
 
 function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (
-    <div className="relative w-full overflow-auto">
+    <div
+      className={cn(
+        "relative w-full overflow-x-auto rounded-xl",
+        // ✨ NO BLACK BORDER — soft surface separation
+        "bg-white",
+        "ring-1 ring-slate-200/70",
+        "shadow-[0_6px_18px_rgba(15,23,42,0.06)]"
+      )}
+    >
       <table
         data-slot="table"
-        className={cn("w-full caption-bottom text-sm", className)}
+        className={cn("w-full border-collapse text-sm", className)}
         {...props}
       />
     </div>
   )
 }
 
+/* ======================================================
+   TABLE SECTIONS
+====================================================== */
+
 function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
   return (
     <thead
       data-slot="table-header"
-      className={cn("border-b bg-muted/50", className)}
+      className={cn(
+        "sticky top-0 z-20",
+        // ✨ Header as a surface, not boxed
+        "bg-slate-50/80 backdrop-blur",
+        "border-b border-slate-200/80",
+        className
+      )}
       {...props}
     />
   )
@@ -32,7 +52,7 @@ function TableBody({ className, ...props }: React.ComponentProps<"tbody">) {
   return (
     <tbody
       data-slot="table-body"
-      className={cn("[&_tr:last-child]:border-0", className)}
+      className={cn("[&_tr:last-child]:border-b-0", className)}
       {...props}
     />
   )
@@ -43,20 +63,29 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
     <tfoot
       data-slot="table-footer"
       className={cn(
-        "border-t bg-muted/50 font-medium [&>tr]:last:border-b-0",
+        "border-t border-slate-200/80",
+        "bg-slate-50/60 font-medium",
         className
       )}
       {...props}
     />
   )
 }
+
+/* ======================================================
+   ROWS & CELLS
+====================================================== */
 
 function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
   return (
     <tr
       data-slot="table-row"
       className={cn(
-        "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
+        // ✨ very light row separation
+        "border-b border-slate-100",
+        "transition-colors duration-150",
+        "hover:bg-slate-50/70",
+        "data-[state=selected]:bg-indigo-50",
         className
       )}
       {...props}
@@ -64,12 +93,21 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
   )
 }
 
+/* ------------------------------------------------------
+   HEADER CELL — TITLES, NOT TEXT
+------------------------------------------------------ */
+
 function TableHead({ className, ...props }: React.ComponentProps<"th">) {
   return (
     <th
       data-slot="table-head"
       className={cn(
-        "h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0",
+        "h-14 px-6 text-left align-middle",
+        // ✨ Title styling
+        "text-[11px] font-extrabold uppercase tracking-[0.14em]",
+        "text-slate-500",
+        "whitespace-nowrap",
+        "[&:has([role=checkbox])]:pr-0",
         className
       )}
       {...props}
@@ -81,23 +119,33 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) {
   return (
     <td
       data-slot="table-cell"
-      className={cn("p-4 align-middle [&:has([role=checkbox])]:pr-0", className)}
+      className={cn(
+        "px-6 py-4 align-middle",
+        "text-sm text-slate-700",
+        "[&:has([role=checkbox])]:pr-0",
+        className
+      )}
       {...props}
     />
   )
 }
 
-function TableCaption({ className, ...props }: React.ComponentProps<"caption">) {
+function TableCaption({
+  className,
+  ...props
+}: React.ComponentProps<"caption">) {
   return (
     <caption
       data-slot="table-caption"
-      className={cn("mt-4 text-sm text-muted-foreground", className)}
+      className={cn("mt-4 text-sm text-slate-500", className)}
       {...props}
     />
   )
 }
 
-// ==================== Table Actions Component ====================
+/* ======================================================
+   TABLE ACTIONS
+====================================================== */
 
 interface TableActionsProps {
   onEdit?: () => void
@@ -123,7 +171,15 @@ function TableActions({
   return (
     <div
       data-slot="table-actions"
-      className={cn("flex items-center gap-2", className)}
+      className={cn(
+        "inline-flex items-center gap-1.5",
+        "rounded-lg",
+        // ✨ subtle container, not boxed
+        "bg-slate-50/80",
+        "ring-1 ring-slate-200/70",
+        "p-1.5",
+        className
+      )}
     >
       {showEdit && onEdit && (
         <Button
@@ -137,6 +193,7 @@ function TableActions({
           <Pencil className="h-4 w-4" />
         </Button>
       )}
+
       {showDelete && onDelete && (
         <Button
           variant="ghost"
@@ -145,7 +202,7 @@ function TableActions({
           disabled={disabled}
           aria-label={deleteLabel}
           title={deleteLabel}
-          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+          className="text-destructive hover:bg-destructive/10"
         >
           <Trash2 className="h-4 w-4" />
         </Button>
@@ -154,7 +211,9 @@ function TableActions({
   )
 }
 
-// ==================== Empty State Component ====================
+/* ======================================================
+   EMPTY STATE (HTML + SSR SAFE)
+====================================================== */
 
 interface TableEmptyProps {
   message?: string
@@ -169,20 +228,19 @@ function TableEmpty({
 }: TableEmptyProps) {
   return (
     <TableRow>
-      <TableCell
-        colSpan={100}
-        className={cn("h-24 text-center", className)}
-      >
-        <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
+      <TableCell colSpan={100} className={cn("h-44 text-center", className)}>
+        <div className="flex flex-col items-center justify-center gap-3 text-slate-400">
           {icon}
-          <p className="text-sm">{message}</p>
+          <p className="text-sm font-medium">{message}</p>
         </div>
       </TableCell>
     </TableRow>
   )
 }
 
-// ==================== Exports ====================
+/* ======================================================
+   EXPORTS
+====================================================== */
 
 export {
   Table,
@@ -198,6 +256,7 @@ export {
 }
 
 export type { TableActionsProps, TableEmptyProps }
+
 
 /*
 ==================== USAGE EXAMPLES ====================
