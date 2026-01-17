@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { PageTitle } from "@/components/layout/PageTitle";
 
 import {
   Select,
@@ -241,8 +242,8 @@ export default function HealthProfilePage() {
         {/* HEADER */}
         <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-slate-200/60">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">Health Profile</h1>
-            <p className="text-slate-600 text-lg mt-2 font-medium">Manage your personal medical record and emergency ID.</p>
+            <PageTitle>Health Profile</PageTitle>
+            <p className="text-slate-500 mt-1">Manage your personal medical record and emergency ID.</p>
           </div>
           
           {hasProfile && (
