@@ -69,10 +69,10 @@ export function CityAutocomplete({
         onClick={handleToggle}
         onMouseDown={(e) => e.preventDefault()}
         className={cn(
-          "flex h-11 w-full items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 transition-all",
-          "hover:bg-white hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#119abf]/20 focus:border-[#119abf]",
+          "flex h-11 w-full items-center justify-between rounded-lg border border-slate-200 bg-white shadow-sm px-3 py-2 text-sm text-slate-900 transition-all",
+          "hover:bg-white-[#119abf] hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#119abf]/20 focus:border-[#119abf]",
           !value && "text-slate-500",
-          isOpen && "bg-white border-[#119abf] ring-2 ring-[#119abf]/20",
+          isOpen && "bg-white border-slate-200 border-[#119abf] ring-2 ring-[#119abf]/20",
           className
         )}
       >
