@@ -127,7 +127,6 @@ export default function PharmacyCampaignsPage() {
     setSearchMedicine("");
     setSearchCharity("");
     setStatusFilter("all");
-    // Fetch with empty filters to show all results
     fetchCampaigns("", "", "all");
   };
 
@@ -144,50 +143,83 @@ export default function PharmacyCampaignsPage() {
     <div className="p-6">
       <CampaignHero variant="pharmacy" />
 
-      {!loading && !error && (
-        <CampaignStats
-          campaigns={campaigns}
-          totalCount={totalCount}
-          variant="pharmacy"
+      {/* ✨ MAGICAL FRAME START */}
+      <div className="relative mt-8 rounded-3xl p-[2px] overflow-hidden">
+        {/* Walking gradient border */}
+        <div
+          className="absolute inset-0 rounded-3xl
+          bg-[conic-gradient(from_0deg,
+            #6366f1,
+            #22d3ee,
+            #14b8a6,
+            #a855f7,
+            #6366f1)]
+          animate-[spin_10s_linear_infinite]"
         />
-      )}
-
-      <CampaignFilters
-        medicines={medicines}
-        charities={charities}
-        searchMedicine={searchMedicine}
-        searchCharity={searchCharity}
-        statusFilter={statusFilter}
-        filterCounts={filterCounts}
-        onSearchMedicineChange={setSearchMedicine}
-        onSearchCharityChange={setSearchCharity}
-        onStatusFilterChange={setStatusFilter}
-        onSearch={handleSearch}
-        onMedicineSelect={handleMedicineSelect}
-        onCharitySelect={handleCharitySelect}
-        onReturnToAll={handleReturnToAll}
-        showReturnButton={hasFilters}
-        variant="pharmacy"
-      />
-
-      <CampaignGrid
-        campaigns={campaigns}
-        loading={loading}
-        error={error}
-        onRetry={fetchCampaigns}
-        onReturnToAll={handleReturnToAll}
-        hasFilters={hasFilters}
-        onCardClick={(id: number) => router.push(`/pharmacy/campaigns/${id}`)}
-      />
-
-      {!loading && !error && campaigns.length > 0 && (
-        <CampaignResultsSummary
-          showing={campaigns.length}
-          total={totalCount}
-          searchMedicine={searchMedicine}
-          searchCharity={searchCharity}
+        <div
+          className="absolute inset-[-10px] rounded-[2rem]
+          bg-gradient-to-r from-indigo-400/30 via-cyan-400/30 to-violet-400/30
+          blur-2xl opacity-70
+          animate-[pulseGlow_6s_ease-in-out_infinite]"
         />
-      )}
+
+
+        {/* Inner surface */}
+        <div className="relative rounded-[1.6rem] shadow-xl border border-slate-100 p-6
+          bg-[linear-gradient(120deg,#ffffff, #f8fafc, #ffffff)]
+          animate-[bgFlow_12s_ease-in-out_infinite]
+        ">
+
+          {!loading && !error && (
+            <CampaignStats
+              campaigns={campaigns}
+              totalCount={totalCount}
+              variant="pharmacy"
+            />
+          )}
+
+          <CampaignFilters
+            medicines={medicines}
+            charities={charities}
+            searchMedicine={searchMedicine}
+            searchCharity={searchCharity}
+            statusFilter={statusFilter}
+            filterCounts={filterCounts}
+            onSearchMedicineChange={setSearchMedicine}
+            onSearchCharityChange={setSearchCharity}
+            onStatusFilterChange={setStatusFilter}
+            onSearch={handleSearch}
+            onMedicineSelect={handleMedicineSelect}
+            onCharitySelect={handleCharitySelect}
+            onReturnToAll={handleReturnToAll}
+            showReturnButton={hasFilters}
+            variant="pharmacy"
+          />
+
+          <CampaignGrid
+            campaigns={campaigns}
+            loading={loading}
+            error={error}
+            onRetry={fetchCampaigns}
+            onReturnToAll={handleReturnToAll}
+            hasFilters={hasFilters}
+            onCardClick={(id: number) =>
+              router.push(`/pharmacy/campaigns/${id}`)
+            }
+          />
+
+          {!loading && !error && campaigns.length > 0 && (
+            <CampaignResultsSummary
+              showing={campaigns.length}
+              total={totalCount}
+              searchMedicine={searchMedicine}
+              searchCharity={searchCharity}
+            />
+          )}
+
+        </div>
+      </div>
+      {/* ✨ MAGICAL FRAME END */}
     </div>
   );
 }
