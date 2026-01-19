@@ -116,9 +116,11 @@ export function MedicineAutocomplete({
           onClick={handleInputClick}
           placeholder={placeholder}
           className={cn(
-            "w-full pl-10 pr-10 h-11 rounded-lg border border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder:text-slate-400 transition-all",
-            "focus:outline-none focus:ring-2 focus:ring-[#119abf]/20 focus:border-[#119abf] focus:bg-white hover:bg-white hover:border-slate-300"
+            "w-full pl-10 pr-10 h-12 rounded-xl  border border-slate-200  bg-white shadow-sm text-sm font-medium text-slate-700 placeholder:text-slate-400 transition-all",
+            "focus:outline-none focus:ring-2 focus:ring-[#119abf]/20 focus:border-[#119abf]",
+            "hover:border-slate-300"
           )}
+          
         />
         
         {/* Trailing Chevron */}
