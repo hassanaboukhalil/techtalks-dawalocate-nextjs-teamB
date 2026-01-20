@@ -32,6 +32,7 @@ import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { PageTitle } from "@/components/layout/PageTitle";
 
 interface Campaign {
   id: number;
@@ -356,11 +357,8 @@ export default function CampaignsPage() {
         <div className="mb-8 animate-slide-up">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
             <div className="flex items-start gap-4">
-              <div className="bg-primary/15 rounded-xl p-4">
-                <Sparkles className="h-8 w-8 text-primary" />
-              </div>
               <div>
-                <h1 className="text-h2 text-primary mb-2">My Campaigns</h1>
+                <PageTitle>My Campaigns</PageTitle>
                 <p className="text-gray-600">
                   Manage and track your medicine donation campaigns
                 </p>
@@ -536,7 +534,19 @@ export default function CampaignsPage() {
               return (
                 <Card
                   key={campaign.id}
-                  className="rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 cursor-pointer animate-scale-in"
+                  className="
+                    relative
+                    rounded-2xl
+                    border-2 border-[#2699B2]/40
+                    bg-white
+                    shadow-[0_10px_30px_rgba(38,153,178,0.15)]
+                    hover:shadow-[0_18px_45px_rgba(38,153,178,0.25)]
+                    transition-all duration-300
+                    hover:-translate-y-1
+                    cursor-pointer
+                    overflow-hidden
+                    animate-scale-in
+                  "
                   style={{ animationDelay: `${index * 50}ms` }}
                   onClick={() => router.push(`/charity/campaigns/${campaign.id}`)}
                 >
@@ -650,181 +660,231 @@ export default function CampaignsPage() {
       </div>
 
       {/* Edit Campaign Dialog */}
+      {/* ===== ENHANCED EDIT CAMPAIGN DIALOG ===== */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold flex items-center gap-2">
-              <Edit className="h-6 w-6 text-primary" />
-              Edit Campaign
-            </DialogTitle>
-          </DialogHeader>
+        <DialogContent
+          className="
+            sm:max-w-[720px]
+            max-h-[90vh]
+            overflow-y-auto
+            rounded-3xl
+            border-2 border-[#2699B2]/40
+            bg-gradient-to-br from-white via-[#f4fbff] to-white
+            shadow-[0_30px_80px_-20px_rgba(38,153,178,0.45)]
+            p-0
+            animate-[fadeInUp_0.35s_ease-out]
+          "
+        >
+          {/* ===== HEADER ===== */}
+          <div className="relative px-6 pt-6 pb-5 border-b bg-gradient-to-r from-[#2699B2]/10 via-cyan-100/60 to-[#2699B2]/10">
+            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#2699B2] via-cyan-400 to-[#2699B2]" />
 
-          {/* Error Display */}
-          {editError && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-              <div className="flex gap-2">
-                <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
-                <div>
-                  <p className="text-sm font-semibold text-red-900">Error</p>
-                  <p className="text-sm text-red-700">{editError}</p>
-                  {editValidationErrors.length > 0 && (
-                    <ul className="mt-2 space-y-1">
-                      {editValidationErrors.map((err, idx) => (
-                        <li key={idx} className="text-sm text-red-600">• {err}</li>
-                      ))}
-                    </ul>
-                  )}
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-4 text-2xl font-black text-slate-900">
+                <div className="p-3 rounded-2xl bg-[#2699B2]/20 shadow-md">
+                  <Edit className="h-6 w-6 text-[#2699B2]" />
                 </div>
-              </div>
-            </div>
-          )}
+                Edit Campaign
+              </DialogTitle>
+            </DialogHeader>
+          </div>
 
-          {/* Info Banner */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <div className="flex gap-2">
-              <Info className="h-5 w-5 text-blue-600 flex-shrink-0" />
-              <p className="text-sm text-blue-800">
+          {/* ===== CONTENT ===== */}
+          <div className="px-6 py-6 space-y-6">
+
+            {/* INFO BANNER */}
+            <div className="relative flex gap-3 rounded-2xl border border-[#2699B2]/40 bg-gradient-to-r from-[#2699B2]/15 to-cyan-100 p-4 shadow-sm">
+              <div className="absolute left-0 top-0 bottom-0 w-1.5 rounded-l-2xl bg-[#2699B2]" />
+              <Info className="h-5 w-5 text-[#2699B2] mt-0.5" />
+              <p className="text-sm text-slate-800 font-semibold">
                 Update your campaign information. All fields are required unless marked optional.
               </p>
             </div>
-          </div>
 
-          <div className="space-y-6 py-4">
-            {/* Campaign Title */}
-            <div className="space-y-2">
-              <Label htmlFor="edit-title" className="flex items-center gap-2 text-gray-700 font-medium">
-                <FileText className="h-4 w-4 text-gray-500" />
-                Campaign Title <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="edit-title"
-                name="title"
-                value={editFormData.title}
-                onChange={handleEditInputChange}
-                placeholder="e.g., Winter Medicine Relief Drive 2024"
-                maxLength={200}
-                className="rounded-lg"
-              />
-              <p className="text-xs text-gray-500">
-                {editFormData.title.length}/200 characters
-              </p>
-            </div>
+            {/* ERROR BLOCK */}
+            {editError && (
+              <div className="rounded-2xl border border-red-300 bg-red-50 p-4">
+                <div className="flex gap-3">
+                  <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
+                  <div>
+                    <p className="font-bold text-red-800">Error</p>
+                    <p className="text-sm text-red-700">{editError}</p>
 
-            {/* Description */}
-            <div className="space-y-2">
-              <Label htmlFor="edit-description" className="flex items-center gap-2 text-gray-700 font-medium">
-                <FileText className="h-4 w-4 text-gray-500" />
-                Description <span className="text-red-500">*</span>
-              </Label>
-              <Textarea
-                id="edit-description"
-                name="description"
-                value={editFormData.description}
-                onChange={handleEditInputChange}
-                placeholder="Describe your campaign goals and impact..."
-                rows={5}
-                maxLength={2000}
-                className="rounded-lg resize-none"
-              />
-              <p className="text-xs text-gray-500">
-                {editFormData.description.length}/2000 characters (minimum 20)
-              </p>
-            </div>
+                    {editValidationErrors.length > 0 && (
+                      <ul className="mt-2 space-y-1">
+                        {editValidationErrors.map((err, idx) => (
+                          <li key={idx} className="text-sm text-red-600">• {err}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
 
-            {/* Target Areas */}
-            <div className="space-y-2">
-              <Label htmlFor="edit-targetAreas" className="flex items-center gap-2 text-gray-700 font-medium">
-                <MapPin className="h-4 w-4 text-gray-500" />
-                Target Areas <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="edit-targetAreas"
-                name="targetAreas"
-                value={editFormData.targetAreas}
-                onChange={handleEditInputChange}
-                placeholder="e.g., Beirut, Tripoli, Sidon"
-                className="rounded-lg"
-              />
-              <p className="text-xs text-gray-500">
-                Enter comma-separated city names
-              </p>
-            </div>
+            {/* FORM */}
+            <div className="space-y-5">
 
-            {/* Dates */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-startDate" className="flex items-center gap-2 text-gray-700 font-medium">
-                  <Calendar className="h-4 w-4 text-gray-500" />
-                  Start Date <span className="text-red-500">*</span>
-                </Label>
+              {/* TITLE */}
+              <div>
+                <Label className="font-semibold text-slate-700">Campaign Title *</Label>
                 <Input
-                  id="edit-startDate"
-                  name="startDate"
-                  type="datetime-local"
-                  value={editFormData.startDate}
+                  name="title"
+                  value={editFormData.title}
                   onChange={handleEditInputChange}
-                  className="rounded-lg"
+                  className="
+                    mt-2 rounded-xl bg-white
+                    border-gray-300
+                    transition-all
+                    focus:border-[#2699B2]
+                    focus:ring-2 focus:ring-[#2699B2]/30
+                    hover:border-[#2699B2]/50
+                  "
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  {editFormData.title.length}/200 characters
+                </p>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="edit-endDate" className="flex items-center gap-2 text-gray-700 font-medium">
-                  <Calendar className="h-4 w-4 text-gray-500" />
-                  End Date <span className="text-gray-500">(Optional)</span>
-                </Label>
-                <Input
-                  id="edit-endDate"
-                  name="endDate"
-                  type="datetime-local"
-                  value={editFormData.endDate}
+              {/* DESCRIPTION */}
+              <div>
+                <Label className="font-semibold text-slate-700">Description *</Label>
+                <Textarea
+                  name="description"
+                  rows={4}
+                  value={editFormData.description}
                   onChange={handleEditInputChange}
-                  className="rounded-lg"
+                  className="
+                    mt-2 rounded-xl resize-none bg-white
+                    border-gray-300
+                    transition-all
+                    focus:border-[#2699B2]
+                    focus:ring-2 focus:ring-[#2699B2]/30
+                    hover:border-[#2699B2]/50
+                  "
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  {editFormData.description.length}/2000 characters (minimum 20)
+                </p>
               </div>
-            </div>
 
-            {/* Contact Information */}
-            <div className="space-y-2">
-              <Label htmlFor="edit-contactInfo" className="flex items-center gap-2 text-gray-700 font-medium">
-                <Phone className="h-4 w-4 text-gray-500" />
-                Contact Information <span className="text-red-500">*</span>
-              </Label>
-              <Textarea
-                id="edit-contactInfo"
-                name="contactInfo"
-                value={editFormData.contactInfo}
-                onChange={handleEditInputChange}
-                placeholder="Email: contact@charity.org&#10;Phone: +961 1 234 567"
-                rows={3}
-                className="rounded-lg resize-none"
-              />
-              <p className="text-xs text-gray-500">
-                Provide multiple contact methods
-              </p>
+              {/* TARGET AREAS */}
+              <div>
+                <Label className="font-semibold text-slate-700">Target Areas *</Label>
+                <Input
+                  name="targetAreas"
+                  value={editFormData.targetAreas}
+                  onChange={handleEditInputChange}
+                  className="
+                    mt-2 rounded-xl bg-white
+                    border-gray-300
+                    transition-all
+                    focus:border-[#2699B2]
+                    focus:ring-2 focus:ring-[#2699B2]/30
+                    hover:border-[#2699B2]/50
+                  "
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Enter comma-separated city names
+                </p>
+              </div>
+
+              {/* DATES */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="font-semibold text-slate-700">Start Date *</Label>
+                  <Input
+                    type="datetime-local"
+                    name="startDate"
+                    value={editFormData.startDate}
+                    onChange={handleEditInputChange}
+                    className="
+                      mt-2 rounded-xl bg-white
+                      border-gray-300
+                      focus:border-[#2699B2]
+                      focus:ring-2 focus:ring-[#2699B2]/30
+                    "
+                  />
+                </div>
+
+                <div>
+                  <Label className="font-semibold text-slate-700">
+                    End Date <span className="text-gray-400">(Optional)</span>
+                  </Label>
+                  <Input
+                    type="datetime-local"
+                    name="endDate"
+                    value={editFormData.endDate}
+                    onChange={handleEditInputChange}
+                    className="
+                      mt-2 rounded-xl bg-white
+                      border-gray-300
+                      focus:border-[#2699B2]
+                      focus:ring-2 focus:ring-[#2699B2]/30
+                    "
+                  />
+                </div>
+              </div>
+
+              {/* CONTACT */}
+              <div>
+                <Label className="font-semibold text-slate-700">Contact Information *</Label>
+                <Textarea
+                  name="contactInfo"
+                  rows={3}
+                  value={editFormData.contactInfo}
+                  onChange={handleEditInputChange}
+                  className="
+                    mt-2 rounded-xl resize-none bg-white
+                    border-gray-300
+                    transition-all
+                    focus:border-[#2699B2]
+                    focus:ring-2 focus:ring-[#2699B2]/30
+                    hover:border-[#2699B2]/50
+                  "
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Provide multiple contact methods
+                </p>
+              </div>
             </div>
           </div>
 
-          <DialogFooter className="gap-2">
+          {/* ===== FOOTER ===== */}
+          <DialogFooter className="px-6 py-4 border-t bg-slate-50 flex gap-3">
             <Button
-              type="button"
               variant="outline"
               onClick={closeEditDialog}
               disabled={editLoading}
-              className="rounded-lg"
+              className="
+                rounded-xl
+                border-[#2699B2]/40
+                text-[#2699B2]
+                hover:bg-[#2699B2]/10
+              "
             >
               <X className="h-4 w-4 mr-2" />
               Cancel
             </Button>
+
             <Button
-              type="button"
               onClick={handleUpdateCampaign}
               disabled={editLoading}
-              className="rounded-lg bg-primary hover:bg-secondary"
+              className="
+                rounded-xl
+                bg-gradient-to-r from-[#2699B2] to-cyan-500
+                hover:from-[#1f7f96] hover:to-cyan-600
+                text-white
+                shadow-lg shadow-[#2699B2]/40
+                transition-all
+                hover:scale-[1.03]
+                active:scale-95
+              "
             >
               {editLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Updating...
+                  Saving...
                 </>
               ) : (
                 <>
@@ -836,6 +896,8 @@ export default function CampaignsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+
     </div>
   );
 }
