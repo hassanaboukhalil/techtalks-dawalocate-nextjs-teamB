@@ -15,6 +15,7 @@ import {
   BarChart, Bar, Legend, PieChart, Pie, Cell
 } from 'recharts';
 
+import { PageTitle } from "@/components/layout/PageTitle";
 interface DashboardData {
   stats: { campaigns: number; requests: number; donations: number };
   myCampaigns: any[]; // Now contains the 'status' field from the API
@@ -69,9 +70,9 @@ export default function CharityDashboard() {
                 <Logo withTitle={false} width={36} height={36} />
              </div>
              <div>
-               <h1 className="text-xl md:text-3xl font-black text-slate-800 leading-tight">
-                 Analytics Dashboard
-               </h1>
+              <PageTitle> Analytics Dashboard</PageTitle>
+                
+               
                <p className="text-sm md:text-base text-slate-500 font-medium">
                  Welcome back, <span className="text-[#119abf] font-bold">{data.charityName}</span>
                </p>
