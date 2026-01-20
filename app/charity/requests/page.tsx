@@ -346,13 +346,13 @@ function CharityRequestsContent() {
 
               {/* City Filter */}
               <div className="relative flex-1">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
+                
                 <CityAutocomplete
                   cities={cities}
                   value={cityFilter}
                   onChange={setCityFilter}
                   placeholder="All Cities"
-                  className="pl-10"
+                  className="pl-3"
                 />
               </div>
             </div>
@@ -376,7 +376,13 @@ function CharityRequestsContent() {
       )}
 
       {/* --- REQUESTS TABLE --- */}
-      <div className="bg-card rounded-lg shadow-sm overflow-hidden">
+      <div
+        className="
+          bg-white rounded-2xl overflow-hidden
+          border border-[#2699B2]/30
+          shadow-[0_10px_30px_rgba(38,153,178,0.18)]
+        "
+      >
         {loading ? (
           <div className="p-8 text-center text-gray-500">
             <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
@@ -386,26 +392,53 @@ function CharityRequestsContent() {
           <>
             <div className="max-h-[calc(100vh-300px)] overflow-y-auto">
               <Table>
-                <TableHeader className="sticky top-0 z-10 bg-card">
-                  <TableRow className="border-b-2 border-gray-300">
-                    <TableHead className="bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
+              <TableHeader
+                className="
+                  sticky top-0 z-10
+                  shadow-[0_2px_0_0_rgba(38,153,178,0.15)]
+                "
+              >
+                <TableRow
+                  className="
+                    bg-[#f4fbff]
+                    border-b-[3px] border-[#2699B2]
+                  "
+                >
+                   <TableHead
+                      className="
+                        h-14
+                        text-left
+                        align-middle
+                        text-xs font-extrabold uppercase tracking-widest
+                        text-[#2699B2]
+                        bg-[#f4fbff]
+                        px-6
+                        border-r border-[#2699B2]/15
+                      "
+                    >
                       Medicine
                     </TableHead>
-                    <TableHead className="bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
+
+                    <TableHead className="h-14 text-left align-middle text-xs font-extrabold uppercase tracking-widest text-[#2699B2] bg-[#f4fbff] px-6 border-r border-[#2699B2]/15">
                       Patient
                     </TableHead>
-                    <TableHead className="bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
+
+                    <TableHead className="h-14 text-left align-middle text-xs font-extrabold uppercase tracking-widest text-[#2699B2] bg-[#f4fbff] px-6 border-r border-[#2699B2]/15">
                       Location
                     </TableHead>
-                    <TableHead className="text-center bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
+
+                    <TableHead className="h-14 text-center align-middle text-xs font-extrabold uppercase tracking-widest text-[#2699B2] bg-[#f4fbff] px-6 border-r border-[#2699B2]/15">
                       Status
                     </TableHead>
-                    <TableHead className="bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
+
+                    <TableHead className="h-14 text-center align-middle text-xs font-extrabold uppercase tracking-widest text-[#2699B2] bg-[#f4fbff] px-6 border-r border-[#2699B2]/15">
                       Requested
                     </TableHead>
-                    <TableHead className="text-center w-[120px] bg-gray-200 text-gray-900 font-bold text-sm uppercase tracking-wide">
+
+                    <TableHead className="h-14 text-center align-middle text-xs font-extrabold uppercase tracking-widest text-[#2699B2] bg-[#f4fbff] px-6">
                       Actions
                     </TableHead>
+
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -424,8 +457,16 @@ function CharityRequestsContent() {
                     />
                   ) : (
                     filteredRequests.map((request) => (
-                      <TableRow key={request.id} className="group">
-                        <TableCell>
+                      <TableRow
+                        key={request.id}
+                        className="
+                          group
+                          border-b border-[#2699B2]/10
+                          hover:bg-[#2699B2]/5
+                          transition-colors
+                        "
+                      >
+                        <TableCell className="px-6 text-left align-middle">
                           <div className="flex flex-col">
                             <span className="font-medium text-gray-900">
                               {request.medicine.name}
@@ -448,7 +489,7 @@ function CharityRequestsContent() {
                             )}
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="px-6 text-left align-middle">
                           <div className="flex flex-col">
                             <span className="font-medium text-gray-900">
                               {request.user.name}
@@ -460,7 +501,7 @@ function CharityRequestsContent() {
                             )}
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="px-6 text-left align-middle">
                           <div className="flex items-center gap-1.5 text-gray-600">
                             <MapPin className="h-4 w-4" />
                             <span>{request.city}</span>
@@ -469,13 +510,14 @@ function CharityRequestsContent() {
                         <TableCell className="text-center">
                           {getStatusBadge(request.status)}
                         </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1.5 text-gray-600 text-sm">
+                        <TableCell className="px-6 text-center align-middle">
+                          <div className="flex items-center justify-center gap-1.5 text-gray-600 text-sm">
                             <Calendar className="h-4 w-4" />
                             <span>{formatDate(request.createdAt)}</span>
                           </div>
                         </TableCell>
-                        <TableCell>
+
+                        <TableCell className="px-6 text-left align-middle">
                           <div className="flex items-center justify-center gap-2">
                             <Button
                               variant="outline"
