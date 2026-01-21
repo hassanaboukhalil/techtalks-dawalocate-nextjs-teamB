@@ -1,22 +1,25 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Pill, 
-  MapPin, 
-  Calendar, 
-  AlertCircle, 
-  CheckCircle2, 
-  XCircle, 
-  Loader2, 
-  Filter, 
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Pill,
+  MapPin,
+  Calendar,
+  AlertCircle,
+  CheckCircle2,
+  XCircle,
+  Loader2,
+  Filter,
   PackageSearch, // Different icon for requests
   Sparkles,
-  ClipboardList
+  ClipboardList,
+  User,
+  Users
 } from "lucide-react";
+import { WhatsAppIcon, getWhatsAppUrl } from "@/lib/utils/campaignHelpers";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -51,6 +54,10 @@ interface Request {
   createdAt: string;
   updatedAt?: string;
   medicine: Medicine;
+  patient?: {
+    name: string;
+    phone?: string;
+  };
 }
 
 interface ApiResponse<T> {
@@ -59,7 +66,17 @@ interface ApiResponse<T> {
   error?: string;
 }
 
+type TabKey = "my-requests" | "expert-view";
+
+interface TabConfig {
+  key: TabKey;
+  label: string;
+  icon: React.ReactNode;
+}
+
 export default function PatientRequestsPage() {
+  const [activeTab, setActiveTab] = useState<TabKey>("my-requests");
+
   // --- State Preserved ---
   const [requests, setRequests] = useState<Request[]>([]);
   const [loading, setLoading] = useState(true);
@@ -75,6 +92,8 @@ export default function PatientRequestsPage() {
   const [selectedRequestId, setSelectedRequestId] = useState<number | null>(null);
   const [togglingStatusId, setTogglingStatusId] = useState<number | null>(null);
   const [statusFilter, setStatusFilter] = useState<"ALL" | "OPEN" | "FULFILLED">("ALL");
+  const [isAssistDialogOpen, setIsAssistDialogOpen] = useState(false);
+  const [assistingRequest, setAssistingRequest] = useState<Request | null>(null);
 
   const [formData, setFormData] = useState({
     medicine: "",
@@ -83,11 +102,19 @@ export default function PatientRequestsPage() {
   });
   const [submitting, setSubmitting] = useState(false);
 
+  const tabs: TabConfig[] = [
+    { key: "my-requests", label: "My Requests", icon: <User className="w-4 h-4" /> },
+    { key: "expert-view", label: "Patients Requests", icon: <Users className="w-4 h-4" /> }
+  ];
+
   // --- Logic Preserved ---
   const fetchRequests = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/patient/requests");
+      const endpoint = activeTab === "my-requests"
+        ? "/api/patient/requests"
+        : "/api/patient/requests/expert";
+      const response = await fetch(endpoint);
       const data: ApiResponse<Request[]> = await response.json();
 
       if (data.success && data.data) {
@@ -105,7 +132,7 @@ export default function PatientRequestsPage() {
   useEffect(() => {
     fetchRequests();
     fetchMedicinesAndCities();
-  }, []);
+  }, [activeTab]);
 
   const filteredRequests = requests.filter((request) => {
     if (statusFilter === "ALL") return true;
@@ -292,31 +319,120 @@ export default function PatientRequestsPage() {
   return (
     <div className="min-h-screen bg-slate-50/50 pb-20 animate-in fade-in duration-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        
+
+        {/* Tab Switcher */}
+        <div className="w-full animate-fade-in-up animation-delay-200">
+          <div className="relative w-full max-w-md mx-auto">
+            {/* Background with animated gradient */}
+            <div className="absolute inset-0 rounded-2xl opacity-30 animate-pulse-slow" style={{ backgroundColor: "#2699b2" }}></div>
+
+            {/* Main container */}
+            <div className="relative grid grid-cols-2 bg-white/80 backdrop-blur-md p-1.5 rounded-2xl border border-white/20 shadow-xl">
+              {/* Sliding indicator */}
+              <div
+                className={`absolute top-1.5 h-[calc(100%-12px)] rounded-xl shadow-lg transition-all duration-500 ease-out transform pointer-events-none ${
+                  activeTab === "my-requests"
+                    ? "left-1.5 translate-x-0"
+                    : "left-1.5 translate-x-full"
+                }`}
+                style={{
+                  width: "calc(50% - 6px)",
+                  backgroundColor: "#2699b2"
+                }}
+              >
+                {/* Animated shine effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer rounded-xl"></div>
+
+                {/* Ripple effect on active tab */}
+                <div className="absolute inset-0 rounded-xl bg-white/10 animate-pulse opacity-50"></div>
+              </div>
+
+              {tabs.map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`relative z-20 py-3.5 px-4 rounded-xl text-sm font-bold transition-all duration-300 group ${
+                    activeTab === tab.key
+                      ? "text-white transform scale-105"
+                      : "text-slate-600 hover:text-slate-800"
+                  }`}
+                  style={activeTab !== tab.key ? { transform: "scale(1.02)" } : undefined}
+                  onMouseEnter={(e) => {
+                    if (activeTab !== tab.key) {
+                      e.currentTarget.style.transform = "scale(1.02)";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (activeTab !== tab.key) {
+                      e.currentTarget.style.transform = "scale(1)";
+                    }
+                  }}
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <div className={`p-1.5 rounded-lg transition-all duration-300 ${
+                      activeTab === tab.key
+                        ? "bg-white/20 text-white shadow-lg"
+                        : "text-slate-700"
+                    }`} style={activeTab !== tab.key ? { backgroundColor: "var(--color-primary-hover)" } : undefined}>
+                      {tab.icon}
+                    </div>
+                    <span className="relative">
+                      {tab.label}
+                      {/* Hover underline effect */}
+                      <div className={`absolute -bottom-1 left-0 h-0.5 bg-white/60 transition-all duration-300 ${
+                        activeTab === tab.key ? "w-full" : "w-0 group-hover:w-full"
+                      }`}></div>
+                    </span>
+                  </div>
+
+                  {/* Floating particles effect */}
+                  {activeTab === tab.key && (
+                    <div className="absolute inset-0 pointer-events-none">
+                      <div className="absolute top-1 right-2 w-1 h-1 bg-white/60 rounded-full animate-bounce animation-delay-100"></div>
+                      <div className="absolute bottom-2 left-3 w-0.5 h-0.5 bg-white/40 rounded-full animate-bounce animation-delay-300"></div>
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {/* Ambient glow effect */}
+            <div className="absolute -inset-2 rounded-3xl blur-xl opacity-20 transition-all duration-500 pointer-events-none" style={{ backgroundColor: "#2699b2" }}></div>
+          </div>
+        </div>
+
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-slate-200 pb-6">
           <div className="space-y-2">
             <div className="flex items-center gap-3 group cursor-default">
-              {/*<div className="p-3 bg-amber-100 rounded-xl shadow-inner group-hover:scale-110 transition-transform duration-300">
+              <div className="p-3 bg-amber-100 rounded-xl shadow-inner group-hover:scale-110 transition-transform duration-300">
                 <ClipboardList className="h-7 w-7 text-amber-600 group-hover:text-amber-700 transition-colors" />
-              </div>*/}
-              <PageTitle>My Requests</PageTitle>
-                
-              
+              </div>
+              <PageTitle>
+                {activeTab === "my-requests" ? "My Requests" : "Patients Requests"}
+              </PageTitle>
+
+
+
             </div>
             <p className="text-slate-500 mt-1">
-              Track the medicines you need. We'll help you find them.
+              {activeTab === "my-requests"
+                ? "Track the medicines you need. We'll help you find them."
+                : "View and assist other patients with their medicine requests."
+              }
             </p>
           </div>
-          
-          <Button
-            onClick={() => setIsNewDialogOpen(true)}
-            size="lg"
-            className="bg-amber-600 hover:bg-amber-700 text-white shadow-lg shadow-amber-500/20 transition-all duration-300 hover:scale-105 hover:shadow-amber-500/40 active:scale-95 font-semibold text-md h-12 px-6 rounded-xl"
-          >
-            <Plus className="h-5 w-5 mr-2 animate-pulse" />
-            New Request
-          </Button>
+
+          {activeTab === "my-requests" && (
+            <Button
+              onClick={() => setIsNewDialogOpen(true)}
+              size="lg"
+              className="bg-amber-600 hover:bg-amber-700 text-white shadow-lg shadow-amber-500/20 transition-all duration-300 hover:scale-105 hover:shadow-amber-500/40 active:scale-95 font-semibold text-md h-12 px-6 rounded-xl"
+            >
+              <Plus className="h-5 w-5 mr-2 animate-pulse" />
+              New Request
+            </Button>
+          )}
         </div>
 
         {/* Notifications */}
@@ -347,19 +463,25 @@ export default function PatientRequestsPage() {
                   <PackageSearch className="h-12 w-12 text-amber-500" />
                 </div>
               </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">No requests yet</h3>
+              <h3 className="text-2xl font-bold text-slate-900 mb-2">
+                {activeTab === "my-requests" ? "No requests yet" : "No patient requests available"}
+              </h3>
               <p className="text-slate-500 max-w-md text-center mb-8 text-lg leading-relaxed">
-                You haven't requested any medicines. <br/>
-                <span className="text-amber-600 font-medium">Need something? Let us know.</span>
+                {activeTab === "my-requests"
+                  ? "You haven't requested any medicines. Need something? Let us know."
+                  : "There are no patient requests that need expert assistance at the moment."
+                }
               </p>
-              <Button 
-                variant="outline" 
-                size="lg" 
-                onClick={() => setIsNewDialogOpen(true)}
-                className="border-amber-200 text-amber-700 hover:bg-amber-50 hover:border-amber-300 transition-all hover:scale-105 active:scale-95 rounded-xl h-12 px-8 font-semibold"
-              >
-                Create your first request
-              </Button>
+              {activeTab === "my-requests" && (
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => setIsNewDialogOpen(true)}
+                  className="border-amber-200 text-amber-700 hover:bg-amber-50 hover:border-amber-300 transition-all hover:scale-105 active:scale-95 rounded-xl h-12 px-8 font-semibold"
+                >
+                  Create your first request
+                </Button>
+              )}
             </div>
           ) : (
             <>
@@ -430,6 +552,14 @@ export default function PatientRequestsPage() {
                                   </p>
                                 </div>
                               )}
+                              {activeTab === "expert-view" && request.patient && (
+                                <div className="flex items-center gap-1.5">
+                                  <User className="w-3 h-3 text-blue-400" />
+                                  <p className="text-xs font-medium text-slate-600">
+                                    Patient: {request.patient.name}
+                                  </p>
+                                </div>
+                              )}
                             </div>
                             {getStatusBadge(request.status)}
                           </div>
@@ -454,53 +584,67 @@ export default function PatientRequestsPage() {
                         </CardContent>
 
                         <CardFooter className="pt-4 pb-5 px-5 gap-3 bg-white border-t border-slate-100 mt-auto">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEdit(request)}
-                            disabled={request.status !== "OPEN" || togglingStatusId === request.id}
-                            className="flex-1 border-slate-200 hover:border-amber-300 hover:bg-amber-50 hover:text-amber-700 transition-all duration-200 active:scale-95 rounded-xl font-medium"
-                          >
-                            <Edit className="h-3.5 w-3.5 mr-2" />
-                            Edit
-                          </Button>
-                          
-                          <Button
-                            onClick={() => handleToggleStatus(request)}
-                            disabled={togglingStatusId === request.id}
-                            size="sm"
-                            className={`flex-1 transition-all duration-300 active:scale-95 rounded-xl shadow-md hover:shadow-lg font-semibold ${
-                              request.status === "OPEN" 
-                                ? "bg-emerald-600 hover:bg-emerald-700 text-white" 
-                                : "bg-slate-800 hover:bg-slate-900 text-white"
-                            }`}
-                          >
-                            {togglingStatusId === request.id ? (
-                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                            ) : request.status === "OPEN" ? (
-                              <>
-                                <CheckCircle2 className="h-3.5 w-3.5 mr-2" />
-                                Mark Found
-                              </>
-                            ) : (
-                              <>
-                                <Calendar className="h-3.5 w-3.5 mr-2" />
-                                Re-Open
-                              </>
-                            )}
-                          </Button>
-                          
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => {
-                              setSelectedRequestId(request.id);
-                              setIsDeleteDialogOpen(true);
-                            }}
-                            className="text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          {activeTab === "my-requests" ? (
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEdit(request)}
+                                disabled={request.status !== "OPEN" || togglingStatusId === request.id}
+                                className="flex-1 border-slate-200 hover:border-amber-300 hover:bg-amber-50 hover:text-amber-700 transition-all duration-200 active:scale-95 rounded-xl font-medium"
+                              >
+                                <Edit className="h-3.5 w-3.5 mr-2" />
+                                Edit
+                              </Button>
+
+                              <Button
+                                onClick={() => handleToggleStatus(request)}
+                                disabled={togglingStatusId === request.id}
+                                size="sm"
+                                className={`flex-1 transition-all duration-300 active:scale-95 rounded-xl shadow-md hover:shadow-lg font-semibold ${
+                                  request.status === "OPEN"
+                                    ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                                    : "bg-slate-800 hover:bg-slate-900 text-white"
+                                }`}
+                              >
+                                {togglingStatusId === request.id ? (
+                                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                ) : request.status === "OPEN" ? (
+                                  <>
+                                    <CheckCircle2 className="h-3.5 w-3.5 mr-2" />
+                                    Mark Found
+                                  </>
+                                ) : (
+                                  <>
+                                    <Calendar className="h-3.5 w-3.5 mr-2" />
+                                    Re-Open
+                                  </>
+                                )}
+                              </Button>
+                            </>
+                          ) : (
+                            // Expert view actions
+                            <div className="w-full flex gap-3">
+                              <Button
+                                onClick={() => {
+                                  setAssistingRequest(request);
+                                  setIsAssistDialogOpen(true);
+                                }}
+                                disabled={togglingStatusId === request.id}
+                                size="sm"
+                                className="flex-1 bg-[#2699b2] hover:bg-[#1e7a9e] text-white transition-all duration-300 active:scale-95 rounded-xl shadow-md hover:shadow-lg font-semibold"
+                              >
+                                {togglingStatusId === request.id ? (
+                                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                ) : (
+                                  <>
+                                    <CheckCircle2 className="h-3.5 w-3.5 mr-2" />
+                                    Assist Patient
+                                  </>
+                                )}
+                              </Button>
+                            </div>
+                          )}
                         </CardFooter>
                       </Card>
                     </div>
@@ -512,11 +656,13 @@ export default function PatientRequestsPage() {
         </div>
       </div>
 
-      {/* New Request Dialog */}
-      <Dialog open={isNewDialogOpen} onOpenChange={(open) => {
-        setIsNewDialogOpen(open);
-        if (!open) resetForm();
-      }}>
+      {/* New Request Dialog - Only show for my-requests tab */}
+      {activeTab === "my-requests" && (
+        <>
+          <Dialog open={isNewDialogOpen} onOpenChange={(open) => {
+            setIsNewDialogOpen(open);
+            if (!open) resetForm();
+          }}>
         <DialogContent 
           className="sm:max-w-[550px] p-0 gap-0 overflow-visible bg-white border-none shadow-2xl rounded-3xl"
           onPointerDownOutside={(e) => {
@@ -535,7 +681,7 @@ export default function PatientRequestsPage() {
                  Create Request
               </DialogTitle>
               <DialogDescription className="text-blue-100 mt-2 font-medium">
-                Tell us what you need, and we'll broadcast it to potential donors.
+                Tell us what you need, and we&apos;ll broadcast it to potential donors.
               </DialogDescription>
             </DialogHeader>
           </div>
@@ -677,6 +823,114 @@ export default function PatientRequestsPage() {
             >
               Delete
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+        </>
+      )}
+
+      {/* Assist Patient Dialog */}
+      <Dialog open={isAssistDialogOpen} onOpenChange={(open) => {
+        setIsAssistDialogOpen(open);
+        if (!open) setAssistingRequest(null);
+      }}>
+        <DialogContent
+          className="sm:max-w-[500px] p-0 gap-0 overflow-visible bg-white border-none shadow-2xl rounded-3xl"
+          onPointerDownOutside={(e) => {
+            const target = e.target as HTMLElement;
+            if (target?.closest("[data-city-dropdown]")) e.preventDefault();
+          }}
+        >
+          <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-8 text-white relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-2xl -mr-10 -mt-10"></div>
+
+            <DialogHeader className="relative z-10">
+              <DialogTitle className="text-2xl font-extrabold flex items-center gap-3 text-white">
+                <div className="p-2.5 bg-white/20 backdrop-blur-md shadow-lg border border-white/10 rounded-xl">
+                  <User className="h-6 w-6" />
+                </div>
+                Assist Patient
+              </DialogTitle>
+              <DialogDescription className="text-green-100 mt-2 font-medium">
+                Help this patient find their needed medicine.
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+
+          <div className="p-8 space-y-6 bg-slate-50/50">
+            {assistingRequest && (
+              <>
+                {/* Patient Info */}
+                <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
+                  <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <User className="h-5 w-5 text-blue-600" />
+                    Patient Information
+                  </h3>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                        <User className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-slate-900">{assistingRequest.patient?.name || "Patient"}</p>
+                        <p className="text-sm text-slate-500">Patient Name</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
+                        <Pill className="h-4 w-4 text-amber-600" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-slate-900">{assistingRequest.medicine.name}</p>
+                        <p className="text-sm text-slate-500">Requested Medicine</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
+                        <MapPin className="h-4 w-4 text-indigo-600" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-slate-900">{assistingRequest.city}</p>
+                        <p className="text-sm text-slate-500">Location</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
+                        <Calendar className="h-4 w-4 text-orange-600" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-slate-900">{new Date(assistingRequest.createdAt).toLocaleDateString()}</p>
+                        <p className="text-sm text-slate-500">Request Date</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col gap-3">
+                  {assistingRequest.patient?.phone && (
+                    <Button
+                      onClick={() => {
+                        const whatsappUrl = getWhatsAppUrl(
+                          assistingRequest.patient?.phone || null,
+                          `Medicine Request: ${assistingRequest.medicine.name}`,
+                          `Hello! I'm contacting you through Dawalocate. I saw your request for ${assistingRequest.medicine.name} in ${assistingRequest.city}. I may be able to help you find this medicine. Can we discuss the details?`
+                        );
+                        window.open(whatsappUrl, "_blank");
+                      }}
+                      className="w-full bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-200 transition-all hover:scale-105 active:scale-95 rounded-xl h-12 font-bold tracking-wide"
+                    >
+                      <WhatsAppIcon className="h-5 w-5 mr-2" />
+                      Contact via WhatsApp
+                    </Button>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </DialogContent>
       </Dialog>

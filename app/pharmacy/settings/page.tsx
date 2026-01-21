@@ -60,9 +60,13 @@ export default function PharmacySettingsPage() {
         } else {
           setError(response.data.error || "Failed to load account data");
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Error fetching account data:", error);
-        setError(error.response?.data?.error || "An error occurred while loading your account data");
+        if (axios.isAxiosError(error)) {
+          setError(error.response?.data?.error || "An error occurred while loading your account data");
+        } else {
+          setError("An error occurred while loading your account data");
+        }
       } finally {
         setLoading(false);
       }
@@ -109,9 +113,13 @@ export default function PharmacySettingsPage() {
       } else {
         setError(response.data.error || "Failed to update account");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error updating account:", error);
-      setError(error.response?.data?.error || "An error occurred while updating your account");
+      if (axios.isAxiosError(error)) {
+        setError(error.response?.data?.error || "An error occurred while updating your account");
+      } else {
+        setError("An error occurred while updating your account");
+      }
     } finally {
       setSaving(false);
     }
@@ -138,9 +146,13 @@ export default function PharmacySettingsPage() {
         console.log("Frontend: Password update failed:", response.data.error);
         setError(response.data.error || "Failed to update password");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Frontend: Error updating password:", error);
-      setError(error.response?.data?.error || "An error occurred while updating your password");
+      if (axios.isAxiosError(error)) {
+        setError(error.response?.data?.error || "An error occurred while updating your password");
+      } else {
+        setError("An error occurred while updating your password");
+      }
     } finally {
       setSaving(false);
     }
