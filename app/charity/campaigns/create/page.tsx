@@ -210,8 +210,9 @@ export default function CreateCampaignPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f6fbfc] py-8">
-      <div className="my-container max-w-5xl">
+    <div className="min-h-screen py-10 bg-[radial-gradient(circle_at_top,#e6f7fb,#f6fbfc_45%)]">
+       <div className="relative my-container max-w-5xl">
+
         {/* Header */}
         <div className="mb-8 animate-slide-up">
           <Button
@@ -277,70 +278,73 @@ export default function CreateCampaignPage() {
         {/* Main Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Basic Information Section */}
-          <Card className="rounded-xl border border-gray-200 shadow-sm animate-scale-in">
-            <div className="p-6 space-y-6">
-              <div className="flex items-center gap-3 pb-4 border-b">
-                <div className="bg-purple-100 rounded-lg p-2">
-                  <FileText className="h-5 w-5 text-purple-600" />
-                </div>
-                <h2 className="text-xl font-bold text-gray-900">Basic Information</h2>
-              </div>
+          <div className="relative rounded-2xl p-[1.5px] bg-[#2699B2]/40 shadow-[0_0_0_1px_rgba(38,153,178,0.35)] animate-scale-in">
+            <Card className="rounded-2xl border-0 bg-white/95 backdrop-blur-sm">
 
-              {/* Campaign Title */}
-              <div>
-                <Label htmlFor="title" className="text-gray-700 font-medium">
-                  Campaign Title <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="title"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleInputChange}
-                  placeholder="e.g., Winter Medicine Relief Drive 2024"
-                  maxLength={200}
-                  className={`mt-2 rounded-xl border-gray-300 focus:border-primary focus:ring-primary ${
-                    formErrors.title ? "border-red-500" : ""
-                  }`}
-                />
-                <div className="flex justify-between mt-1">
-                  {formErrors.title ? (
-                    <p className="text-sm text-red-600">{formErrors.title}</p>
-                  ) : (
-                    <p className="text-sm text-gray-500">Give your campaign a clear, compelling title</p>
-                  )}
-                  <p className="text-sm">{getCharacterCount(formData.title, 200)}</p>
+              <div className="p-6 space-y-6">
+              <div className="flex items-center gap-3 pb-4 border-b border-[#2699B2]/20">
+                  <div className="flex items-center justify-center h-9 w-9 rounded-xl bg-[#2699B2]/15">
+
+                    <FileText className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <h2 className="text-xl font-bold text-gray-900">Basic Information</h2>
+                </div>
+
+                {/* Campaign Title */}
+                <div>
+                  <Label htmlFor="title" className="text-gray-700 font-medium">
+                    Campaign Title <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="title"
+                    name="title"
+                    value={formData.title}
+                    onChange={handleInputChange}
+                    placeholder="e.g., Winter Medicine Relief Drive 2024"
+                    maxLength={200}
+                    className={`mt-2 rounded-xl border-gray-300 focus:border-primary focus:ring-primary ${
+                      formErrors.title ? "border-red-500" : ""
+                    }`}
+                  />
+                  <div className="flex justify-between mt-1">
+                    {formErrors.title ? (
+                      <p className="text-sm text-red-600">{formErrors.title}</p>
+                    ) : (
+                      <p className="text-sm text-gray-500">Give your campaign a clear, compelling title</p>
+                    )}
+                    <p className="text-sm">{getCharacterCount(formData.title, 200)}</p>
+                  </div>
+                </div>
+
+                {/* Description */}
+                <div>
+                  <Label htmlFor="description" className="text-gray-700 font-medium">
+                    Campaign Description <span className="text-red-500">*</span>
+                  </Label>
+                  <Textarea
+                    id="description"
+                    name="description"
+                    value={formData.description}
+                    onChange={handleInputChange}
+                    placeholder="Describe your campaign goals, who it will help, and why it matters. Be specific about the impact your campaign will have on the community..."
+                    rows={6}
+                    maxLength={2000}
+                    className={`mt-2 rounded-xl border-gray-300 focus:border-primary focus:ring-primary resize-none ${
+                      formErrors.description ? "border-red-500" : ""
+                    }`}
+                  />
+                  <div className="flex justify-between mt-1">
+                    {formErrors.description ? (
+                      <p className="text-sm text-red-600">{formErrors.description}</p>
+                    ) : (
+                      <p className="text-sm text-gray-500">Minimum 20 characters</p>
+                    )}
+                    <p className="text-sm">{getCharacterCount(formData.description, 2000)}</p>
+                  </div>
                 </div>
               </div>
-
-              {/* Description */}
-              <div>
-                <Label htmlFor="description" className="text-gray-700 font-medium">
-                  Campaign Description <span className="text-red-500">*</span>
-                </Label>
-                <Textarea
-                  id="description"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  placeholder="Describe your campaign goals, who it will help, and why it matters. Be specific about the impact your campaign will have on the community..."
-                  rows={6}
-                  maxLength={2000}
-                  className={`mt-2 rounded-xl border-gray-300 focus:border-primary focus:ring-primary resize-none ${
-                    formErrors.description ? "border-red-500" : ""
-                  }`}
-                />
-                <div className="flex justify-between mt-1">
-                  {formErrors.description ? (
-                    <p className="text-sm text-red-600">{formErrors.description}</p>
-                  ) : (
-                    <p className="text-sm text-gray-500">Minimum 20 characters</p>
-                  )}
-                  <p className="text-sm">{getCharacterCount(formData.description, 2000)}</p>
-                </div>
-              </div>
-            </div>
-          </Card>
-
+            </Card>
+          </div>
           {/* Location & Dates Section */}
           <Card className="rounded-xl border border-gray-200 shadow-sm animate-scale-in">
             <div className="p-6 space-y-6">
@@ -492,8 +496,10 @@ export default function CreateCampaignPage() {
                     {getSelectedMedicineObjects().map((medicine) => (
                       <div
                         key={medicine.id}
-                        className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg"
-                      >
+                        className="group flex items-center justify-between p-3 rounded-xl
+                        bg-[#2699B2]/5 border border-[#2699B2]/30
+                        hover:shadow-md hover:-translate-y-[1px] transition-all"
+                         >
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-gray-900 truncate">{medicine.name}</p>
                           <p className="text-sm text-gray-600">
