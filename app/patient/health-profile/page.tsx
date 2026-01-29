@@ -303,7 +303,7 @@ export default function HealthProfilePage() {
 
         {/* CONTENT GRID */}
         {hasProfile && (
-          <div className="flex flex-col md:flex-row items-start gap-4">
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-4">
             {/* LEFT: DETAILS */}
             <div className="w-full order-2 xl:order-1 flex flex-col gap-8">
               {/* Personal Info Card */}
