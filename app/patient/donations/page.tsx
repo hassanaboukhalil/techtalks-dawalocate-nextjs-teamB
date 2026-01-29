@@ -135,7 +135,7 @@ export default function PatientDonationsPage() {
       setError(null);
       const endpoint = activeTab === "my-donations"
         ? "/api/patient/donation-offers"
-        : "/api/patient/donation-offers/expert";
+        : "/api/patient/donation-offers/view-patients-donations";
       const response = await fetch(endpoint);
       const result: ApiResponse<DonationOffer[]> = await response.json();
       if (!result.success) throw new Error(result.error || "Failed to fetch donation offers");

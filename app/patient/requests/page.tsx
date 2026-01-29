@@ -113,7 +113,7 @@ export default function PatientRequestsPage() {
       setLoading(true);
       const endpoint = activeTab === "my-requests"
         ? "/api/patient/requests"
-        : "/api/patient/requests/expert";
+        : "/api/patient/requests/view-patients-requests";
       const response = await fetch(endpoint);
       const data: ApiResponse<Request[]> = await response.json();
 
