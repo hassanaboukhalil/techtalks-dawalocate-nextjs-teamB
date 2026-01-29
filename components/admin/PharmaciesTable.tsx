@@ -218,7 +218,7 @@ export function PharmaciesTable({
                     </TableCell>
                     <TableCell>{pharmacy.city ?? "—"}</TableCell>
                     <TableCell className="font-mono">
-                      {pharmacy.phone ?? "—"}
+                      {pharmacy.phone?.replaceAll(" ", "") ?? "—"}
                     </TableCell>
                     {/* <TableCell>
                       {pharmacy.hasDelivery ? (
