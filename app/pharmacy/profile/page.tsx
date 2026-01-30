@@ -252,120 +252,232 @@ export default function PharmacyProfilePage() {
           />
         </div>
 
-        {/* Edit Dialog (same as yours) */}
+        {/* Edit Dialog*/}
+        
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto mx-3 sm:mx-auto">
-            <DialogHeader>
-              <DialogTitle className="text-lg sm:text-xl">Edit Pharmacy Profile</DialogTitle>
-            </DialogHeader>
+        <DialogContent
+          className="
+            p-0 overflow-hidden
+            sm:max-w-[680px] w-[calc(100vw-24px)]
+            max-h-[90vh]
+            rounded-3xl border border-slate-200 bg-white shadow-2xl
+            outline-none focus:outline-none focus-visible:outline-none
+            ring-0 focus:ring-0 focus-visible:ring-0
+            [&>button]:hidden
+          "
+        >
 
-            {editError && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                <p className="text-sm text-red-600">{editError}</p>
-              </div>
-            )}
+            {/* Top teal header */}
+            <div className="relative bg-[#2a9ab0] text-white px-6 sm:px-7 py-6">
+              <button
+                onClick={closeEditDialog}
+                className="absolute right-4 top-4 grid h-9 w-9 place-items-center rounded-full hover:bg-white/10 transition"
+                aria-label="Close"
+                type="button"
+              >
+                ✕
+              </button>
 
-            <div className="grid gap-4 sm:gap-6 py-2 sm:py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="name" className="text-sm sm:text-base">Pharmacy Name *</Label>
-                <Input
-                  id="name"
-                  value={editForm.name}
-                  onChange={(e) => handleFormChange("name", e.target.value)}
-                  className={`text-sm sm:text-base ${formErrors.name ? "border-red-500" : ""}`}
-                />
-                {formErrors.name && (
-                  <p className="text-xs sm:text-sm text-red-600">{formErrors.name}</p>
-                )}
-              </div>
+              <div className="flex items-start gap-3">
+                <div className="grid h-11 w-11 place-items-center rounded-2xl bg-white/15 border border-white/20">
+                  <span className="text-lg">🏥</span>
+                </div>
 
-              <div className="grid gap-2">
-                <Label htmlFor="email" className="text-sm sm:text-base">Email Address *</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={editForm.email}
-                  onChange={(e) => handleFormChange("email", e.target.value)}
-                  className={`text-sm sm:text-base ${formErrors.email ? "border-red-500" : ""}`}
-                />
-                {formErrors.email && (
-                  <p className="text-xs sm:text-sm text-red-600">{formErrors.email}</p>
-                )}
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="phone" className="text-sm sm:text-base">Phone Number</Label>
-                <Input
-                  id="phone"
-                  value={editForm.phone}
-                  onChange={(e) => handleFormChange("phone", e.target.value)}
-                  className={`text-sm sm:text-base ${formErrors.phone ? "border-red-500" : ""}`}
-                />
-                {formErrors.phone && (
-                  <p className="text-xs sm:text-sm text-red-600">{formErrors.phone}</p>
-                )}
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="city" className="text-sm sm:text-base">City</Label>
-                <CityAutocomplete
-                  cities={LEBANON_CITIES}
-                  value={editForm.city}
-                  onChange={(value) => handleFormChange("city", value)}
-                />
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="address" className="text-sm sm:text-base">Full Address</Label>
-                <Input
-                  id="address"
-                  value={editForm.address}
-                  onChange={(e) => handleFormChange("address", e.target.value)}
-                  className="text-sm sm:text-base"
-                />
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="openingHours" className="text-sm sm:text-base">Opening Hours</Label>
-                <OpeningHoursInput
-                  value={editForm.openingHours}
-                  onChange={(value) => handleFormChange("openingHours", value)}
-                />
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="hasDelivery"
-                  checked={editForm.hasDelivery}
-                  onChange={(e) =>
-                    handleFormChange("hasDelivery", e.target.checked)
-                  }
-                  className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary flex-shrink-0"
-                />
-                <Label htmlFor="hasDelivery" className="text-sm sm:text-base cursor-pointer">Offers delivery service</Label>
+                <div>
+                  <DialogTitle className="text-xl text-white sm:text-2xl font-semibold leading-tight">
+                    Edit Pharmacy Profile
+                  </DialogTitle>
+                  <p className="text-white/85 text-sm mt-1">
+                    Update your pharmacy details and availability settings.
+                  </p>
+                </div>
               </div>
             </div>
 
-            <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
-              <Button 
-                variant="outline" 
-                onClick={closeEditDialog} 
-                disabled={editLoading}
-                className="w-full sm:w-auto text-sm sm:text-base"
-              >
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleSaveProfile} 
-                disabled={editLoading}
-                className="w-full sm:w-auto text-sm sm:text-base"
-              >
-                {editLoading ? "Saving..." : "Save Changes"}
-              </Button>
-            </DialogFooter>
+            {/* Body */}
+            <div className="px-6 sm:px-7 py-6 max-h-[70vh] overflow-y-auto">
+              {editError && (
+                <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3">
+                  <p className="text-sm text-red-700">{editError}</p>
+                </div>
+              )}
+
+              {/* Soft input style */}
+              {/*
+                If you prefer, move this string outside the JSX.
+                Keeping it inline here so you can copy-paste fast.
+              */}
+              <div className="grid gap-5">
+                {/* Pharmacy Name */}
+                <div className="grid gap-2">
+                  <Label
+                    htmlFor="name"
+                    className="text-[12px] font-semibold tracking-wide text-slate-500 uppercase"
+                  >
+                    Pharmacy Name *
+                  </Label>
+                  <Input
+                    id="name"
+                    value={editForm.name}
+                    onChange={(e) => handleFormChange("name", e.target.value)}
+                    className={[
+                      "h-12 rounded-2xl bg-slate-50 border-slate-200 px-4",
+                      "focus-visible:ring-2 focus-visible:ring-[#2a9ab0]/35 focus-visible:border-[#2a9ab0]",
+                      "placeholder:text-slate-400",
+                      formErrors.name ? "border-red-400 focus-visible:ring-red-200" : "",
+                    ].join(" ")}
+                  />
+                  {formErrors.name && (
+                    <p className="text-xs text-red-600">{formErrors.name}</p>
+                  )}
+                </div>
+
+                {/* Email */}
+                <div className="grid gap-2">
+                  <Label
+                    htmlFor="email"
+                    className="text-[12px] font-semibold tracking-wide text-slate-500 uppercase"
+                  >
+                    Email Address *
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={editForm.email}
+                    onChange={(e) => handleFormChange("email", e.target.value)}
+                    className={[
+                      "h-12 rounded-2xl bg-slate-50 border-slate-200 px-4",
+                      "focus-visible:ring-2 focus-visible:ring-[#2a9ab0]/35 focus-visible:border-[#2a9ab0]",
+                      "placeholder:text-slate-400",
+                      formErrors.email ? "border-red-400 focus-visible:ring-red-200" : "",
+                    ].join(" ")}
+                  />
+                  {formErrors.email && (
+                    <p className="text-xs text-red-600">{formErrors.email}</p>
+                  )}
+                </div>
+
+                {/* Phone */}
+                <div className="grid gap-2">
+                  <Label
+                    htmlFor="phone"
+                    className="text-[12px] font-semibold tracking-wide text-slate-500 uppercase"
+                  >
+                    Phone Number
+                  </Label>
+                  <Input
+                    id="phone"
+                    value={editForm.phone}
+                    onChange={(e) => handleFormChange("phone", e.target.value)}
+                    className={[
+                      "h-12 rounded-2xl bg-slate-50 border-slate-200 px-4",
+                      "focus-visible:ring-2 focus-visible:ring-[#2a9ab0]/35 focus-visible:border-[#2a9ab0]",
+                      "placeholder:text-slate-400",
+                      formErrors.phone ? "border-red-400 focus-visible:ring-red-200" : "",
+                    ].join(" ")}
+                  />
+                  {formErrors.phone && (
+                    <p className="text-xs text-red-600">{formErrors.phone}</p>
+                  )}
+                </div>
+
+                {/* City */}
+                <div className="grid gap-2">
+                  <Label className="text-[12px] font-semibold tracking-wide text-slate-500 uppercase">
+                    City
+                  </Label>
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
+                    <CityAutocomplete
+                      cities={LEBANON_CITIES}
+                      value={editForm.city}
+                      onChange={(value) => handleFormChange("city", value)}
+                    />
+                  </div>
+                </div>
+
+                {/* Address */}
+                <div className="grid gap-2">
+                  <Label
+                    htmlFor="address"
+                    className="text-[12px] font-semibold tracking-wide text-slate-500 uppercase"
+                  >
+                    Full Address
+                  </Label>
+                  <Input
+                    id="address"
+                    value={editForm.address}
+                    onChange={(e) => handleFormChange("address", e.target.value)}
+                    className="h-12 rounded-2xl bg-slate-50 border-slate-200 px-4 focus-visible:ring-2 focus-visible:ring-[#2a9ab0]/35 focus-visible:border-[#2a9ab0]"
+                  />
+                </div>
+
+                {/* Opening Hours */}
+                <div className="grid gap-2">
+                  <Label className="text-[12px] font-semibold tracking-wide text-slate-500 uppercase">
+                    Opening Hours
+                  </Label>
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
+                    <OpeningHoursInput
+                      value={editForm.openingHours}
+                      onChange={(value) => handleFormChange("openingHours", value)}
+                    />
+                  </div>
+                </div>
+
+                {/* Delivery */}
+                <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                  <input
+                    type="checkbox"
+                    id="hasDelivery"
+                    checked={editForm.hasDelivery}
+                    onChange={(e) => handleFormChange("hasDelivery", e.target.checked)}
+                    className="h-4 w-4 accent-[#2a9ab0]"
+                  />
+                  <Label
+                    htmlFor="hasDelivery"
+                    className="text-sm text-slate-700 cursor-pointer"
+                  >
+                    Offers delivery service
+                  </Label>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 sm:px-7 pb-6">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  variant="outline"
+                  onClick={closeEditDialog}
+                  disabled={editLoading}
+                  className="
+                    w-full sm:w-auto
+                    rounded-2xl
+                    border-slate-200 bg-white
+                    hover:bg-slate-50
+                  "
+                >
+                  Cancel
+                </Button>
+
+                <Button
+                  onClick={handleSaveProfile}
+                  disabled={editLoading}
+                  className="
+                    w-full sm:flex-1
+                    rounded-2xl
+                    bg-[#2a9ab0] hover:bg-[#23899c]
+                    text-white
+                    shadow-lg shadow-[#2a9ab0]/25
+                  "
+                >
+                  {editLoading ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
+
       </div>
     </div>
   );
