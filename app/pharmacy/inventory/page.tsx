@@ -773,7 +773,7 @@ function PharmacyInventoryContent() {
           <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-white rounded-3xl shadow-2xl p-0 z-50 overflow-hidden outline-none">
              
              {/* Edit Header */}
-             <div className="bg-indigo-600 p-8 text-white relative">
+             <div className="bg-[#2699B2] p-8 text-white relative">
                 <div className="flex justify-between items-center relative z-10">
                   <Dialog.Title className="text-2xl font-extrabold flex items-center gap-3 text-white">
                     <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm border border-white/10 shadow-inner">
@@ -799,7 +799,7 @@ function PharmacyInventoryContent() {
                    <div>
                       <p className="font-extrabold text-indigo-900 text-xl leading-none">{editingItem.medicine.name}</p>
                       {editingItem.medicine.genericName && (
-                        <p className="text-xs text-indigo-600 mt-1.5 font-bold uppercase tracking-wide">{editingItem.medicine.genericName}</p>
+                        <p className="text-xs text-indigo-900 mt-1.5 font-bold uppercase tracking-wide">{editingItem.medicine.genericName}</p>
                       )}
                    </div>
                  </div>
@@ -909,8 +909,8 @@ function PharmacyInventoryContent() {
                 </div>
 
                 <div className="pt-4 flex gap-4 border-t border-slate-100 mt-2">
-                   <Button type="button" onClick={() => setEditOpen(false)} className="flex-1 h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-lg shadow-indigo-200 hover:shadow-indigo-300 hover:scale-[1.02] transition-all">Cancel</Button>
-                   <Button type="submit" disabled={loading} className="flex-[2] h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-lg hover:scale-[1.02] transition-all">
+                   <Button type="button" onClick={() => setEditOpen(false)} className="flex-1 h-12 rounded-xl bg-[#2699B2] hover:bg-[#1f7f94] text-white font-bold shadow-lg shadow-indigo-200 hover:shadow-indigo-300 hover:scale-[1.02] transition-all">Cancel</Button>
+                   <Button type="submit" disabled={loading} className="flex-[2] h-12 rounded-xl bg-[#2699B2] hover:bg-[#1f7f94] text-white font-bold shadow-lg hover:scale-[1.02] transition-all">
                       {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Save Changes"}
                    </Button>
                 </div>
