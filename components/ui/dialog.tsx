@@ -76,28 +76,12 @@ function DialogContent({
         )}
         {...props}
       >
-        {/* Accent Top Bar */}
-        <div className="h-1 w-full bg-gradient-to-r from-indigo-500 via-cyan-400 to-violet-500" />
-
         {children}
-
-        {/* Close Button */}
-        <DialogPrimitive.Close
-          className={cn(
-            "absolute right-4 top-4",
-            "rounded-full p-2",
-            "text-slate-500 hover:text-slate-800",
-            "hover:bg-slate-100 dark:hover:bg-slate-800",
-            "transition-all focus:outline-none focus:ring-2 focus:ring-indigo-400"
-          )}
-        >
-          <X className="h-4 w-4" />
-          <span className="sr-only">Close</span>
-        </DialogPrimitive.Close>
       </DialogPrimitive.Content>
     </DialogPortal>
   )
 }
+
 
 /* =========================
    Header / Footer
