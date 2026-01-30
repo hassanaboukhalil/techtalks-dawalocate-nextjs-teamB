@@ -592,58 +592,69 @@ function CharityRequestsContent() {
         }}
       >
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 bg-black/50 animate-fade-in z-50" />
-          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-card rounded-lg shadow-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto z-50">
+          <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[9999]" />
+          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-white rounded-3xl shadow-2xl z-[9999] overflow-hidden">
             {selectedRequest && (
               <>
-                <div className="flex justify-between items-center mb-6">
-                  <Dialog.Title className="text-h3 text-primary">
-                    Request Details
-                  </Dialog.Title>
+                {/* Gradient Header */}
+                <div className="relative bg-gradient-to-br from-[#2699B2] to-[#1f8a9e] px-6 py-5 overflow-hidden">
+                  {/* Decorative blur circles */}
+                  <div className="absolute -top-6 -right-6 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
+                  <div className="absolute -bottom-4 -left-4 w-20 h-20 bg-white/10 rounded-full blur-xl" />
+                  
+                  <div className="relative flex items-center gap-4">
+                    {/* Frosted glass icon container */}
+                    <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 shadow-lg">
+                      <Package className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <Dialog.Title className="text-xl font-bold text-white">
+                        Request Details
+                      </Dialog.Title>
+                      <p className="text-white/80 text-sm">
+                        Medicine request information
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* Close button */}
                   <Dialog.Close asChild>
-                    <button className="text-gray-500 hover:text-gray-700 transition-colors">
-                      <X size={24} />
+                    <button className="absolute top-4 right-4 p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors">
+                      <X className="w-5 h-5 text-white" />
                     </button>
                   </Dialog.Close>
                 </div>
 
-                <div className="space-y-6">
+                {/* Scrollable Content */}
+                <div className="p-6 space-y-5 max-h-[60vh] overflow-y-auto">
                   {/* Medicine Information */}
-                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                    <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                      <Package className="h-5 w-5 text-primary" />
-                      Medicine Information
-                    </h3>
-                    <div className="space-y-2">
-                      <div>
-                        <span className="text-sm font-medium text-gray-700">
-                          Name:
-                        </span>
-                        <span className="ml-2 text-gray-900">
+                  <div className="bg-[#2699B2]/5 rounded-2xl p-4 border border-[#2699B2]/20">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="p-1.5 bg-[#2699B2]/10 rounded-lg">
+                        <Package className="h-4 w-4 text-[#2699B2]" />
+                      </div>
+                      <h3 className="font-semibold text-gray-800">Medicine Information</h3>
+                    </div>
+                    <div className="space-y-2 pl-8">
+                      <div className="flex items-center">
+                        <span className="text-sm font-medium text-gray-500 w-28">Name:</span>
+                        <span className="text-sm text-gray-900 font-medium">
                           {selectedRequest.medicine.name}
                         </span>
                       </div>
                       {selectedRequest.medicine.genericName && (
-                        <div>
-                          <span className="text-sm font-medium text-gray-700">
-                            Generic Name:
-                          </span>
-                          <span className="ml-2 text-gray-900">
+                        <div className="flex items-center">
+                          <span className="text-sm font-medium text-gray-500 w-28">Generic:</span>
+                          <span className="text-sm text-gray-900">
                             {selectedRequest.medicine.genericName}
                           </span>
                         </div>
                       )}
-                      {(selectedRequest.medicine.strength ||
-                        selectedRequest.medicine.form) && (
-                        <div>
-                          <span className="text-sm font-medium text-gray-700">
-                            Details:
-                          </span>
-                          <span className="ml-2 text-gray-900">
-                            {[
-                              selectedRequest.medicine.strength,
-                              selectedRequest.medicine.form,
-                            ]
+                      {(selectedRequest.medicine.strength || selectedRequest.medicine.form) && (
+                        <div className="flex items-center">
+                          <span className="text-sm font-medium text-gray-500 w-28">Details:</span>
+                          <span className="text-sm text-gray-900">
+                            {[selectedRequest.medicine.strength, selectedRequest.medicine.form]
                               .filter(Boolean)
                               .join(" • ")}
                           </span>
@@ -653,97 +664,92 @@ function CharityRequestsContent() {
                   </div>
 
                   {/* Patient Information */}
-                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                    <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                      <User className="h-5 w-5 text-primary" />
-                      Patient Information
-                    </h3>
-                    <div className="space-y-2">
-                      <div>
-                        <span className="text-sm font-medium text-gray-700">
-                          Name:
-                        </span>
-                        <span className="ml-2 text-gray-900">
-                          {selectedRequest.user.name}
-                        </span>
+                  <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="p-1.5 bg-slate-200 rounded-lg">
+                        <User className="h-4 w-4 text-slate-600" />
                       </div>
-                      {selectedRequest.user.email && (
-                        <div className="flex items-center gap-2">
-                          <Mail className="h-4 w-4 text-gray-500" />
-                          <span className="text-sm text-gray-900">
-                            {selectedRequest.user.email}
-                          </span>
+                      <h3 className="font-semibold text-gray-800">Patient Information</h3>
+                    </div>
+                    <div className="flex items-start gap-4 pl-8">
+                      {/* Patient Avatar */}
+                      <div className="flex-shrink-0 w-14 h-14 bg-[#2699B2]/10 rounded-full flex items-center justify-center border-2 border-[#2699B2]/20">
+                        <User className="w-7 h-7 text-[#2699B2]" />
+                      </div>
+                      {/* Patient Details */}
+                      <div className="flex-1 space-y-1.5">
+                        <p className="font-semibold text-gray-900">{selectedRequest.user.name}</p>
+                        {selectedRequest.user.email && (
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <Mail className="h-3.5 w-3.5" />
+                            <span>{selectedRequest.user.email}</span>
+                          </div>
+                        )}
+                        {selectedRequest.user.phone && (
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <Phone className="h-3.5 w-3.5" />
+                            <span>{selectedRequest.user.phone}</span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <MapPin className="h-3.5 w-3.5" />
+                          <span>{selectedRequest.city}</span>
                         </div>
-                      )}
-                      {selectedRequest.user.phone && (
-                        <div className="flex items-center gap-2">
-                          <Phone className="h-4 w-4 text-gray-500" />
-                          <span className="text-sm text-gray-900">
-                            {selectedRequest.user.phone}
-                          </span>
-                        </div>
-                      )}
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-gray-500" />
-                        <span className="text-sm text-gray-900">
-                          {selectedRequest.city}
-                        </span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Request Status & Charity Actions */}
-                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                    <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                      <Heart className="h-5 w-5 text-primary" />
-                      Request Status & Charity Actions
-                    </h3>
-                    <div className="space-y-3">
-                      <div>
-                        <span className="text-sm font-medium text-gray-700">
-                          Status:
-                        </span>
-                        <div className="mt-1">
-                          {getStatusBadge(selectedRequest.status)}
+                  {/* Request Status */}
+                  <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="p-1.5 bg-slate-200 rounded-lg">
+                        <Heart className="h-4 w-4 text-slate-600" />
+                      </div>
+                      <h3 className="font-semibold text-gray-800">Request Status</h3>
+                    </div>
+                    <div className="space-y-3 pl-8">
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm font-medium text-gray-500">Status:</span>
+                        {getStatusBadge(selectedRequest.status)}
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm font-medium text-gray-500">Requested:</span>
+                        <div className="flex items-center gap-1.5 text-sm text-gray-900">
+                          <Calendar className="h-3.5 w-3.5 text-gray-400" />
+                          {formatDate(selectedRequest.createdAt)}
                         </div>
                       </div>
-                      <div>
-                        <span className="text-sm font-medium text-gray-700">
-                          Requested On:
-                        </span>
-                        <span className="ml-2 text-gray-900">
-                          {formatDate(selectedRequest.createdAt)}
-                        </span>
-                      </div>
-                      <div className="mt-4 p-3 bg-primary/10 border border-primary/20 rounded-md">
-                        <p className="text-sm text-gray-700 mb-2">
-                          As a charity, you can help coordinate medicine access
-                          for this patient.
-                        </p>
-                        <p className="text-xs text-gray-600">
-                          Contact the patient directly or work with your network
-                          of pharmacies and donors to fulfill this request.
+                      <div className="mt-3 p-3 bg-[#2699B2]/10 border border-[#2699B2]/20 rounded-xl">
+                        <p className="text-sm text-gray-700">
+                          As a charity, you can help coordinate medicine access for this patient.
+                          Contact them directly or work with your pharmacy network.
                         </p>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-6 flex justify-end gap-3">
+                {/* Action Buttons */}
+                <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex gap-3">
                   <Dialog.Close asChild>
-                    <Button variant="outline">Close</Button>
+                    <button
+                      type="button"
+                      className="flex-1 h-11 rounded-xl font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
+                    >
+                      Close
+                    </button>
                   </Dialog.Close>
-                  <Button
-                    variant="default"
+                  <button
+                    type="button"
                     onClick={() => {
                       // TODO: Implement contact/help functionality
                       alert("Contact functionality will be implemented here");
                     }}
-                    className="flex items-center gap-2"
+                    className="flex-[2] h-11 rounded-xl font-semibold text-white bg-[#2699B2] hover:bg-[#1f7f94] transition-colors shadow-lg shadow-[#2699B2]/30 flex items-center justify-center gap-2"
                   >
                     <MessageSquare className="h-4 w-4" />
                     Contact Patient
-                  </Button>
+                  </button>
                 </div>
               </>
             )}
