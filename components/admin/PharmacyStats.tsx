@@ -71,28 +71,19 @@ export function PharmacyStats({ stats, loading }: PharmacyStatsProps) {
             relative overflow-hidden group cursor-default
             transition-all duration-300 ease-in-out
             hover:-translate-y-2 hover:shadow-lg ${stat.shadowColor}
-            animate-in fade-in slide-in-from-bottom-4
           `}
-          // Stagger effect: cards appear one after another
-          style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'backwards' }}
         >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className={`text-sm font-bold uppercase tracking-wide ${stat.textColor}`}>
               {stat.title}
             </CardTitle>
             
-            {/* ✨ BIGGER & ANIMATED ICON CONTAINER ✨ */}
+            {/* ICON CONTAINER */}
             <div className={`
-                p-3 rounded-2xl ${stat.iconBg} 
-                transition-transform duration-500
-                group-hover:scale-110 group-hover:rotate-6
+                p-3 rounded-2xl ${stat.iconBg}
             `}>
               <stat.icon 
-                className={`
-                    h-8 w-8 ${stat.iconColor} 
-                    transition-all duration-300
-                    ${loading ? 'animate-spin' : 'group-hover:animate-pulse'}
-                `} 
+                className={`h-8 w-8 ${stat.iconColor}`} 
               />
             </div>
           </CardHeader>
