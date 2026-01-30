@@ -476,10 +476,9 @@ function PharmacyInventoryContent() {
                       >
                         <option value="IN_STOCK">In Stock</option>
                         <option value="LOW">Low</option>
-                        <option value="OUT">Out</option>
                       </select>
 
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className="grid grid-cols-2 gap-3">
                       {[
                         { 
                           val: "IN_STOCK", 
@@ -499,14 +498,6 @@ function PharmacyInventoryContent() {
                           iconColor: "text-amber-500",
                           hoverClass: "hover:bg-amber-50 hover:border-amber-200 hover:text-amber-700", 
                           activeClass: "bg-amber-100 border-amber-500 text-amber-900 ring-1 ring-amber-500" 
-                        },
-                        { 
-                          val: "OUT", 
-                          label: "Out", 
-                          icon: XCircle, 
-                          iconColor: "text-rose-500",
-                          hoverClass: "hover:bg-rose-50 hover:border-rose-200 hover:text-rose-700", 
-                          activeClass: "bg-rose-100 border-rose-500 text-rose-900 ring-1 ring-rose-500" 
                         }
                       ].map((opt) => (
                         <button
@@ -772,15 +763,20 @@ function PharmacyInventoryContent() {
           <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 animate-in fade-in duration-300" />
           <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-white rounded-3xl shadow-2xl p-0 z-50 overflow-hidden outline-none">
              
-             {/* Edit Header */}
-             <div className="bg-indigo-600 p-8 text-white relative">
-                <div className="flex justify-between items-center relative z-10">
-                  <Dialog.Title className="text-2xl font-extrabold flex items-center gap-3 text-white">
-                    <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm border border-white/10 shadow-inner">
-                      <Pencil className="h-6 w-6 text-white" />
-                    </div>
-                    Edit Medicine
-                  </Dialog.Title>
+             {/* Edit Header - MATCHING TEAL COLOR */}
+             <div className="bg-[#2699B2] p-8 text-white relative">
+                <div className="flex justify-between items-start relative z-10">
+                  <div>
+                    <Dialog.Title className="text-2xl font-extrabold flex items-center gap-3 text-white">
+                      <div className="p-2 bg-white/20 rounded-xl backdrop-blur-md border border-white/10 shadow-inner">
+                        <Pencil className="h-6 w-6 text-white" />
+                      </div>
+                      Edit Medicine
+                    </Dialog.Title>
+                    <Dialog.Description className="text-white/80 mt-2 font-medium text-sm">
+                      Update stock quantity, status, and expiry date.
+                    </Dialog.Description>
+                  </div>
                   <Dialog.Close asChild>
                     <button className="text-white/70 hover:text-white p-2 rounded-full hover:bg-white/20 transition-all">
                       <X size={20} />
@@ -792,14 +788,14 @@ function PharmacyInventoryContent() {
              {/* Edit Info Card */}
              {editingItem && (
                <div className="px-8 pt-6 pb-0">
-                 <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 flex items-center gap-4 shadow-sm">
-                   <div className="p-3 bg-white rounded-xl shadow-sm">
-                      <Package className="h-6 w-6 text-indigo-600" />
+                 <div className="bg-[#2699B2]/10 border border-[#2699B2]/20 rounded-xl p-4 flex items-center gap-4 shadow-sm">
+                   <div className="p-3 bg-white rounded-xl shadow-sm border border-[#2699B2]/10">
+                      <Package className="h-6 w-6 text-[#2699B2]" />
                    </div>
                    <div>
-                      <p className="font-extrabold text-indigo-900 text-xl leading-none">{editingItem.medicine.name}</p>
+                      <p className="font-extrabold text-slate-800 text-xl leading-none">{editingItem.medicine.name}</p>
                       {editingItem.medicine.genericName && (
-                        <p className="text-xs text-indigo-600 mt-1.5 font-bold uppercase tracking-wide">{editingItem.medicine.genericName}</p>
+                        <p className="text-xs text-[#2699B2] mt-1.5 font-bold uppercase tracking-wide">{editingItem.medicine.genericName}</p>
                       )}
                    </div>
                  </div>
@@ -812,14 +808,14 @@ function PharmacyInventoryContent() {
                    <div className="space-y-3">
                       <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Quantity</Label>
                       <div className="relative group">
-                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#2699B2] transition-colors pointer-events-none">
                           <Hash className="h-4 w-4" />
                         </div>
                         <input 
                           type="number" 
                           value={editFormData.quantity} 
                           onChange={e => setEditFormData({...editFormData, quantity: e.target.value})} 
-                          className="w-full pl-10 h-12 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-bold shadow-sm" 
+                          className="w-full pl-10 h-12 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2699B2]/20 focus:border-[#2699B2] transition-all font-bold shadow-sm" 
                         />
                       </div>
                    </div>
@@ -836,28 +832,45 @@ function PharmacyInventoryContent() {
                       >
                         <option value="IN_STOCK">In Stock</option>
                         <option value="LOW">Low</option>
-                        <option value="OUT">Out</option>
                       </select>
 
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className="grid grid-cols-2 gap-3">
                         {[
-                          { val: "IN_STOCK", label: "In Stock", icon: CheckCircle2, color: "text-emerald-600", activeClass: "bg-emerald-50 border-emerald-200 ring-1 ring-emerald-500/20 shadow-sm" },
-                          { val: "LOW", label: "Low", icon: AlertTriangle, color: "text-amber-600", activeClass: "bg-amber-50 border-amber-200 ring-1 ring-amber-500/20 shadow-sm" },
-                          { val: "OUT", label: "Out", icon: XCircle, color: "text-rose-600", activeClass: "bg-rose-50 border-rose-200 ring-1 ring-rose-500/20 shadow-sm" }
+                          { 
+                            val: "IN_STOCK", 
+                            label: "In Stock", 
+                            icon: CheckCircle2, 
+                            iconColor: "text-emerald-500",
+                            hoverClass: "hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700",
+                            activeClass: "bg-emerald-100 border-emerald-500 text-emerald-900 ring-1 ring-emerald-500" 
+                          },
+                          { 
+                            val: "LOW", 
+                            label: "Low", 
+                            icon: AlertTriangle, 
+                            iconColor: "text-amber-500",
+                            hoverClass: "hover:bg-amber-50 hover:border-amber-200 hover:text-amber-700",
+                            activeClass: "bg-amber-100 border-amber-500 text-amber-900 ring-1 ring-amber-500" 
+                          }
                         ].map((opt) => (
                           <button
                             key={opt.val}
                             type="button"
                             onClick={() => setEditFormData({...editFormData, status: opt.val as any})}
                             className={cn(
-                              "flex flex-col items-center justify-center py-3 rounded-xl border transition-all duration-200 gap-1.5",
+                              "group flex flex-col items-center justify-center py-3 rounded-xl border transition-all duration-200 gap-1.5",
                               editFormData.status === opt.val 
                                 ? opt.activeClass 
-                                : "bg-white border-slate-200 text-slate-500 hover:border-slate-300 hover:bg-slate-50"
+                                : cn("bg-white border-slate-200 text-slate-600 shadow-sm", opt.hoverClass)
                             )}
                           >
-                            <opt.icon className={cn("h-5 w-5", editFormData.status === opt.val ? opt.color : "text-slate-400")} />
-                            <span className={cn("text-xs font-bold", editFormData.status === opt.val ? "text-slate-900" : "text-slate-500")}>
+                            <opt.icon 
+                              className={cn(
+                                "h-6 w-6 transition-transform group-hover:scale-110 duration-200",
+                                editFormData.status === opt.val ? "text-current" : opt.iconColor
+                              )} 
+                            />
+                            <span className="text-xs font-bold uppercase tracking-wide">
                               {opt.label}
                             </span>
                           </button>
@@ -866,21 +879,24 @@ function PharmacyInventoryContent() {
                    </div>
                 </div>
 
-               {/* Expiry Date (EDIT FORM - FIXED) */}
-               <div className="space-y-2">
+               {/* Expiry Date */}
+               <div className="space-y-3">
                       <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Expiry Date</Label>
                       <Popover>
                         <PopoverTrigger asChild>
                           <button
                             type="button"
                             className={cn(
-                              "w-full h-12 px-4 rounded-xl border bg-slate-50 border-slate-200 flex items-center justify-between text-left transition-all font-medium text-sm hover:bg-white hover:border-[#119abf]/50 outline-none focus:ring-2 focus:ring-[#119abf]/20",
+                              "w-full h-12 px-4 rounded-xl border bg-slate-50 border-slate-200 flex items-center justify-between text-left transition-all font-medium text-sm hover:bg-white hover:border-[#2699B2]/50 outline-none focus:ring-2 focus:ring-[#2699B2]/20 focus:border-[#2699B2]",
                               !editFormData.expiresAt && "text-slate-400"
                             )}
                           >
-                            <span>
-                              {editFormData.expiresAt ? format(new Date(editFormData.expiresAt), "PPP") : "Select date"}
-                            </span>
+                            <div className="flex items-center gap-3">
+                              <Calendar className="h-4 w-4 text-slate-400" />
+                              <span>
+                                {editFormData.expiresAt ? format(new Date(editFormData.expiresAt), "PPP") : "Select date"}
+                              </span>
+                            </div>
                             <Calendar className="h-4 w-4 text-slate-400" />
                           </button>
                         </PopoverTrigger>
@@ -908,11 +924,22 @@ function PharmacyInventoryContent() {
                       </Popover>
                 </div>
 
-                <div className="pt-4 flex gap-4 border-t border-slate-100 mt-2">
-                   <Button type="button" onClick={() => setEditOpen(false)} className="flex-1 h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-lg shadow-indigo-200 hover:shadow-indigo-300 hover:scale-[1.02] transition-all">Cancel</Button>
-                   <Button type="submit" disabled={loading} className="flex-[2] h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-lg hover:scale-[1.02] transition-all">
-                      {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Save Changes"}
-                   </Button>
+                {/* Action Buttons - MATCHING STYLE */}
+                <div className="pt-4 flex gap-4">
+                  <button 
+                    type="button" 
+                    onClick={() => setEditOpen(false)} 
+                    className="flex-1 h-12 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    disabled={loading} 
+                    className="flex-[2] h-12 rounded-xl bg-[#2699B2] text-white font-bold hover:bg-[#1f7f94] transition-all flex items-center justify-center gap-2 disabled:opacity-70 shadow-lg shadow-[#2699B2]/30 hover:shadow-[#2699B2]/40"
+                  >
+                    {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Save Changes"}
+                  </button>
                 </div>
              </form>
           </Dialog.Content>
