@@ -4,6 +4,8 @@
   import { useSession } from "next-auth/react";
   import { useSearchParams } from "next/navigation";
   import axios from "axios";
+  import { WhatsAppIcon, getWhatsAppUrl } from "@/lib/utils/campaignHelpers";
+
   import {
     Search,
     Loader2,
@@ -505,8 +507,7 @@
         </div>
 
         {/* --- MODAL --- */}
-        {/* --- MODAL --- */}
-<Dialog
+        <Dialog
   open={modalOpen}
   onOpenChange={(open) => {
     setModalOpen(open);
@@ -515,179 +516,243 @@
     }
   }}
 >
-  <DialogContent className="p-0 overflow-hidden max-w-xl">
-
+  <DialogContent
+    className="
+      p-0 overflow-hidden
+      w-[calc(100vw-24px)] sm:max-w-[720px]
+      max-h-[90vh]
+      rounded-3xl border border-slate-200 bg-white shadow-2xl
+      outline-none focus:outline-none focus-visible:outline-none
+      ring-0 focus:ring-0 focus-visible:ring-0
+      [&>button]:hidden
+    "
+  >
     {selectedRequest && (
       <>
         {/* ===== HEADER ===== */}
-        <div className="relative bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 px-6 py-5 text-white overflow-hidden">
-          <Stethoscope className="absolute -bottom-6 -right-6 w-36 h-36 text-white/10 rotate-12" />
-
-          <DialogHeader className="relative z-10">
-            <DialogTitle className="text-xl font-extrabold tracking-tight">
-              Request Details
-            </DialogTitle>
-            <DialogDescription className="text-indigo-100">
-              Request ID #{selectedRequest.id}
-            </DialogDescription>
-          </DialogHeader>
-
+        <div className="relative bg-[#2a9ab0] text-white px-6 sm:px-7 py-6">
           <DialogClose asChild>
-            <button className="absolute top-4 right-4 rounded-full bg-white/20 hover:bg-white/30 p-2 transition">
+            <button
+              className="
+                absolute right-4 top-4
+                grid h-9 w-9 place-items-center
+                rounded-full
+                hover:bg-white/10 transition
+                outline-none focus:outline-none focus-visible:ring-0
+              "
+              aria-label="Close"
+              type="button"
+            >
               <X className="h-4 w-4 text-white" />
             </button>
           </DialogClose>
+
+          <div className="flex items-start gap-3 pr-10">
+            <div className="grid h-11 w-11 place-items-center rounded-2xl bg-white/15 border border-white/20 shrink-0">
+              <Stethoscope className="h-5 w-5 text-white" />
+            </div>
+
+            <div className="min-w-0">
+              <DialogHeader className="space-y-1 p-0 border-0">
+                <DialogTitle className="text-2xl font-semibold leading-tight text-white">
+                  Request Details
+                </DialogTitle>
+                <DialogDescription className="text-white/85">
+                  Request ID #{selectedRequest.id}
+                </DialogDescription>
+              </DialogHeader>
+
+              <p className="text-sm text-white/85 mt-3">
+                Review the medicine, patient info, and stock match.
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* ===== BODY ===== */}
-        <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
-
-          {/* Medicine */}
-          <div className="flex gap-4 items-start">
-            <div className="w-11 h-11 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0">
-              <Pill className="w-5 h-5 text-indigo-600" />
-            </div>
-
-            <div className="flex-1">
-              <h4 className="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">
-                Medicine
-              </h4>
-              <div className="text-lg font-bold text-slate-800">
-                {selectedRequest.medicine.name}
+        <div className="px-6 sm:px-7 py-6 max-h-[70vh] overflow-y-auto">
+          <div className="space-y-6">
+            {/* Medicine */}
+            <div className="flex gap-4 items-start">
+              <div className="w-11 h-11 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0">
+                <Pill className="w-5 h-5 text-[#2a9ab0]" />
               </div>
 
-              <div className="flex flex-wrap gap-2 mt-1">
-                {selectedRequest.medicine.genericName && (
-                  <span className="px-2 py-0.5 text-xs font-semibold bg-slate-100 text-slate-600 rounded">
-                    {selectedRequest.medicine.genericName}
-                  </span>
-                )}
-                {(selectedRequest.medicine.strength || selectedRequest.medicine.form) && (
-                  <span className="px-2 py-0.5 text-xs font-semibold bg-indigo-50 text-indigo-700 rounded border border-indigo-100">
-                    {[selectedRequest.medicine.strength, selectedRequest.medicine.form]
-                      .filter(Boolean)
-                      .join(" - ")}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="h-px bg-slate-100" />
-
-          {/* Patient */}
-          <div className="flex gap-4 items-start">
-            <div className="w-11 h-11 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
-              <User className="w-5 h-5 text-slate-500" />
-            </div>
-
-            <div className="flex-1 space-y-3">
-              <div>
+              <div className="flex-1">
                 <h4 className="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">
-                  Patient
+                  Medicine
                 </h4>
-                <div className="text-base font-bold text-slate-800">
-                  {selectedRequest.user.name}
-                </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex items-center gap-2 text-sm bg-slate-50 p-2 rounded-lg">
-                  <MapPin className="w-4 h-4 text-indigo-500" />
-                  {selectedRequest.city}
+                <div className="text-lg font-bold text-slate-800">
+                  {selectedRequest.medicine.name}
                 </div>
 
-                {selectedRequest.user.phone && (
-                  <div className="flex items-center gap-2 text-sm bg-slate-50 p-2 rounded-lg">
-                    <Phone className="w-4 h-4 text-emerald-500" />
-                    {selectedRequest.user.phone}
-                  </div>
-                )}
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {selectedRequest.medicine.genericName && (
+                    <span className="px-3 py-1 text-xs font-semibold bg-slate-100 text-slate-600 rounded-xl">
+                      {selectedRequest.medicine.genericName}
+                    </span>
+                  )}
 
-                <div className="col-span-2 flex items-center gap-2 text-sm bg-slate-50 p-2 rounded-lg">
-                  <Clock className="w-4 h-4 text-amber-500" />
-                  Requested on {formatDate(selectedRequest.createdAt)}
+                  {(selectedRequest.medicine.strength || selectedRequest.medicine.form) && (
+                    <span className="px-3 py-1 text-xs font-semibold bg-[#2a9ab0]/10 text-[#1f7f90] rounded-xl border border-[#2a9ab0]/20">
+                      {[selectedRequest.medicine.strength, selectedRequest.medicine.form]
+                        .filter(Boolean)
+                        .join(" - ")}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Availability */}
-          {(() => {
-            const { canHelp: pharmacyCanHelp, inventoryItem } =
-              canHelp(selectedRequest.medicineId);
+            <div className="h-px bg-slate-100" />
 
-            return (
-              <div
-                className={cn(
-                  "flex items-center gap-4 rounded-xl border p-4",
-                  pharmacyCanHelp
-                    ? "bg-emerald-50 border-emerald-100"
-                    : "bg-rose-50 border-rose-100"
-                )}
-              >
+            {/* Patient */}
+            <div className="flex gap-4 items-start">
+              <div className="w-11 h-11 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0">
+                <User className="w-5 h-5 text-slate-600" />
+              </div>
+
+              <div className="flex-1 space-y-3">
+                <div>
+                  <h4 className="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">
+                    Patient
+                  </h4>
+                  <div className="text-base font-bold text-slate-800">
+                    {selectedRequest.user.name}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="flex items-center gap-2 text-sm bg-slate-50 border border-slate-200 px-3 py-2 rounded-2xl">
+                    <MapPin className="w-4 h-4 text-[#2a9ab0]" />
+                    {selectedRequest.city}
+                  </div>
+
+                  {selectedRequest.user.phone && (
+                    <div className="flex items-center gap-2 text-sm bg-slate-50 border border-slate-200 px-3 py-2 rounded-2xl">
+                      <Phone className="w-4 h-4 text-emerald-500" />
+                      {selectedRequest.user.phone}
+                    </div>
+                  )}
+
+                  <div className="sm:col-span-2 flex items-center gap-2 text-sm bg-slate-50 border border-slate-200 px-3 py-2 rounded-2xl">
+                    <Clock className="w-4 h-4 text-amber-500" />
+                    Requested on {formatDate(selectedRequest.createdAt)}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Availability */}
+            {(() => {
+              const { canHelp: pharmacyCanHelp, inventoryItem } =
+                canHelp(selectedRequest.medicineId);
+
+              return (
                 <div
                   className={cn(
-                    "w-10 h-10 rounded-full flex items-center justify-center",
-                    pharmacyCanHelp ? "bg-emerald-100" : "bg-rose-100"
+                    "flex items-center gap-4 rounded-2xl border px-4 py-4",
+                    pharmacyCanHelp
+                      ? "bg-emerald-50 border-emerald-100"
+                      : "bg-rose-50 border-rose-100"
                   )}
                 >
-                  {pharmacyCanHelp ? (
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                  ) : (
-                    <XCircle className="w-5 h-5 text-rose-600" />
-                  )}
-                </div>
+                  <div
+                    className={cn(
+                      "w-10 h-10 rounded-2xl flex items-center justify-center",
+                      pharmacyCanHelp ? "bg-emerald-100" : "bg-rose-100"
+                    )}
+                  >
+                    {pharmacyCanHelp ? (
+                      <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                    ) : (
+                      <XCircle className="w-5 h-5 text-rose-600" />
+                    )}
+                  </div>
 
-                <div>
-                  <h4
-                    className={cn(
-                      "font-bold text-sm",
-                      pharmacyCanHelp ? "text-emerald-800" : "text-rose-800"
-                    )}
-                  >
-                    {pharmacyCanHelp
-                      ? "Match Found in Inventory"
-                      : "Not Available in Stock"}
-                  </h4>
-                  <p
-                    className={cn(
-                      "text-xs mt-0.5",
-                      pharmacyCanHelp ? "text-emerald-600" : "text-rose-600"
-                    )}
-                  >
-                    {pharmacyCanHelp
-                      ? `You have ${inventoryItem?.quantity} units. Expiry: ${
-                          inventoryItem?.expiresAt
-                            ? formatDate(inventoryItem.expiresAt)
-                            : "N/A"
-                        }`
-                      : "You do not have this exact medicine."}
-                  </p>
+                  <div>
+                    <h4
+                      className={cn(
+                        "font-bold text-sm",
+                        pharmacyCanHelp ? "text-emerald-800" : "text-rose-800"
+                      )}
+                    >
+                      {pharmacyCanHelp
+                        ? "Match Found in Inventory"
+                        : "Not Available in Stock"}
+                    </h4>
+                    <p
+                      className={cn(
+                        "text-xs mt-0.5",
+                        pharmacyCanHelp ? "text-emerald-600" : "text-rose-600"
+                      )}
+                    >
+                      {pharmacyCanHelp
+                        ? `You have ${inventoryItem?.quantity} units. Expiry: ${
+                            inventoryItem?.expiresAt
+                              ? formatDate(inventoryItem.expiresAt)
+                              : "N/A"
+                          }`
+                        : "You do not have this exact medicine."}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            );
-          })()}
+              );
+            })()}
+          </div>
         </div>
 
         {/* ===== FOOTER ===== */}
-        <DialogFooter className="bg-slate-50 border-t border-slate-100 px-6 py-4">
-          <DialogClose asChild>
-            <Button variant="outline" className="font-bold">
-              Close
-            </Button>
-          </DialogClose>
+        <div className="px-6 sm:px-7 pb-6">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <DialogClose asChild>
+              <Button
+                variant="outline"
+                className="
+                  w-full sm:w-auto
+                  rounded-2xl
+                  border-slate-200 bg-white
+                  hover:bg-slate-50
+                  font-semibold
+                "
+              >
+                Close
+              </Button>
+            </DialogClose>
 
-          {canHelp(selectedRequest.medicineId).canHelp && (
-            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-md shadow-indigo-200">
-              Contact Patient
-            </Button>
-          )}
-        </DialogFooter>
+            {canHelp(selectedRequest.medicineId).canHelp &&
+              selectedRequest.user.phone && (
+                <Button
+                  onClick={() => {
+                    const whatsappUrl = getWhatsAppUrl(
+                      selectedRequest.user.phone,
+                      `Medicine Request: ${selectedRequest.medicine.name}`,
+                      `Hello! I'm contacting you through Dawalocate. I saw your request for ${selectedRequest.medicine.name} in ${selectedRequest.city}. I may be able to help you find this medicine. Can we discuss the details?`
+                    );
+                    window.open(whatsappUrl, "_blank");
+                  }}
+                  className="
+                    w-full sm:flex-1
+                    rounded-2xl
+                    bg-green-600 hover:bg-green-700
+                    text-white font-semibold
+                    shadow-lg shadow-green-200
+                    transition-all hover:scale-[1.02] active:scale-[0.98]
+                  "
+                >
+                  <WhatsAppIcon className="h-5 w-5 mr-2" />
+                  Contact Patient
+                </Button>
+              )}
+          </div>
+        </div>
       </>
     )}
   </DialogContent>
 </Dialog>
+
+
 
       </div>
     );
