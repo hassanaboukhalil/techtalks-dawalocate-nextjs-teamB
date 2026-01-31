@@ -323,13 +323,11 @@ function CharityRequestsContent() {
             <div className="flex flex-col md:flex-row gap-4">
               {/* Medicine Search */}
               <div className="relative flex-1">
-                <Package className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
                 <MedicineAutocomplete
                   medicines={medicines}
                   value={medicineSearch}
                   onChange={setMedicineSearch}
                   placeholder="Search by medicine name..."
-                  className="pl-10"
                 />
               </div>
 
