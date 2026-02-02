@@ -124,7 +124,7 @@ export default function AdminPage() {
               <Building2 className="w-6 h-6" />
             </div>
           </div>
-           <div className="w-full bg-slate-100 h-1.5 mt-6 rounded-full overflow-hidden">
+          <div className="w-full bg-slate-100 h-1.5 mt-6 rounded-full overflow-hidden">
             <div className="bg-emerald-500 h-1.5 rounded-full w-[85%]" />
           </div>
         </div>
