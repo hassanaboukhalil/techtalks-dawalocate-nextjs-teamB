@@ -3,6 +3,7 @@
 import React, { useState, useEffect, Suspense } from "react";
 import axios from "axios";
 import { useSearchParams } from "next/navigation";
+import * as Dialog from "@radix-ui/react-dialog";
 import {
   Search,
   Loader2,
@@ -15,9 +16,10 @@ import {
   Pencil,
   Trash2,
   Lock,
-  LayoutGrid,
   Filter,
-  Sparkles
+  Sparkles,
+  X,
+  Phone
 } from "lucide-react";
 import { PageTitle } from "@/components/layout/PageTitle";
 
@@ -34,17 +36,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 import { LEBANON_CITIES } from "@/constants/lebanon-cities";
 
@@ -252,13 +249,234 @@ function PatientsManagementContent() {
               </Badge>
             </CardContent>
           </Card>
-          <Button
-            onClick={openAddDialog}
-            className="bg-[#119abf] hover:bg-[#0e8cae] text-white shadow-lg shadow-blue-500/20 transition-all active:scale-95 font-semibold"
-            size="lg"
-          >
-            <Plus className="w-5 h-5 mr-2" /> Add New Patient
-          </Button>
+          <Dialog.Root open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <Dialog.Trigger asChild>
+              <Button
+                onClick={openAddDialog}
+                className="bg-[#2699B2] hover:bg-[#1f7f94] text-white shadow-lg shadow-[#2699B2]/30 hover:shadow-[#2699B2]/40 transition-all hover:-translate-y-0.5 font-bold px-6"
+                size="lg"
+              >
+                <Plus className="w-5 h-5 mr-2" /> Add New Patient
+              </Button>
+            </Dialog.Trigger>
+
+            {/* --- DIALOG MATCHING PHARMACY STYLE --- */}
+            <Dialog.Portal>
+              <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300 z-50" />
+              <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg z-50 p-0 overflow-hidden bg-white rounded-3xl shadow-2xl outline-none animate-in zoom-in-95 duration-200">
+                
+                {/* Header - Teal Gradient */}
+                <div className="bg-gradient-to-br from-[#2699B2] to-[#1f8a9e] p-6 text-white relative overflow-hidden">
+                  {/* Decorative circles */}
+                  <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
+                  <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-white/5 rounded-full blur-xl" />
+                  
+                  <div className="relative z-10 flex justify-between items-start">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2.5 bg-white/20 rounded-xl backdrop-blur-md border border-white/20 shadow-lg">
+                        {editingPatient ? <Pencil className="h-5 w-5 text-white" /> : <User className="h-5 w-5 text-white" />}
+                      </div>
+                      <div>
+                        <Dialog.Title className="text-xl font-bold text-white">
+                          {editingPatient ? "Edit Patient" : "Add Patient"}
+                        </Dialog.Title>
+                        <Dialog.Description className="text-white/80 text-sm mt-0.5">
+                          {editingPatient ? "Update the patient details below." : "Register a new patient account."}
+                        </Dialog.Description>
+                      </div>
+                    </div>
+                    <Dialog.Close asChild>
+                      <button className="text-white/70 hover:text-white hover:bg-white/20 p-2 rounded-full transition-all border border-white/20">
+                        <X size={18} />
+                      </button>
+                    </Dialog.Close>
+                  </div>
+                </div>
+
+                {/* Form Body */}
+                <form onSubmit={handleSave} className="p-6 space-y-5 max-h-[60vh] overflow-y-auto">
+                  
+                  {/* Section: Account Credentials */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+                      <ShieldCheck className="w-4 h-4 text-[#2699B2]" />
+                      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Account Credentials</span>
+                    </div>
+
+                    {/* Full Name */}
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        Full Name
+                      </Label>
+                      <div className="relative">
+                        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                          <User className="h-4 w-4" />
+                        </div>
+                        <input
+                          type="text"
+                          name="name"
+                          required
+                          placeholder="John Doe"
+                          value={formData.name}
+                          onChange={handleInputChange}
+                          className="w-full pl-10 pr-4 h-12 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2699B2]/20 focus:border-[#2699B2] transition-all font-medium"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Email */}
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        Email Address
+                      </Label>
+                      <div className="relative">
+                        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                          <Mail className="h-4 w-4" />
+                        </div>
+                        <input
+                          type="email"
+                          name="email"
+                          required
+                          placeholder="john@example.com"
+                          value={formData.email}
+                          onChange={handleInputChange}
+                          className="w-full pl-10 pr-4 h-12 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2699B2]/20 focus:border-[#2699B2] transition-all font-medium"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Password */}
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                        Password
+                        {editingPatient && (
+                          <span className="text-slate-400 text-[10px] font-normal normal-case">(Leave blank to keep current)</span>
+                        )}
+                      </Label>
+                      <div className="relative">
+                        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                          <Lock className="h-4 w-4" />
+                        </div>
+                        <input
+                          type="password"
+                          name="password"
+                          required={!editingPatient}
+                          placeholder={editingPatient ? "••••••••" : "Create a strong password"}
+                          value={formData.password}
+                          onChange={handleInputChange}
+                          className="w-full pl-10 pr-4 h-12 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2699B2]/20 focus:border-[#2699B2] transition-all font-medium"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Section: Contact Information */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+                      <Contact className="w-4 h-4 text-[#2699B2]" />
+                      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Contact Information</span>
+                    </div>
+
+                    {/* Phone Number */}
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        Phone Number
+                      </Label>
+                      <div className="flex h-12 w-full rounded-xl border border-slate-200 bg-slate-50 focus-within:ring-2 focus-within:ring-[#2699B2]/20 focus-within:border-[#2699B2] focus-within:bg-white overflow-hidden transition-all">
+                        <div className="flex items-center gap-2 px-3.5 bg-slate-100 border-r border-slate-200 shrink-0">
+                          <img
+                            src="https://flagcdn.com/w40/lb.png"
+                            alt="Lebanon Flag"
+                            className="w-5 h-3.5 object-cover rounded-sm"
+                          />
+                          <span className="text-sm font-bold text-slate-600">+961</span>
+                        </div>
+                        <input
+                          name="phone"
+                          className="flex h-full w-full bg-transparent px-4 text-sm font-medium placeholder:text-slate-400 focus:outline-none"
+                          placeholder="70 123 456"
+                          value={formData.phone}
+                          onChange={handleInputChange}
+                          maxLength={8}
+                        />
+                      </div>
+                      <p className="text-[10px] text-slate-400 text-right">8 digits exactly</p>
+                    </div>
+
+                    {/* City & Address - Side by Side */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                          City
+                        </Label>
+                        <div className="relative">
+                          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10">
+                            <MapPin className="h-4 w-4" />
+                          </div>
+                          <select
+                            name="city"
+                            value={formData.city}
+                            onChange={handleInputChange}
+                            className="w-full pl-10 pr-4 h-12 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2699B2]/20 focus:border-[#2699B2] transition-all font-medium appearance-none cursor-pointer"
+                          >
+                            <option value="">Select city</option>
+                            {LEBANON_CITIES.map((city) => (
+                              <option key={city} value={city}>{city}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                          Address
+                        </Label>
+                        <div className="relative">
+                          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                            <MapPin className="h-4 w-4" />
+                          </div>
+                          <input
+                            type="text"
+                            name="address"
+                            placeholder="Street, Building..."
+                            value={formData.address}
+                            onChange={handleInputChange}
+                            className="w-full pl-10 pr-4 h-12 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2699B2]/20 focus:border-[#2699B2] transition-all font-medium"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+
+                {/* Action Buttons - Fixed at Bottom */}
+                <div className="p-6 pt-0 flex gap-3">
+                  <Dialog.Close asChild>
+                    <button
+                      type="button"
+                      className="flex-1 h-12 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </Dialog.Close>
+                  <button
+                    type="submit"
+                    disabled={isSaving}
+                    onClick={handleSave}
+                    className="flex-[2] h-12 rounded-xl bg-[#2699B2] text-white font-bold hover:bg-[#1f7f94] transition-all flex items-center justify-center gap-2 disabled:opacity-70 shadow-lg shadow-[#2699B2]/30 hover:shadow-[#2699B2]/40"
+                  >
+                    {isSaving ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : editingPatient ? (
+                      "Save Changes"
+                    ) : (
+                      "Create Account"
+                    )}
+                  </button>
+                </div>
+              </Dialog.Content>
+            </Dialog.Portal>
+          </Dialog.Root>
         </div>
       </div>
 
@@ -469,191 +687,6 @@ function PatientsManagementContent() {
           </Table>
         </div>
       </Card>
-
-      {/* --- DIALOG --- */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[800px] p-0 overflow-hidden bg-white border-none shadow-2xl rounded-2xl flex flex-col gap-0">
-          
-          {/* Dialog Header */}
-          <div className="bg-[#119abf] p-6 text-white">
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-bold flex items-center gap-3">
-                <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                  {editingPatient ? <Pencil className="w-5 h-5" /> : <User className="w-5 h-5" />}
-                </div>
-                {editingPatient ? "Edit Patient Record" : "Register New Patient"}
-              </DialogTitle>
-              <p className="text-blue-100 mt-2 text-sm opacity-90">
-                {editingPatient
-                  ? "Update the patient's personal details and contact information below."
-                  : "Fill in the required fields to create a new patient account in the system."}
-              </p>
-            </DialogHeader>
-          </div>
-
-          <form onSubmit={handleSave} className="flex-1 overflow-y-auto">
-            <div className="p-8 grid gap-8">
-              
-              {/* Section 1: Credentials */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-                  <ShieldCheck className="w-5 h-5 text-[#119abf]" />
-                  <h3 className="font-semibold text-slate-900">Account Credentials</h3>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="name" className="text-slate-600">Full Name <span className="text-red-500">*</span></Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                      <Input
-                        id="name"
-                        name="name"
-                        className="pl-9"
-                        required
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        placeholder="John Doe"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="text-slate-600">Email Address <span className="text-red-500">*</span></Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        className="pl-9"
-                        required
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        placeholder="john@example.com"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="password" className="text-slate-600">
-                      Password 
-                      {editingPatient ? <span className="text-slate-400 text-xs font-normal ml-2">(Optional - Leave blank to keep current)</span> : <span className="text-red-500">*</span>}
-                    </Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                      <Input
-                        id="password"
-                        name="password"
-                        type="password"
-                        className="pl-9"
-                        required={!editingPatient}
-                        placeholder={editingPatient ? "••••••••" : "Create a strong password"}
-                        value={formData.password}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Section 2: Contact Info */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-                  <Contact className="w-5 h-5 text-[#119abf]" />
-                  <h3 className="font-semibold text-slate-900">Contact Information</h3>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label className="text-slate-600">Phone Number</Label>
-                    <div className="flex h-10 w-full rounded-md border border-slate-200 bg-white focus-within:ring-2 focus-within:ring-[#119abf]/20 focus-within:border-[#119abf] overflow-hidden transition-all">
-                      <div className="flex items-center gap-2 px-3 bg-slate-50 border-r border-slate-200 shrink-0">
-                        <img
-                          src="https://flagcdn.com/w40/lb.png"
-                          alt="Lebanon Flag"
-                          className="w-5 h-3.5 object-cover rounded-sm"
-                        />
-                        <span className="text-sm font-medium text-slate-600">+961</span>
-                      </div>
-                      <input
-                        id="phone"
-                        name="phone"
-                        className="flex h-full w-full bg-transparent px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none"
-                        placeholder="70 123 456"
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                        maxLength={8}
-                      />
-                    </div>
-                    <p className="text-[10px] text-slate-400 text-right">8 digits exactly</p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-slate-600">City</Label>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 z-10" />
-                      <select
-                        name="city"
-                        className="flex h-10 w-full items-center justify-between rounded-md border border-slate-200 bg-white px-3 py-2 pl-9 text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#119abf]/20 focus:border-[#119abf] disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
-                        value={formData.city}
-                        onChange={handleInputChange}
-                      >
-                        <option value="">Select a city</option>
-                        {LEBANON_CITIES.map((city) => (
-                          <option key={city} value={city}>{city}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="address" className="text-slate-600">Street Address</Label>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                      <Input
-                        id="address"
-                        name="address"
-                        className="pl-9"
-                        value={formData.address}
-                        onChange={handleInputChange}
-                        placeholder="Building, Floor, Street..."
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Footer Actions */}
-            <div className="p-6 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsDialogOpen(false)}
-                className="bg-white hover:bg-slate-50 text-slate-700"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                className="bg-[#119abf] hover:bg-[#0e8cae] text-white px-8 shadow-md transition-all active:scale-95"
-                disabled={isSaving}
-              >
-                {isSaving ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...
-                  </>
-                ) : editingPatient ? (
-                  "Save Changes"
-                ) : (
-                  "Create Account"
-                )}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

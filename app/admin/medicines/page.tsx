@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState, Suspense } from "react";
 import axios from "axios";
 import { useSearchParams } from "next/navigation";
+import * as Dialog from "@radix-ui/react-dialog";
 import {
   Plus,
   Search,
@@ -18,7 +19,10 @@ import {
   Check,
   Package,
   Sparkles,
-  LayoutGrid
+  LayoutGrid,
+  X,
+  Hash,
+  FileText
 } from "lucide-react";
 import { PageTitle } from "@/components/layout/PageTitle";
 
@@ -32,14 +36,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -309,13 +307,214 @@ function MedicinesManagementContent() {
               </Badge>
             </CardContent>
           </Card>
-          <Button 
-            onClick={openAdd} 
-            className="bg-[#119abf] hover:bg-[#0e8cae] text-white shadow-lg shadow-blue-500/20 transition-all active:scale-95 font-semibold"
-            size="lg"
-          >
-            <Plus className="w-5 h-5 mr-2" /> Add New Medicine
-          </Button>
+          <Dialog.Root open={dialogOpen} onOpenChange={setDialogOpen}>
+            <Dialog.Trigger asChild>
+              <Button 
+                onClick={openAdd} 
+                className="bg-[#2699B2] hover:bg-[#1f7f94] text-white shadow-lg shadow-[#2699B2]/30 hover:shadow-[#2699B2]/40 transition-all hover:-translate-y-0.5 font-bold px-6"
+                size="lg"
+              >
+                <Plus className="w-5 h-5 mr-2" /> Add New Medicine
+              </Button>
+            </Dialog.Trigger>
+
+            {/* --- DIALOG MATCHING PHARMACY STYLE --- */}
+            <Dialog.Portal>
+              <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300 z-50" />
+              <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg z-50 p-0 overflow-hidden bg-white rounded-3xl shadow-2xl outline-none animate-in zoom-in-95 duration-200">
+                
+                {/* Header - Teal Gradient */}
+                <div className="bg-gradient-to-br from-[#2699B2] to-[#1f8a9e] p-6 text-white relative overflow-hidden">
+                  {/* Decorative circles */}
+                  <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
+                  <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-white/5 rounded-full blur-xl" />
+                  
+                  <div className="relative z-10 flex justify-between items-start">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2.5 bg-white/20 rounded-xl backdrop-blur-md border border-white/20 shadow-lg">
+                        {editing ? <Pencil className="h-5 w-5 text-white" /> : <Package className="h-5 w-5 text-white" />}
+                      </div>
+                      <div>
+                        <Dialog.Title className="text-xl font-bold text-white">
+                          {editing ? "Edit Medicine" : "Add Medicine"}
+                        </Dialog.Title>
+                        <Dialog.Description className="text-white/80 text-sm mt-0.5">
+                          {editing ? "Update the medicine details below." : "Add a new medicine to the global database."}
+                        </Dialog.Description>
+                      </div>
+                    </div>
+                    <Dialog.Close asChild>
+                      <button className="text-white/70 hover:text-white hover:bg-white/20 p-2 rounded-full transition-all border border-white/20">
+                        <X size={18} />
+                      </button>
+                    </Dialog.Close>
+                  </div>
+                </div>
+
+                {/* Form Body */}
+                <form onSubmit={handleSave} className="p-6 space-y-5 max-h-[60vh] overflow-y-auto">
+                  
+                  {/* 1. Medicine Name */}
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                      Medicine Name
+                    </Label>
+                    <div className="relative">
+                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                        <Pill className="h-4 w-4" />
+                      </div>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Panadol"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        className="w-full pl-10 pr-4 h-12 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2699B2]/20 focus:border-[#2699B2] transition-all font-medium"
+                      />
+                    </div>
+                  </div>
+
+                  {/* 2. Generic Name */}
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                      Generic Name
+                    </Label>
+                    <div className="relative">
+                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                        <Sparkles className="h-4 w-4" />
+                      </div>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Paracetamol"
+                        value={formData.genericName}
+                        onChange={(e) => setFormData({ ...formData, genericName: e.target.value })}
+                        className="w-full pl-10 pr-4 h-12 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2699B2]/20 focus:border-[#2699B2] transition-all font-medium"
+                      />
+                    </div>
+                  </div>
+
+                  {/* 3. Strength & Unit - Side by Side */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        Strength
+                      </Label>
+                      <div className="relative">
+                        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                          <Hash className="h-4 w-4" />
+                        </div>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.1"
+                          required
+                          placeholder="500"
+                          value={formData.strengthValue}
+                          onChange={(e) => setFormData({ ...formData, strengthValue: e.target.value })}
+                          className="w-full pl-10 pr-4 h-12 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2699B2]/20 focus:border-[#2699B2] transition-all font-bold"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Unit</Label>
+                      <Select
+                        value={formData.strengthUnit}
+                        onValueChange={(v) => setFormData({ ...formData, strengthUnit: v })}
+                      >
+                        <SelectTrigger className="h-12 rounded-xl bg-slate-50 border-slate-200 focus:ring-2 focus:ring-[#2699B2]/20 focus:border-[#2699B2] font-medium">
+                          <SelectValue placeholder="Unit" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white z-[9999] rounded-xl shadow-xl border-slate-100">
+                          {STRENGTH_UNITS.map((u) => (
+                            <SelectItem key={u} value={u} className="font-medium">{u}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* 4. Dosage Form - Tile Buttons */}
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Dosage Form</Label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {FORMS.map((f) => {
+                        const style = FORM_STYLES[f] || FORM_STYLES.Default;
+                        const isSelected = formData.form === f;
+                        return (
+                          <button
+                            key={f}
+                            type="button"
+                            onClick={() => setFormData({ ...formData, form: f })}
+                            className={cn(
+                              "group flex flex-col items-center justify-center py-3 rounded-xl border-2 transition-all duration-200 gap-1.5",
+                              isSelected
+                                ? `${style.bg} border-current ${style.text} ring-1 ring-current/30`
+                                : "bg-white border-slate-200 text-slate-500 hover:border-slate-300 hover:bg-slate-50"
+                            )}
+                          >
+                            <span className={cn(
+                              "transition-transform group-hover:scale-110",
+                              isSelected ? style.text : "text-slate-400"
+                            )}>
+                              {style.icon}
+                            </span>
+                            <span className="text-[10px] font-bold uppercase tracking-wide">
+                              {f}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* 5. Description */}
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Description</Label>
+                    <div className="relative">
+                      <div className="absolute left-3.5 top-3 text-slate-400 pointer-events-none">
+                        <FileText className="h-4 w-4" />
+                      </div>
+                      <textarea
+                        rows={3}
+                        placeholder="Additional notes..."
+                        value={formData.description}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2699B2]/20 focus:border-[#2699B2] transition-all font-medium resize-none"
+                      />
+                    </div>
+                  </div>
+                </form>
+
+                {/* Action Buttons - Fixed at Bottom */}
+                <div className="p-6 pt-0 flex gap-3">
+                  <Dialog.Close asChild>
+                    <button
+                      type="button"
+                      className="flex-1 h-12 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </Dialog.Close>
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    onClick={handleSave}
+                    className="flex-[2] h-12 rounded-xl bg-[#2699B2] text-white font-bold hover:bg-[#1f7f94] transition-all flex items-center justify-center gap-2 disabled:opacity-70 shadow-lg shadow-[#2699B2]/30 hover:shadow-[#2699B2]/40"
+                  >
+                    {saving ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : editing ? (
+                      "Save Changes"
+                    ) : (
+                      "Add Medicine"
+                    )}
+                  </button>
+                </div>
+              </Dialog.Content>
+            </Dialog.Portal>
+          </Dialog.Root>
         </div>
       </div>
 
@@ -501,130 +700,6 @@ function MedicinesManagementContent() {
           </Table>
         </div>
       </Card>
-
-      {/* DIALOG (ADD/EDIT) */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] p-0 overflow-hidden bg-white border-none shadow-2xl rounded-2xl flex flex-col gap-0">
-          
-          <div className="bg-[#119abf] p-6 text-white">
-            <DialogHeader>
-              <DialogTitle className="text-xl font-bold flex items-center gap-3">
-                <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                  {editing ? <Pencil className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
-                </div>
-                {editing ? "Edit Medicine Details" : "Add New Medicine"}
-              </DialogTitle>
-            </DialogHeader>
-          </div>
-
-          <form onSubmit={handleSave} className="flex-1 overflow-y-auto">
-            <div className="p-8 grid gap-6">
-                <div className="grid gap-2">
-                  <Label className="text-slate-700 font-semibold">Medicine Name <span className="text-red-500">*</span></Label>
-                  <Input
-                    required
-                    placeholder="e.g. Panadol"
-                    value={formData.name}
-                    className="bg-slate-50 border-slate-200 focus-visible:ring-[#119abf]"
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label className="text-slate-700 font-semibold">Generic Name</Label>
-                  <Input
-                    required
-                    placeholder="e.g. Paracetamol"
-                    value={formData.genericName}
-                    className="bg-slate-50 border-slate-200 focus-visible:ring-[#119abf]"
-                    onChange={(e) => setFormData({ ...formData, genericName: e.target.value })}
-                  />
-                </div>
-
-                <div className="grid grid-cols-12 gap-4">
-                  <div className="col-span-8">
-                    <Label className="text-slate-700 font-semibold">Strength</Label>
-                    <Input
-                      required
-                      type="number"
-                      min="0"
-                      step="0.1"
-                      placeholder="500"
-                      value={formData.strengthValue}
-                      className="mt-1.5 bg-slate-50 border-slate-200 focus-visible:ring-[#119abf]"
-                      onChange={(e) => setFormData({ ...formData, strengthValue: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="col-span-4">
-                    <Label className="text-slate-700 font-semibold">Unit</Label>
-                    <Select
-                      value={formData.strengthUnit}
-                      onValueChange={(v) => setFormData({ ...formData, strengthUnit: v })}
-                    >
-                      <SelectTrigger className="mt-1.5 bg-slate-50 border-slate-200">
-                        <SelectValue placeholder="Unit" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white z-[9999]">
-                        {STRENGTH_UNITS.map((u) => (
-                          <SelectItem key={u} value={u}>{u}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="grid gap-2">
-                  <Label className="text-slate-700 font-semibold">Form</Label>
-                  <Select
-                    value={formData.form}
-                    onValueChange={(v) => setFormData({ ...formData, form: v })}
-                  >
-                    <SelectTrigger className="bg-slate-50 border-slate-200">
-                      <SelectValue placeholder="Select form..." />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white max-h-60 overflow-auto z-[9999]">
-                      {FORMS.map((f) => {
-                        const style = FORM_STYLES[f] || FORM_STYLES.Default;
-                        return (
-                          <SelectItem key={f} value={f}>
-                            <span className="flex items-center gap-2">
-                              <span className={`p-1 rounded ${style.bg} ${style.text}`}>
-                                {style.icon}
-                              </span>
-                              {f}
-                            </span>
-                          </SelectItem>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="grid gap-2">
-                  <Label className="text-slate-700 font-semibold">Description</Label>
-                  <Textarea
-                    rows={3}
-                    placeholder="Additional notes..."
-                    value={formData.description}
-                    className="bg-slate-50 border-slate-200 focus-visible:ring-[#119abf]"
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  />
-                </div>
-            </div>
-
-            <div className="p-6 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
-              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)} className="bg-white">
-                Cancel
-              </Button>
-              <Button type="submit" className="bg-[#119abf] hover:bg-[#0e8cae] text-white px-6 shadow-md transition-all active:scale-95" disabled={saving}>
-                {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                Save
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
