@@ -248,16 +248,6 @@ export async function PUT(
       const parsedStartDate = new Date(startDate);
       if (isNaN(parsedStartDate.getTime())) {
         validationErrors.push("Invalid start date format.");
-      } else if (parsedStartDate < new Date(Date.now() - 24 * 60 * 60 * 1000)) {
-        validationErrors.push("Start date cannot be in the past.");
-      }
-
-      // Validate end date if provided in relation to new start date
-      if (endDate !== undefined) {
-        const parsedEndDate = new Date(endDate);
-        if (!isNaN(parsedEndDate.getTime()) && parsedEndDate <= parsedStartDate) {
-          validationErrors.push("End date must be after start date.");
-        }
       }
     }
 
@@ -266,7 +256,12 @@ export async function PUT(
       if (isNaN(parsedEndDate.getTime())) {
         validationErrors.push("Invalid end date format.");
       } else {
-        const campaignStartDate = startDate ? new Date(startDate) : new Date(existingCampaign.startDate);
+        // Use the new start date if provided, otherwise fall back to the existing one
+        const campaignStartDate =
+          startDate !== undefined
+            ? new Date(startDate)
+            : new Date(existingCampaign.startDate);
+
         if (parsedEndDate <= campaignStartDate) {
           validationErrors.push("End date must be after start date.");
         }
