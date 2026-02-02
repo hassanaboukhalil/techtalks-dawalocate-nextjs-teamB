@@ -17,7 +17,7 @@ import {
   Sparkles,
   ClipboardList,
   User,
-  Users
+  Users,
 } from "lucide-react";
 import { WhatsAppIcon, getWhatsAppUrl } from "@/lib/utils/campaignHelpers";
 import { Button } from "@/components/ui/button";
@@ -32,9 +32,15 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-  DialogDescription
+  DialogDescription,
 } from "@/components/ui/dialog";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { PageTitle } from "@/components/layout/PageTitle";
 import { Badge } from "@/components/ui/badge";
 
@@ -89,11 +95,17 @@ export default function PatientRequestsPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [editingRequestId, setEditingRequestId] = useState<number | null>(null);
-  const [selectedRequestId, setSelectedRequestId] = useState<number | null>(null);
+  const [selectedRequestId, setSelectedRequestId] = useState<number | null>(
+    null,
+  );
   const [togglingStatusId, setTogglingStatusId] = useState<number | null>(null);
-  const [statusFilter, setStatusFilter] = useState<"ALL" | "OPEN" | "FULFILLED">("ALL");
+  const [statusFilter, setStatusFilter] = useState<
+    "ALL" | "OPEN" | "FULFILLED"
+  >("ALL");
   const [isAssistDialogOpen, setIsAssistDialogOpen] = useState(false);
-  const [assistingRequest, setAssistingRequest] = useState<Request | null>(null);
+  const [assistingRequest, setAssistingRequest] = useState<Request | null>(
+    null,
+  );
 
   const [formData, setFormData] = useState({
     medicine: "",
@@ -103,17 +115,26 @@ export default function PatientRequestsPage() {
   const [submitting, setSubmitting] = useState(false);
 
   const tabs: TabConfig[] = [
-    { key: "my-requests", label: "My Requests", icon: <User className="w-4 h-4" /> },
-    { key: "expert-view", label: "Patients Requests", icon: <Users className="w-4 h-4" /> }
+    {
+      key: "my-requests",
+      label: "My Requests",
+      icon: <User className="w-4 h-4" />,
+    },
+    {
+      key: "expert-view",
+      label: "Patients Requests",
+      icon: <Users className="w-4 h-4" />,
+    },
   ];
 
   // --- Logic Preserved ---
   const fetchRequests = async () => {
     try {
       setLoading(true);
-      const endpoint = activeTab === "my-requests"
-        ? "/api/patient/requests"
-        : "/api/patient/requests/view-patients-requests";
+      const endpoint =
+        activeTab === "my-requests"
+          ? "/api/patient/requests"
+          : "/api/patient/requests/view-patients-requests";
       const response = await fetch(endpoint);
       const data: ApiResponse<Request[]> = await response.json();
 
@@ -161,7 +182,10 @@ export default function PatientRequestsPage() {
     setSubmitting(true);
 
     try {
-      if (editingRequestId && (editingRequestId <= 0 || isNaN(editingRequestId))) {
+      if (
+        editingRequestId &&
+        (editingRequestId <= 0 || isNaN(editingRequestId))
+      ) {
         setError("Invalid request ID");
         return;
       }
@@ -173,10 +197,12 @@ export default function PatientRequestsPage() {
       const method = editingRequestId ? "PUT" : "POST";
 
       const body = {
-        medicines: [{
-          name: formData.medicine,
-          city: formData.city,
-        }],
+        medicines: [
+          {
+            name: formData.medicine,
+            city: formData.city,
+          },
+        ],
         notes: formData.note,
       };
 
@@ -185,7 +211,7 @@ export default function PatientRequestsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      
+
       if (!response.ok) {
         setError(`Request failed with status ${response.status}`);
         setSubmitting(false);
@@ -202,7 +228,10 @@ export default function PatientRequestsPage() {
         setFormData({ medicine: "", city: "", note: "" });
         setError(null);
       } else {
-        setError(data.error || `Failed to ${editingRequestId ? "update" : "create"} request`);
+        setError(
+          data.error ||
+            `Failed to ${editingRequestId ? "update" : "create"} request`,
+        );
       }
     } catch (error) {
       setError("Network error occurred");
@@ -232,7 +261,7 @@ export default function PatientRequestsPage() {
     try {
       const url = `/api/patient/requests/${idString}`;
       const response = await fetch(url, { method: "DELETE" });
-      
+
       if (!response.ok) {
         setError(`Delete failed with status ${response.status}`);
         return;
@@ -241,7 +270,7 @@ export default function PatientRequestsPage() {
       const data = await response.json();
 
       if (data.success) {
-        setRequests(prev => prev.filter(req => req.id !== idNumber));
+        setRequests((prev) => prev.filter((req) => req.id !== idNumber));
         setIsDeleteDialogOpen(false);
         setSelectedRequestId(null);
         setError(null);
@@ -255,7 +284,7 @@ export default function PatientRequestsPage() {
 
   const handleToggleStatus = async (request: Request) => {
     const newStatus = request.status === "OPEN" ? "FULFILLED" : "OPEN";
-    
+
     setTogglingStatusId(request.id);
     try {
       const response = await fetch(`/api/patient/requests/${request.id}`, {
@@ -292,25 +321,34 @@ export default function PatientRequestsPage() {
   const getStatusBadge = (status: string) => {
     if (status === "OPEN") {
       return (
-        <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 px-3 py-1 gap-1.5 shadow-sm transition-all duration-300 hover:scale-105 cursor-default">
+        <Badge
+          variant="outline"
+          className="bg-amber-50 text-amber-700 border-amber-200 px-3 py-1 gap-1.5 shadow-sm transition-all duration-300 hover:scale-105 cursor-default w-fit mt-2"
+        >
           <span className="relative flex h-2.5 w-2.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
           </span>
-          <span className="font-bold tracking-wide">Looking for</span>
+          <span className="font-bold tracking-wide">Not Fulfilled</span>
         </Badge>
       );
     }
     if (status === "FULFILLED") {
       return (
-        <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 px-3 py-1 gap-1.5 shadow-sm transition-all duration-300 hover:scale-105 cursor-default">
+        <Badge
+          variant="outline"
+          className="bg-emerald-50 text-emerald-700 border-emerald-200 px-3 py-1 gap-1.5 shadow-sm transition-all duration-300 hover:scale-105 cursor-default w-fit mt-2"
+        >
           <CheckCircle2 className="w-3.5 h-3.5" />
           <span className="font-bold tracking-wide">Fulfilled</span>
         </Badge>
       );
     }
     return (
-      <Badge variant="secondary" className="bg-slate-100 text-slate-500 border-slate-200 px-3 py-1">
+      <Badge
+        variant="secondary"
+        className="bg-slate-100 text-slate-500 border-slate-200 px-3 py-1"
+      >
         {status}
       </Badge>
     );
@@ -319,12 +357,14 @@ export default function PatientRequestsPage() {
   return (
     <div className="min-h-screen bg-slate-50/50 pb-20 animate-in fade-in duration-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-
         {/* Tab Switcher */}
         <div className="w-full animate-fade-in-up animation-delay-200">
           <div className="relative w-full max-w-md mx-auto">
             {/* Background with animated gradient */}
-            <div className="absolute inset-0 rounded-2xl opacity-30 animate-pulse-slow" style={{ backgroundColor: "#2699b2" }}></div>
+            <div
+              className="absolute inset-0 rounded-2xl opacity-30 animate-pulse-slow"
+              style={{ backgroundColor: "#2699b2" }}
+            ></div>
 
             {/* Main container */}
             <div className="relative grid grid-cols-2 bg-white/80 backdrop-blur-md p-1.5 rounded-2xl border border-white/20 shadow-xl">
@@ -337,7 +377,7 @@ export default function PatientRequestsPage() {
                 }`}
                 style={{
                   width: "calc(50% - 6px)",
-                  backgroundColor: "#2699b2"
+                  backgroundColor: "#2699b2",
                 }}
               >
                 {/* Animated shine effect */}
@@ -356,7 +396,11 @@ export default function PatientRequestsPage() {
                       ? "text-white transform scale-105"
                       : "text-slate-600 hover:text-slate-800"
                   }`}
-                  style={activeTab !== tab.key ? { transform: "scale(1.02)" } : undefined}
+                  style={
+                    activeTab !== tab.key
+                      ? { transform: "scale(1.02)" }
+                      : undefined
+                  }
                   onMouseEnter={(e) => {
                     if (activeTab !== tab.key) {
                       e.currentTarget.style.transform = "scale(1.02)";
@@ -369,19 +413,30 @@ export default function PatientRequestsPage() {
                   }}
                 >
                   <div className="flex items-center justify-center gap-2">
-                    <div className={`p-1.5 rounded-lg transition-all duration-300 ${
-                      activeTab === tab.key
-                        ? "bg-white/20 text-white shadow-lg"
-                        : "text-slate-700"
-                    }`} style={activeTab !== tab.key ? { backgroundColor: "var(--color-primary-hover)" } : undefined}>
+                    <div
+                      className={`p-1.5 rounded-lg transition-all duration-300 ${
+                        activeTab === tab.key
+                          ? "bg-white/20 text-white shadow-lg"
+                          : "text-slate-700"
+                      }`}
+                      style={
+                        activeTab !== tab.key
+                          ? { backgroundColor: "var(--color-primary-hover)" }
+                          : undefined
+                      }
+                    >
                       {tab.icon}
                     </div>
                     <span className="relative">
                       {tab.label}
                       {/* Hover underline effect */}
-                      <div className={`absolute -bottom-1 left-0 h-0.5 bg-white/60 transition-all duration-300 ${
-                        activeTab === tab.key ? "w-full" : "w-0 group-hover:w-full"
-                      }`}></div>
+                      <div
+                        className={`absolute -bottom-1 left-0 h-0.5 bg-white/60 transition-all duration-300 ${
+                          activeTab === tab.key
+                            ? "w-full"
+                            : "w-0 group-hover:w-full"
+                        }`}
+                      ></div>
                     </span>
                   </div>
 
@@ -397,7 +452,10 @@ export default function PatientRequestsPage() {
             </div>
 
             {/* Ambient glow effect */}
-            <div className="absolute -inset-2 rounded-3xl blur-xl opacity-20 transition-all duration-500 pointer-events-none" style={{ backgroundColor: "#2699b2" }}></div>
+            <div
+              className="absolute -inset-2 rounded-3xl blur-xl opacity-20 transition-all duration-500 pointer-events-none"
+              style={{ backgroundColor: "#2699b2" }}
+            ></div>
           </div>
         </div>
 
@@ -409,17 +467,15 @@ export default function PatientRequestsPage() {
                 <ClipboardList className="h-7 w-7 text-amber-600 group-hover:text-amber-700 transition-colors" />
               </div>
               <PageTitle>
-                {activeTab === "my-requests" ? "My Requests" : "Patients Requests"}
+                {activeTab === "my-requests"
+                  ? "My Requests"
+                  : "Patients Requests"}
               </PageTitle>
-
-
-
             </div>
             <p className="text-slate-500 mt-1">
               {activeTab === "my-requests"
                 ? "Track the medicines you need. We'll help you find them."
-                : "View and assist other patients with their medicine requests."
-              }
+                : "View and assist other patients with their medicine requests."}
             </p>
           </div>
 
@@ -451,7 +507,10 @@ export default function PatientRequestsPage() {
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-64 bg-white rounded-2xl shadow-sm animate-pulse border border-slate-200" />
+                <div
+                  key={i}
+                  className="h-64 bg-white rounded-2xl shadow-sm animate-pulse border border-slate-200"
+                />
               ))}
             </div>
           ) : requests.length === 0 ? (
@@ -464,13 +523,14 @@ export default function PatientRequestsPage() {
                 </div>
               </div>
               <h3 className="text-2xl font-bold text-slate-900 mb-2">
-                {activeTab === "my-requests" ? "No requests yet" : "No patient requests available"}
+                {activeTab === "my-requests"
+                  ? "No requests yet"
+                  : "No patient requests available"}
               </h3>
               <p className="text-slate-500 max-w-md text-center mb-8 text-lg leading-relaxed">
                 {activeTab === "my-requests"
                   ? "You haven't requested any medicines. Need something? Let us know."
-                  : "There are no patient requests that need expert assistance at the moment."
-                }
+                  : "There are no patient requests that need expert assistance at the moment."}
               </p>
               {activeTab === "my-requests" && (
                 <Button
@@ -492,9 +552,11 @@ export default function PatientRequestsPage() {
                     <div className="p-1.5 bg-amber-50 rounded-lg">
                       <Filter className="h-4 w-4 text-amber-600" />
                     </div>
-                    <span className="text-sm font-bold text-slate-700 uppercase tracking-wide">Filter Status</span>
+                    <span className="text-sm font-bold text-slate-700 uppercase tracking-wide">
+                      Filter Status
+                    </span>
                   </div>
-                  
+
                   <div className="flex p-1.5 bg-slate-100/80 rounded-xl w-full sm:w-auto relative">
                     {(["ALL", "OPEN", "FULFILLED"] as const).map((status) => (
                       <button
@@ -502,16 +564,21 @@ export default function PatientRequestsPage() {
                         onClick={() => setStatusFilter(status)}
                         className={`
                           flex-1 sm:flex-none relative px-6 py-2.5 text-sm font-bold rounded-lg transition-all duration-300 ease-out
-                          ${statusFilter === status 
-                            ? "bg-white text-slate-900 shadow-md scale-100" 
-                            : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 scale-95"
+                          ${
+                            statusFilter === status
+                              ? "bg-white text-slate-900 shadow-md scale-100"
+                              : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 scale-95"
                           }
                         `}
                       >
                         {status.charAt(0) + status.slice(1).toLowerCase()}
-                        <span className={`ml-2 text-[10px] py-0.5 px-2 rounded-full transition-colors duration-300 ${
-                          statusFilter === status ? "bg-amber-600 text-white" : "bg-slate-200 text-slate-600"
-                        }`}>
+                        <span
+                          className={`ml-2 text-[10px] py-0.5 px-2 rounded-full transition-colors duration-300 ${
+                            statusFilter === status
+                              ? "bg-amber-600 text-white"
+                              : "bg-slate-200 text-slate-600"
+                          }`}
+                        >
                           {statusCounts[status]}
                         </span>
                       </button>
@@ -523,43 +590,50 @@ export default function PatientRequestsPage() {
               {/* STAGGERED GRID */}
               {filteredRequests.length === 0 ? (
                 <div className="text-center py-20 bg-slate-50/50 rounded-3xl border border-dashed border-slate-200 text-slate-500 animate-in fade-in zoom-in-95 duration-300">
-                  <p className="font-medium text-lg">No {statusFilter.toLowerCase()} requests found.</p>
+                  <p className="font-medium text-lg">
+                    No {statusFilter.toLowerCase()} requests found.
+                  </p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredRequests.map((request, index) => (
-                    <div 
+                    <div
                       key={request.id}
                       className="animate-in slide-in-from-bottom-8 fade-in duration-500 fill-mode-backwards"
                       style={{ animationDelay: `${index * 100}ms` }}
                     >
-                      <Card 
+                      <Card
                         className={`group h-full flex flex-col overflow-hidden border-t-4 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 ${
-                          request.status === 'OPEN' ? 'border-t-amber-500' : 'border-t-emerald-500'
+                          request.status === "OPEN"
+                            ? "border-t-amber-500"
+                            : "border-t-emerald-500"
                         }`}
                       >
                         <CardHeader className="pb-3 space-y-3 bg-white">
-                          <div className="flex justify-between items-start">
-                            <div className="space-y-1">
-                              <CardTitle className="text-xl font-bold text-slate-900 line-clamp-1 group-hover:text-amber-600 transition-colors duration-300">
-                                {request.medicine.name}
-                              </CardTitle>
-                              {request.medicine.genericName && (
-                                <div className="flex items-center gap-1.5">
-                                  <Sparkles className="w-3 h-3 text-purple-400" />
-                                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wider line-clamp-1">
-                                    {request.medicine.genericName}
-                                  </p>
-                                </div>
-                              )}
-                              {activeTab === "expert-view" && request.patient && (
-                                <div className="flex items-center gap-1.5">
-                                  <User className="w-3 h-3 text-blue-400" />
-                                  <p className="text-xs font-medium text-slate-600">
-                                    Patient: {request.patient.name}
-                                  </p>
-                                </div>
-                              )}
+                          <div className="flex flex-col">
+                            <div className="flex justify-between items-start">
+                              <div className="space-y-1">
+                                <CardTitle className="text-xl font-bold text-slate-900 line-clamp-1 group-hover:text-amber-600 transition-colors duration-300">
+                                  {request.medicine.name}
+                                </CardTitle>
+                                {request.medicine.genericName && (
+                                  <div className="flex items-center gap-1.5">
+                                    <Sparkles className="w-3 h-3 text-purple-400" />
+                                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider line-clamp-1">
+                                      {request.medicine.genericName}
+                                    </p>
+                                  </div>
+                                )}
+                                {activeTab === "expert-view" &&
+                                  request.patient && (
+                                    <div className="flex items-center gap-1.5">
+                                      <User className="w-3 h-3 text-blue-400" />
+                                      <p className="text-xs font-medium text-slate-600">
+                                        Patient: {request.patient.name}
+                                      </p>
+                                    </div>
+                                  )}
+                              </div>
                             </div>
                             {getStatusBadge(request.status)}
                           </div>
@@ -569,16 +643,23 @@ export default function PatientRequestsPage() {
                           <div className="grid gap-3 text-slate-600">
                             <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all duration-200">
                               <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
-                                 <MapPin className="h-4 w-4" />
+                                <MapPin className="h-4 w-4" />
                               </div>
-                              <span className="font-semibold text-slate-700">{request.city}</span>
+                              <span className="font-semibold text-slate-700">
+                                {request.city}
+                              </span>
                             </div>
-                            
+
                             <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all duration-200">
                               <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 shrink-0">
-                                 <Calendar className="h-4 w-4" />
+                                <Calendar className="h-4 w-4" />
                               </div>
-                              <span>Requested {new Date(request.createdAt).toLocaleDateString()}</span>
+                              <span>
+                                Requested{" "}
+                                {new Date(
+                                  request.createdAt,
+                                ).toLocaleDateString()}
+                              </span>
                             </div>
                           </div>
                         </CardContent>
@@ -590,7 +671,10 @@ export default function PatientRequestsPage() {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleEdit(request)}
-                                disabled={request.status !== "OPEN" || togglingStatusId === request.id}
+                                disabled={
+                                  request.status !== "OPEN" ||
+                                  togglingStatusId === request.id
+                                }
                                 className="flex-1 border-slate-200 hover:border-amber-300 hover:bg-amber-50 hover:text-amber-700 transition-all duration-200 active:scale-95 rounded-xl font-medium"
                               >
                                 <Edit className="h-3.5 w-3.5 mr-2" />
@@ -659,181 +743,241 @@ export default function PatientRequestsPage() {
       {/* New Request Dialog - Only show for my-requests tab */}
       {activeTab === "my-requests" && (
         <>
-          <Dialog open={isNewDialogOpen} onOpenChange={(open) => {
-            setIsNewDialogOpen(open);
-            if (!open) resetForm();
-          }}>
-        <DialogContent 
-          className="sm:max-w-[550px] p-0 gap-0 overflow-visible bg-white border-none shadow-2xl rounded-3xl"
-          onPointerDownOutside={(e) => {
-            const target = e.target as HTMLElement;
-            if (target?.closest("[data-city-dropdown]")) e.preventDefault();
-          }}
-        >
-          <div className="bg-gradient-to-r from-amber-500 to-orange-600 p-8 text-white relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10  -mr-10 -mt-10 blur-2xl"></div>
-            
-            <DialogHeader className="relative z-10">
-            <DialogTitle className="text-2xl font-extrabold flex items-center gap-3 text-white">
-                 <div className="p-2.5 bg-white/20 rounded-xl backdrop-blur-md shadow-lg border border-white/10">
-                    <Plus className="h-6 w-6" />
-                 </div>
-                 Create Request
-              </DialogTitle>
-              <DialogDescription className="text-blue-100 mt-2 font-medium">
-                Tell us what you need, and we&apos;ll broadcast it to potential donors.
-              </DialogDescription>
-            </DialogHeader>
-          </div>
-
-          <form onSubmit={handleSubmit} className="p-8 space-y-7 bg-slate-50/50">
-            <div className="space-y-3">
-              <Label className="text-sm font-bold text-slate-800 flex items-center gap-2 uppercase tracking-wide">
-                 <Pill className="h-4 w-4 text-amber-600" />
-                 Medicine Name <span className="text-red-500">*</span>
-              </Label>
-              <div className="relative shadow-sm">
-                <MedicineAutocomplete
-                  medicines={medicines}
-                  value={formData.medicine ?? ""}
-                  onChange={(value) => setFormData({ ...formData, medicine: value })}
-                  placeholder="Search medicine by name..."
-                  className="w-full"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <Label className="text-sm font-bold text-slate-800 flex items-center gap-2 uppercase tracking-wide">
-                 <MapPin className="h-4 w-4 text-amber-600" />
-                 Preferred City
-              </Label>
-              <CityAutocomplete
-                cities={cities}
-                value={formData.city ?? ""}
-                onChange={(value) => setFormData({ ...formData, city: value })}
-                placeholder="Select your city..."
-                className="w-full shadow-sm"
-              />
-            </div>
-            
-            <div className="p-6 flex flex-row-reverse gap-3 border-t border-slate-100 -mx-8 -mb-8 rounded-b-3xl bg-white mt-4">
-              <Button type="submit" disabled={submitting} className="bg-amber-600 hover:bg-amber-700 text-white shadow-lg shadow-amber-200 transition-all hover:scale-105 active:scale-95 min-w-[140px] rounded-xl h-11 font-bold tracking-wide">
-                {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create Request"}
-              </Button>
-              <Button type="button" variant="outline" onClick={() => { setIsNewDialogOpen(false); resetForm(); }} className="bg-white hover:bg-slate-50 text-slate-600 border-slate-200 rounded-xl h-11 px-6 font-medium hover:text-slate-900">
-                Cancel
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Request Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={(open) => {
-        setIsEditDialogOpen(open);
-        if (!open) resetForm();
-      }}>
-        <DialogContent 
-          className="sm:max-w-[550px] p-0 gap-0 overflow-visible bg-white border-none shadow-2xl "
-          onPointerDownOutside={(e) => {
-            const target = e.target as HTMLElement;
-            if (target?.closest("[data-city-dropdown]")) e.preventDefault();
-          }}
-        >
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-8 text-white relative overflow-hidden">
-            <DialogHeader className="relative z-10">
-            <DialogTitle className="text-2xl font-extrabold flex items-center gap-3 text-white">
-                 <div className="p-2.5 bg-white/20 backdrop-blur-md shadow-lg border border-white/10">
-                    <Edit className="h-6 w-6" />
-                 </div>
-                 Edit Request
-              </DialogTitle>
-            </DialogHeader>
-          </div>
-
-          <form onSubmit={handleSubmit} className="p-8 space-y-7 bg-slate-50/50">
-            {/* Same form fields as Create */}
-            <div className="space-y-3">
-              <Label className="text-sm font-bold text-slate-800 flex items-center gap-2 uppercase tracking-wide">
-                 <Pill className="h-4 w-4 text-blue-600" />
-                 Medicine Name <span className="text-red-500">*</span>
-              </Label>
-              <MedicineAutocomplete
-                medicines={medicines}
-                value={formData.medicine ?? ""}
-                onChange={(value) => setFormData({ ...formData, medicine: value })}
-                placeholder="Search medicine by name..."
-              />
-            </div>
-            <div className="space-y-3">
-              <Label className="text-sm font-bold text-slate-800 flex items-center gap-2 uppercase tracking-wide">
-                 <MapPin className="h-4 w-4 text-blue-600" />
-                 City
-              </Label>
-              <CityAutocomplete
-                cities={cities}
-                value={formData.city ?? ""}
-                onChange={(value) => setFormData({ ...formData, city: value })}
-                placeholder="Select your city..."
-              />
-            </div>
-
-            <div className="p-6 flex flex-row-reverse gap-3 border-t border-slate-100 -mx-8 -mb-8 rounded-b-3xl bg-white mt-4">
-              <Button type="submit" disabled={submitting} className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-all hover:scale-105 active:scale-95 min-w-[140px] rounded-xl h-11 font-bold tracking-wide">
-                {submitting ? "Updating..." : "Update Request"}
-              </Button>
-              <Button type="button" variant="outline" onClick={() => { setIsEditDialogOpen(false); resetForm(); }} className="bg-white hover:bg-slate-50 text-slate-600 border-slate-200 rounded-xl h-11 px-6 font-medium">
-                Cancel
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={(open) => {
-        setIsDeleteDialogOpen(open);
-        if (!open) setSelectedRequestId(null);
-      }}>
-        <DialogContent className="sm:max-w-[400px] rounded-3xl border-none shadow-2xl p-0 overflow-hidden">
-          <div className="bg-red-50 p-6 flex flex-col items-center justify-center text-center gap-4">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-2 animate-bounce">
-              <Trash2 className="h-8 w-8 text-red-600" />
-            </div>
-            <DialogTitle className="text-xl font-bold text-red-900">Delete Request?</DialogTitle>
-            <DialogDescription className="text-red-700 font-medium">
-              Are you sure? This action cannot be undone.
-            </DialogDescription>
-          </div>
-          <div className="p-6 bg-white flex gap-3">
-            <Button
-              variant="outline"
-              className="flex-1 rounded-xl h-11 font-medium"
-              onClick={() => { setIsDeleteDialogOpen(false); setSelectedRequestId(null); }}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              className="flex-1 bg-red-600 hover:bg-red-700 text-white rounded-xl h-11 font-bold shadow-md hover:shadow-lg transition-all hover:scale-105 active:scale-95"
-              onClick={() => {
-                if (selectedRequestId) handleDelete(selectedRequestId);
+          <Dialog
+            open={isNewDialogOpen}
+            onOpenChange={(open) => {
+              setIsNewDialogOpen(open);
+              if (!open) resetForm();
+            }}
+          >
+            <DialogContent
+              className="sm:max-w-[550px] p-0 gap-0 overflow-visible bg-white border-none shadow-2xl rounded-3xl"
+              onPointerDownOutside={(e) => {
+                const target = e.target as HTMLElement;
+                if (target?.closest("[data-city-dropdown]")) e.preventDefault();
               }}
             >
-              Delete
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+              <div className="bg-gradient-to-r from-amber-500 to-orange-600 p-8 text-white relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10  -mr-10 -mt-10 blur-2xl"></div>
+
+                <DialogHeader className="relative z-10">
+                  <DialogTitle className="text-2xl font-extrabold flex items-center gap-3 text-white">
+                    <div className="p-2.5 bg-white/20 rounded-xl backdrop-blur-md shadow-lg border border-white/10">
+                      <Plus className="h-6 w-6" />
+                    </div>
+                    Create Request
+                  </DialogTitle>
+                  <DialogDescription className="text-blue-100 mt-2 font-medium">
+                    Tell us what you need, and we&apos;ll broadcast it to
+                    potential donors.
+                  </DialogDescription>
+                </DialogHeader>
+              </div>
+
+              <form
+                onSubmit={handleSubmit}
+                className="p-8 space-y-7 bg-slate-50/50"
+              >
+                <div className="space-y-3">
+                  <Label className="text-sm font-bold text-slate-800 flex items-center gap-2 uppercase tracking-wide">
+                    <Pill className="h-4 w-4 text-amber-600" />
+                    Medicine Name <span className="text-red-500">*</span>
+                  </Label>
+                  <div className="relative shadow-sm">
+                    <MedicineAutocomplete
+                      medicines={medicines}
+                      value={formData.medicine ?? ""}
+                      onChange={(value) =>
+                        setFormData({ ...formData, medicine: value })
+                      }
+                      placeholder="Search medicine by name..."
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <Label className="text-sm font-bold text-slate-800 flex items-center gap-2 uppercase tracking-wide">
+                    <MapPin className="h-4 w-4 text-amber-600" />
+                    Preferred City
+                  </Label>
+                  <CityAutocomplete
+                    cities={cities}
+                    value={formData.city ?? ""}
+                    onChange={(value) =>
+                      setFormData({ ...formData, city: value })
+                    }
+                    placeholder="Select your city..."
+                    className="w-full shadow-sm"
+                  />
+                </div>
+
+                <div className="p-6 flex flex-row-reverse gap-3 border-t border-slate-100 -mx-8 -mb-8 rounded-b-3xl bg-white mt-4">
+                  <Button
+                    type="submit"
+                    disabled={submitting}
+                    className="bg-amber-600 hover:bg-amber-700 text-white shadow-lg shadow-amber-200 transition-all hover:scale-105 active:scale-95 min-w-[140px] rounded-xl h-11 font-bold tracking-wide"
+                  >
+                    {submitting ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      "Create Request"
+                    )}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setIsNewDialogOpen(false);
+                      resetForm();
+                    }}
+                    className="bg-white hover:bg-slate-50 text-slate-600 border-slate-200 rounded-xl h-11 px-6 font-medium hover:text-slate-900"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+
+          {/* Edit Request Dialog */}
+          <Dialog
+            open={isEditDialogOpen}
+            onOpenChange={(open) => {
+              setIsEditDialogOpen(open);
+              if (!open) resetForm();
+            }}
+          >
+            <DialogContent
+              className="sm:max-w-[550px] p-0 gap-0 overflow-visible bg-white border-none shadow-2xl "
+              onPointerDownOutside={(e) => {
+                const target = e.target as HTMLElement;
+                if (target?.closest("[data-city-dropdown]")) e.preventDefault();
+              }}
+            >
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-8 text-white relative overflow-hidden">
+                <DialogHeader className="relative z-10">
+                  <DialogTitle className="text-2xl font-extrabold flex items-center gap-3 text-white">
+                    <div className="p-2.5 bg-white/20 backdrop-blur-md shadow-lg border border-white/10">
+                      <Edit className="h-6 w-6" />
+                    </div>
+                    Edit Request
+                  </DialogTitle>
+                </DialogHeader>
+              </div>
+
+              <form
+                onSubmit={handleSubmit}
+                className="p-8 space-y-7 bg-slate-50/50"
+              >
+                {/* Same form fields as Create */}
+                <div className="space-y-3">
+                  <Label className="text-sm font-bold text-slate-800 flex items-center gap-2 uppercase tracking-wide">
+                    <Pill className="h-4 w-4 text-blue-600" />
+                    Medicine Name <span className="text-red-500">*</span>
+                  </Label>
+                  <MedicineAutocomplete
+                    medicines={medicines}
+                    value={formData.medicine ?? ""}
+                    onChange={(value) =>
+                      setFormData({ ...formData, medicine: value })
+                    }
+                    placeholder="Search medicine by name..."
+                  />
+                </div>
+                <div className="space-y-3">
+                  <Label className="text-sm font-bold text-slate-800 flex items-center gap-2 uppercase tracking-wide">
+                    <MapPin className="h-4 w-4 text-blue-600" />
+                    City
+                  </Label>
+                  <CityAutocomplete
+                    cities={cities}
+                    value={formData.city ?? ""}
+                    onChange={(value) =>
+                      setFormData({ ...formData, city: value })
+                    }
+                    placeholder="Select your city..."
+                  />
+                </div>
+
+                <div className="p-6 flex flex-row-reverse gap-3 border-t border-slate-100 -mx-8 -mb-8 rounded-b-3xl bg-white mt-4">
+                  <Button
+                    type="submit"
+                    disabled={submitting}
+                    className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-all hover:scale-105 active:scale-95 min-w-[140px] rounded-xl h-11 font-bold tracking-wide"
+                  >
+                    {submitting ? "Updating..." : "Update Request"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setIsEditDialogOpen(false);
+                      resetForm();
+                    }}
+                    className="bg-white hover:bg-slate-50 text-slate-600 border-slate-200 rounded-xl h-11 px-6 font-medium"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+
+          {/* Delete Confirmation Dialog */}
+          <Dialog
+            open={isDeleteDialogOpen}
+            onOpenChange={(open) => {
+              setIsDeleteDialogOpen(open);
+              if (!open) setSelectedRequestId(null);
+            }}
+          >
+            <DialogContent className="sm:max-w-[400px] rounded-3xl border-none shadow-2xl p-0 overflow-hidden">
+              <div className="bg-red-50 p-6 flex flex-col items-center justify-center text-center gap-4">
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-2 animate-bounce">
+                  <Trash2 className="h-8 w-8 text-red-600" />
+                </div>
+                <DialogTitle className="text-xl font-bold text-red-900">
+                  Delete Request?
+                </DialogTitle>
+                <DialogDescription className="text-red-700 font-medium">
+                  Are you sure? This action cannot be undone.
+                </DialogDescription>
+              </div>
+              <div className="p-6 bg-white flex gap-3">
+                <Button
+                  variant="outline"
+                  className="flex-1 rounded-xl h-11 font-medium"
+                  onClick={() => {
+                    setIsDeleteDialogOpen(false);
+                    setSelectedRequestId(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white rounded-xl h-11 font-bold shadow-md hover:shadow-lg transition-all hover:scale-105 active:scale-95"
+                  onClick={() => {
+                    if (selectedRequestId) handleDelete(selectedRequestId);
+                  }}
+                >
+                  Delete
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </>
       )}
 
       {/* Assist Patient Dialog */}
-      <Dialog open={isAssistDialogOpen} onOpenChange={(open) => {
-        setIsAssistDialogOpen(open);
-        if (!open) setAssistingRequest(null);
-      }}>
+      <Dialog
+        open={isAssistDialogOpen}
+        onOpenChange={(open) => {
+          setIsAssistDialogOpen(open);
+          if (!open) setAssistingRequest(null);
+        }}
+      >
         <DialogContent
           className="sm:max-w-[500px] p-0 gap-0 overflow-visible bg-white border-none shadow-2xl rounded-3xl"
           onPointerDownOutside={(e) => {
@@ -873,7 +1017,9 @@ export default function PatientRequestsPage() {
                         <User className="h-4 w-4 text-blue-600" />
                       </div>
                       <div>
-                        <p className="font-semibold text-slate-900">{assistingRequest.patient?.name || "Patient"}</p>
+                        <p className="font-semibold text-slate-900">
+                          {assistingRequest.patient?.name || "Patient"}
+                        </p>
                         <p className="text-sm text-slate-500">Patient Name</p>
                       </div>
                     </div>
@@ -883,8 +1029,12 @@ export default function PatientRequestsPage() {
                         <Pill className="h-4 w-4 text-amber-600" />
                       </div>
                       <div>
-                        <p className="font-semibold text-slate-900">{assistingRequest.medicine.name}</p>
-                        <p className="text-sm text-slate-500">Requested Medicine</p>
+                        <p className="font-semibold text-slate-900">
+                          {assistingRequest.medicine.name}
+                        </p>
+                        <p className="text-sm text-slate-500">
+                          Requested Medicine
+                        </p>
                       </div>
                     </div>
 
@@ -893,7 +1043,9 @@ export default function PatientRequestsPage() {
                         <MapPin className="h-4 w-4 text-indigo-600" />
                       </div>
                       <div>
-                        <p className="font-semibold text-slate-900">{assistingRequest.city}</p>
+                        <p className="font-semibold text-slate-900">
+                          {assistingRequest.city}
+                        </p>
                         <p className="text-sm text-slate-500">Location</p>
                       </div>
                     </div>
@@ -903,7 +1055,11 @@ export default function PatientRequestsPage() {
                         <Calendar className="h-4 w-4 text-orange-600" />
                       </div>
                       <div>
-                        <p className="font-semibold text-slate-900">{new Date(assistingRequest.createdAt).toLocaleDateString()}</p>
+                        <p className="font-semibold text-slate-900">
+                          {new Date(
+                            assistingRequest.createdAt,
+                          ).toLocaleDateString()}
+                        </p>
                         <p className="text-sm text-slate-500">Request Date</p>
                       </div>
                     </div>
@@ -918,7 +1074,7 @@ export default function PatientRequestsPage() {
                         const whatsappUrl = getWhatsAppUrl(
                           assistingRequest.patient?.phone || null,
                           `Medicine Request: ${assistingRequest.medicine.name}`,
-                          `Hello! I'm contacting you through Dawalocate. I saw your request for ${assistingRequest.medicine.name} in ${assistingRequest.city}. I may be able to help you find this medicine. Can we discuss the details?`
+                          `Hello! I'm contacting you through Dawalocate. I saw your request for ${assistingRequest.medicine.name} in ${assistingRequest.city}. I may be able to help you find this medicine. Can we discuss the details?`,
                         );
                         window.open(whatsappUrl, "_blank");
                       }}

@@ -16,7 +16,7 @@ import {
   HeartHandshake,
   Sparkles,
   User,
-  Users
+  Users,
 } from "lucide-react";
 import { WhatsAppIcon, getWhatsAppUrl } from "@/lib/utils/campaignHelpers";
 import { Button } from "@/components/ui/button";
@@ -26,9 +26,15 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription
+  DialogDescription,
 } from "@/components/ui/dialog";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MedicineAutocomplete } from "@/components/ui/MedicineAutocomplete";
 import { CityAutocomplete } from "@/components/ui/CityAutocomplete";
@@ -94,23 +100,37 @@ export default function PatientDonationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<"ALL" | "OPEN" | "CLOSED">("ALL");
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "OPEN" | "CLOSED">(
+    "ALL",
+  );
 
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const [isAssistDialogOpen, setIsAssistDialogOpen] = useState(false);
-  const [assistingOffer, setAssistingOffer] = useState<DonationOffer | null>(null);
+  const [assistingOffer, setAssistingOffer] = useState<DonationOffer | null>(
+    null,
+  );
   const [formMode, setFormMode] = useState<"create" | "edit">("create");
   const [editingOfferId, setEditingOfferId] = useState<number | null>(null);
   const [togglingOfferId, setTogglingOfferId] = useState<number | null>(null);
 
   const [medicineSearchTerm, setMedicineSearchTerm] = useState("");
-  const [selectedMedicine, setSelectedMedicine] = useState<Medicine | null>(null);
+  const [selectedMedicine, setSelectedMedicine] = useState<Medicine | null>(
+    null,
+  );
   const [city, setCity] = useState("");
   const [formLoading, setFormLoading] = useState(false);
 
   const tabs: TabConfig[] = [
-    { key: "my-donations", label: "My Donations", icon: <User className="w-4 h-4" /> },
-    { key: "expert-view", label: "Patients DonationOffer", icon: <Users className="w-4 h-4" /> }
+    {
+      key: "my-donations",
+      label: "My Donations",
+      icon: <User className="w-4 h-4" />,
+    },
+    {
+      key: "expert-view",
+      label: "Patients DonationOffer",
+      icon: <Users className="w-4 h-4" />,
+    },
   ];
 
   // --- Logic Preserved ---
@@ -133,12 +153,14 @@ export default function PatientDonationsPage() {
     try {
       setLoading(true);
       setError(null);
-      const endpoint = activeTab === "my-donations"
-        ? "/api/patient/donation-offers"
-        : "/api/patient/donation-offers/view-patients-donations";
+      const endpoint =
+        activeTab === "my-donations"
+          ? "/api/patient/donation-offers"
+          : "/api/patient/donation-offers/view-patients-donations";
       const response = await fetch(endpoint);
       const result: ApiResponse<DonationOffer[]> = await response.json();
-      if (!result.success) throw new Error(result.error || "Failed to fetch donation offers");
+      if (!result.success)
+        throw new Error(result.error || "Failed to fetch donation offers");
       setOffers(result.data || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
@@ -158,10 +180,14 @@ export default function PatientDonationsPage() {
       const response = await fetch("/api/patient/donation-offers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ medicineId: selectedMedicine.id, city: city.trim() }),
+        body: JSON.stringify({
+          medicineId: selectedMedicine.id,
+          city: city.trim(),
+        }),
       });
       const result: ApiResponse<DonationOffer> = await response.json();
-      if (!result.success) throw new Error(result.error || "Failed to create donation offer");
+      if (!result.success)
+        throw new Error(result.error || "Failed to create donation offer");
       setSuccessMessage("Donation offer created successfully!");
       setIsFormDialogOpen(false);
       resetForm();
@@ -181,14 +207,23 @@ export default function PatientDonationsPage() {
     try {
       setFormLoading(true);
       setError(null);
-      const response = await fetch(`/api/patient/donation-offers/${editingOfferId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ medicineId: selectedMedicine.id, city: city.trim() }),
-      });
+      const response = await fetch(
+        `/api/patient/donation-offers/${editingOfferId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            medicineId: selectedMedicine.id,
+            city: city.trim(),
+          }),
+        },
+      );
       const result: ApiResponse<DonationOffer> = await response.json();
-      if (!result.success) throw new Error(result.error || "Failed to update donation offer");
-      setSuccessMessage(result.message || "Donation offer updated successfully!");
+      if (!result.success)
+        throw new Error(result.error || "Failed to update donation offer");
+      setSuccessMessage(
+        result.message || "Donation offer updated successfully!",
+      );
       setIsFormDialogOpen(false);
       resetForm();
       await fetchOffers();
@@ -210,8 +245,17 @@ export default function PatientDonationsPage() {
         body: JSON.stringify({ status: newStatus }),
       });
       const result: ApiResponse<DonationOffer> = await response.json();
-      if (!result.success) throw new Error(result.error || `Failed to ${newStatus === "CLOSED" ? "close" : "reopen"} donation offer`);
-      setSuccessMessage(result.message || (newStatus === "CLOSED" ? "Donation offer closed successfully!" : "Donation offer reopened successfully!"));
+      if (!result.success)
+        throw new Error(
+          result.error ||
+            `Failed to ${newStatus === "CLOSED" ? "close" : "reopen"} donation offer`,
+        );
+      setSuccessMessage(
+        result.message ||
+          (newStatus === "CLOSED"
+            ? "Donation offer closed successfully!"
+            : "Donation offer reopened successfully!"),
+      );
       await fetchOffers();
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
@@ -230,7 +274,11 @@ export default function PatientDonationsPage() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", { year: 'numeric', month: 'short', day: 'numeric' });
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   };
 
   const filteredOffers = offers.filter((offer) => {
@@ -238,13 +286,17 @@ export default function PatientDonationsPage() {
     return offer.status === statusFilter;
   });
 
-  const statusCounts = offers.reduce<{ ALL: number; OPEN: number; CLOSED: number }>(
+  const statusCounts = offers.reduce<{
+    ALL: number;
+    OPEN: number;
+    CLOSED: number;
+  }>(
     (acc, offer) => {
       if (offer.status === "OPEN") acc.OPEN += 1;
       if (offer.status === "CLOSED") acc.CLOSED += 1;
       return acc;
     },
-    { ALL: offers.length, OPEN: 0, CLOSED: 0 }
+    { ALL: offers.length, OPEN: 0, CLOSED: 0 },
   );
 
   const handleOpenCreate = () => {
@@ -277,13 +329,17 @@ export default function PatientDonationsPage() {
 
     try {
       setTogglingOfferId(assistingOffer.id);
-      const response = await fetch(`/api/patient/donation-offers/${assistingOffer.id}/assist`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "CLOSED" }),
-      });
+      const response = await fetch(
+        `/api/patient/donation-offers/${assistingOffer.id}/assist`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "CLOSED" }),
+        },
+      );
       const result: ApiResponse<DonationOffer> = await response.json();
-      if (!result.success) throw new Error(result.error || "Failed to mark as assisted");
+      if (!result.success)
+        throw new Error(result.error || "Failed to mark as assisted");
       setSuccessMessage("Successfully assisted with donation!");
       setIsAssistDialogOpen(false);
       setAssistingOffer(null);
@@ -298,7 +354,10 @@ export default function PatientDonationsPage() {
   // --- ANIMATED BADGE COMPONENT ---
   const getStatusBadge = (status: string) => {
     return status === "OPEN" ? (
-      <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 px-3 py-1 gap-1.5 shadow-sm transition-all duration-300 hover:scale-105 hover:bg-emerald-100 cursor-default">
+      <Badge
+        variant="outline"
+        className="bg-emerald-50 text-emerald-700 border-emerald-200 px-3 py-1 gap-1.5 shadow-sm transition-all duration-300 hover:scale-105 hover:bg-emerald-100 cursor-default mt-2"
+      >
         <span className="relative flex h-2.5 w-2.5">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
           <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
@@ -306,7 +365,10 @@ export default function PatientDonationsPage() {
         <span className="font-bold tracking-wide">Active</span>
       </Badge>
     ) : (
-      <Badge variant="secondary" className="bg-slate-100 text-slate-500 border-slate-200 px-3 py-1 gap-1.5 shadow-sm transition-all duration-300 hover:bg-slate-200 cursor-default">
+      <Badge
+        variant="secondary"
+        className="bg-slate-100 text-slate-500 border-slate-200 px-3 py-1 gap-1.5 shadow-sm transition-all duration-300 hover:bg-slate-200 cursor-default mt-2"
+      >
         <XCircle className="w-3.5 h-3.5" />
         <span className="font-medium">Closed</span>
       </Badge>
@@ -316,12 +378,14 @@ export default function PatientDonationsPage() {
   return (
     <div className="min-h-screen bg-slate-50/50 pb-20 animate-in fade-in duration-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-
         {/* Tab Switcher */}
         <div className="w-full animate-fade-in-up animation-delay-200">
           <div className="relative w-full max-w-md mx-auto">
             {/* Background with animated gradient */}
-            <div className="absolute inset-0 rounded-2xl opacity-30 animate-pulse-slow" style={{ backgroundColor: "#119abf" }}></div>
+            <div
+              className="absolute inset-0 rounded-2xl opacity-30 animate-pulse-slow"
+              style={{ backgroundColor: "#119abf" }}
+            ></div>
 
             {/* Main container */}
             <div className="relative grid grid-cols-2 bg-white/80 backdrop-blur-md p-1.5 rounded-2xl border border-white/20 shadow-xl">
@@ -334,7 +398,7 @@ export default function PatientDonationsPage() {
                 }`}
                 style={{
                   width: "calc(50% - 6px)",
-                  backgroundColor: "#119abf"
+                  backgroundColor: "#119abf",
                 }}
               >
                 {/* Animated shine effect */}
@@ -353,7 +417,11 @@ export default function PatientDonationsPage() {
                       ? "text-white transform scale-105"
                       : "text-slate-600 hover:text-slate-800"
                   }`}
-                  style={activeTab !== tab.key ? { transform: "scale(1.02)" } : undefined}
+                  style={
+                    activeTab !== tab.key
+                      ? { transform: "scale(1.02)" }
+                      : undefined
+                  }
                   onMouseEnter={(e) => {
                     if (activeTab !== tab.key) {
                       e.currentTarget.style.transform = "scale(1.02)";
@@ -366,19 +434,30 @@ export default function PatientDonationsPage() {
                   }}
                 >
                   <div className="flex items-center justify-center gap-2">
-                    <div className={`p-1.5 rounded-lg transition-all duration-300 ${
-                      activeTab === tab.key
-                        ? "bg-white/20 text-white shadow-lg"
-                        : "text-slate-700"
-                    }`} style={activeTab !== tab.key ? { backgroundColor: "var(--color-primary-hover)" } : undefined}>
+                    <div
+                      className={`p-1.5 rounded-lg transition-all duration-300 ${
+                        activeTab === tab.key
+                          ? "bg-white/20 text-white shadow-lg"
+                          : "text-slate-700"
+                      }`}
+                      style={
+                        activeTab !== tab.key
+                          ? { backgroundColor: "var(--color-primary-hover)" }
+                          : undefined
+                      }
+                    >
                       {tab.icon}
                     </div>
                     <span className="relative">
                       {tab.label}
                       {/* Hover underline effect */}
-                      <div className={`absolute -bottom-1 left-0 h-0.5 bg-white/60 transition-all duration-300 ${
-                        activeTab === tab.key ? "w-full" : "w-0 group-hover:w-full"
-                      }`}></div>
+                      <div
+                        className={`absolute -bottom-1 left-0 h-0.5 bg-white/60 transition-all duration-300 ${
+                          activeTab === tab.key
+                            ? "w-full"
+                            : "w-0 group-hover:w-full"
+                        }`}
+                      ></div>
                     </span>
                   </div>
 
@@ -394,7 +473,10 @@ export default function PatientDonationsPage() {
             </div>
 
             {/* Ambient glow effect */}
-            <div className="absolute -inset-2 rounded-3xl blur-xl opacity-20 transition-all duration-500 pointer-events-none" style={{ backgroundColor: "#119abf" }}></div>
+            <div
+              className="absolute -inset-2 rounded-3xl blur-xl opacity-20 transition-all duration-500 pointer-events-none"
+              style={{ backgroundColor: "#119abf" }}
+            ></div>
           </div>
         </div>
 
@@ -406,16 +488,15 @@ export default function PatientDonationsPage() {
                 <HeartHandshake className="h-7 w-7 text-[#119abf] group-hover:text-blue-600 transition-colors" />
               </div>
               <PageTitle>
-                {activeTab === "my-donations" ? "My Donation Offers" : "Expert View - Donation Offers"}
+                {activeTab === "my-donations"
+                  ? "My Donation Offers"
+                  : "Expert View - Donation Offers"}
               </PageTitle>
-
-
             </div>
             <p className="text-slate-500 mt-1">
               {activeTab === "my-donations"
                 ? "Your generosity saves lives. Manage your contributions here."
-                : "View and assist other patients with their donation offers."
-              }
+                : "View and assist other patients with their donation offers."}
             </p>
           </div>
 
@@ -457,7 +538,10 @@ export default function PatientDonationsPage() {
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-64 bg-white rounded-2xl shadow-sm animate-pulse border border-slate-200" />
+                <div
+                  key={i}
+                  className="h-64 bg-white rounded-2xl shadow-sm animate-pulse border border-slate-200"
+                />
               ))}
             </div>
           ) : offers.length === 0 ? (
@@ -470,14 +554,21 @@ export default function PatientDonationsPage() {
                 </div>
               </div>
               <h3 className="text-2xl font-bold text-slate-900 mb-2">
-                {activeTab === "my-donations" ? "No donations yet" : "No donation offers available"}
+                {activeTab === "my-donations"
+                  ? "No donations yet"
+                  : "No donation offers available"}
               </h3>
               <p className="text-slate-500 max-w-md text-center mb-8 text-lg leading-relaxed">
-                {activeTab === "my-donations"
-                  ? <>You haven&apos;t listed any medicines. <br/>
-                    <span className="text-[#119abf] font-medium">Be the hero someone needs today.</span></>
-                  : "There are no donation offers that need expert assistance at the moment."
-                }
+                {activeTab === "my-donations" ? (
+                  <>
+                    You haven&apos;t listed any medicines. <br />
+                    <span className="text-[#119abf] font-medium">
+                      Be the hero someone needs today.
+                    </span>
+                  </>
+                ) : (
+                  "There are no donation offers that need expert assistance at the moment."
+                )}
               </p>
               {activeTab === "my-donations" && (
                 <Button
@@ -499,9 +590,11 @@ export default function PatientDonationsPage() {
                     <div className="p-1.5 bg-indigo-50 rounded-lg">
                       <Filter className="h-4 w-4 text-indigo-600" />
                     </div>
-                    <span className="text-sm font-bold text-slate-700 uppercase tracking-wide">Filter Status</span>
+                    <span className="text-sm font-bold text-slate-700 uppercase tracking-wide">
+                      Filter Status
+                    </span>
                   </div>
-                  
+
                   <div className="flex p-1.5 bg-slate-100/80 rounded-xl w-full sm:w-auto relative">
                     {(["ALL", "OPEN", "CLOSED"] as const).map((status) => (
                       <button
@@ -509,16 +602,21 @@ export default function PatientDonationsPage() {
                         onClick={() => setStatusFilter(status)}
                         className={`
                           flex-1 sm:flex-none relative px-6 py-2.5 text-sm font-bold rounded-lg transition-all duration-300 ease-out
-                          ${statusFilter === status 
-                            ? "bg-white text-slate-900 shadow-md scale-100" 
-                            : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 scale-95"
+                          ${
+                            statusFilter === status
+                              ? "bg-white text-slate-900 shadow-md scale-100"
+                              : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 scale-95"
                           }
                         `}
                       >
                         {status.charAt(0) + status.slice(1).toLowerCase()}
-                        <span className={`ml-2 text-[10px] py-0.5 px-2 rounded-full transition-colors duration-300 ${
-                          statusFilter === status ? "bg-[#119abf] text-white" : "bg-slate-200 text-slate-600"
-                        }`}>
+                        <span
+                          className={`ml-2 text-[10px] py-0.5 px-2 rounded-full transition-colors duration-300 ${
+                            statusFilter === status
+                              ? "bg-[#119abf] text-white"
+                              : "bg-slate-200 text-slate-600"
+                          }`}
+                        >
                           {statusCounts[status]}
                         </span>
                       </button>
@@ -530,43 +628,50 @@ export default function PatientDonationsPage() {
               {/* STAGGERED GRID ANIMATION */}
               {filteredOffers.length === 0 ? (
                 <div className="text-center py-20 bg-slate-50/50 rounded-3xl border border-dashed border-slate-200 text-slate-500 animate-in fade-in zoom-in-95 duration-300">
-                  <p className="font-medium text-lg">No {statusFilter.toLowerCase()} offers found.</p>
+                  <p className="font-medium text-lg">
+                    No {statusFilter.toLowerCase()} offers found.
+                  </p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredOffers.map((offer, index) => (
-                    <div 
+                    <div
                       key={offer.id}
                       className="animate-in slide-in-from-bottom-8 fade-in duration-500 fill-mode-backwards"
                       style={{ animationDelay: `${index * 100}ms` }} // ✨ STAGGERED DELAY
                     >
-                      <Card 
+                      <Card
                         className={`group h-full flex flex-col overflow-hidden border-t-4 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 ${
-                          offer.status === 'OPEN' ? 'border-t-emerald-500' : 'border-t-slate-400'
+                          offer.status === "OPEN"
+                            ? "border-t-emerald-500"
+                            : "border-t-slate-400"
                         }`}
                       >
                         <CardHeader className="pb-3 space-y-3 bg-white relative">
-                          <div className="flex justify-between items-start">
-                            <div className="space-y-1">
-                              <CardTitle className="text-xl font-bold text-slate-900 line-clamp-1 group-hover:text-[#119abf] transition-colors duration-300">
-                                {offer.medicine.name}
-                              </CardTitle>
-                              {offer.medicine.genericName && (
-                                <div className="flex items-center gap-1.5">
-                                  <Sparkles className="w-3 h-3 text-purple-400" />
-                                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wider line-clamp-1">
-                                    {offer.medicine.genericName}
-                                  </p>
-                                </div>
-                              )}
-                              {activeTab === "expert-view" && offer.patient && (
-                                <div className="flex items-center gap-1.5">
-                                  <User className="w-3 h-3 text-blue-400" />
-                                  <p className="text-xs font-medium text-slate-600">
-                                    Donor: {offer.patient.name}
-                                  </p>
-                                </div>
-                              )}
+                          <div>
+                            <div className="flex justify-between items-start">
+                              <div className="space-y-1">
+                                <CardTitle className="text-xl font-bold text-slate-900 line-clamp-1 group-hover:text-[#119abf] transition-colors duration-300">
+                                  {offer.medicine.name}
+                                </CardTitle>
+                                {offer.medicine.genericName && (
+                                  <div className="flex items-center gap-1.5">
+                                    <Sparkles className="w-3 h-3 text-purple-400" />
+                                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider line-clamp-1">
+                                      {offer.medicine.genericName}
+                                    </p>
+                                  </div>
+                                )}
+                                {activeTab === "expert-view" &&
+                                  offer.patient && (
+                                    <div className="flex items-center gap-1.5">
+                                      <User className="w-3 h-3 text-blue-400" />
+                                      <p className="text-xs font-medium text-slate-600">
+                                        Donor: {offer.patient.name}
+                                      </p>
+                                    </div>
+                                  )}
+                              </div>
                             </div>
                             {getStatusBadge(offer.status)}
                           </div>
@@ -576,14 +681,16 @@ export default function PatientDonationsPage() {
                           <div className="grid gap-3 text-slate-600">
                             <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all duration-200">
                               <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
-                                 <MapPin className="h-4 w-4" />
+                                <MapPin className="h-4 w-4" />
                               </div>
-                              <span className="font-semibold text-slate-700">{offer.city}</span>
+                              <span className="font-semibold text-slate-700">
+                                {offer.city}
+                              </span>
                             </div>
-                            
+
                             <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all duration-200">
                               <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 shrink-0">
-                                 <Calendar className="h-4 w-4" />
+                                <Calendar className="h-4 w-4" />
                               </div>
                               <span>Posted {formatDate(offer.createdAt)}</span>
                             </div>
@@ -594,7 +701,8 @@ export default function PatientDonationsPage() {
                                   <Pill className="h-4 w-4" />
                                 </div>
                                 <span className="font-bold bg-white px-2 py-0.5 rounded border border-slate-100 text-slate-800 shadow-sm">
-                                  {offer.medicine.strength} {offer.medicine.form}
+                                  {offer.medicine.strength}{" "}
+                                  {offer.medicine.form}
                                 </span>
                               </div>
                             )}
@@ -603,7 +711,9 @@ export default function PatientDonationsPage() {
                           {offer.notes && (
                             <div className="bg-amber-50 p-3 rounded-xl text-xs text-slate-700 border border-amber-100/60 mt-3 relative">
                               <div className="absolute -left-1 top-3 w-1 h-6 bg-amber-300 rounded-r-full"></div>
-                              <span className="font-bold text-amber-800 block mb-1">Note:</span> 
+                              <span className="font-bold text-amber-800 block mb-1">
+                                Note:
+                              </span>
                               &quot;{offer.notes}&quot;
                             </div>
                           )}
@@ -616,7 +726,10 @@ export default function PatientDonationsPage() {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleEditOffer(offer)}
-                                disabled={offer.status !== "OPEN" || togglingOfferId === offer.id}
+                                disabled={
+                                  offer.status !== "OPEN" ||
+                                  togglingOfferId === offer.id
+                                }
                                 className="flex-1 border-slate-200 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 active:scale-95 rounded-xl font-medium"
                               >
                                 <Edit className="h-3.5 w-3.5 mr-2" />
@@ -681,120 +794,130 @@ export default function PatientDonationsPage() {
 
       {/* --- Create/Edit Dialog --- */}
       {activeTab === "my-donations" && (
-        <Dialog open={isFormDialogOpen} onOpenChange={(open) => {
-          setIsFormDialogOpen(open);
-          if (!open) resetForm();
-        }}>
-        <DialogContent 
-          className="sm:max-w-[550px] p-0 gap-0 bg-white border-none shadow-2xl rounded-3xl"
-          onPointerDownOutside={(e) => {
-            const target = e.target as HTMLElement;
-            if (target?.closest("[data-city-dropdown]")) e.preventDefault();
+        <Dialog
+          open={isFormDialogOpen}
+          onOpenChange={(open) => {
+            setIsFormDialogOpen(open);
+            if (!open) resetForm();
           }}
         >
-          <div className="bg-gradient-to-r from-[#119abf] to-blue-600 p-8 text-white relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl"></div>
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-10 -mb-10 blur-xl"></div>
-            
-            <DialogHeader className="relative z-10">
-            <DialogTitle className="text-2xl font-extrabold flex items-center gap-3 text-white">
-                 <div className="p-2.5 bg-white/20 rounded-xl backdrop-blur-md shadow-lg border border-white/10">
-                    {formMode === "edit" ? <Edit className="h-6 w-6" /> : <Plus className="h-6 w-6" />}
-                 </div>
-                 {formMode === "edit" ? "Update Offer" : "Donate Medicine"}
-              </DialogTitle>
-              <DialogDescription className="text-blue-100 mt-2 font-medium">
-                {formMode === "edit" 
-                  ? "Modify the details of your donation."
-                  : "Help someone in need by sharing your medicine."
-                }
-              </DialogDescription>
-            </DialogHeader>
-          </div>
+          <DialogContent
+            className="sm:max-w-[550px] p-0 gap-0 bg-white border-none shadow-2xl rounded-3xl"
+            onPointerDownOutside={(e) => {
+              const target = e.target as HTMLElement;
+              if (target?.closest("[data-city-dropdown]")) e.preventDefault();
+            }}
+          >
+            <div className="bg-gradient-to-r from-[#119abf] to-blue-600 p-8 text-white relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl"></div>
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-10 -mb-10 blur-xl"></div>
 
-          <div className="p-8 space-y-7 bg-slate-50/50">
-            <div className="space-y-3">
-              <Label className="text-sm font-bold text-slate-800 flex items-center gap-2 uppercase tracking-wide">
-                 <Pill className="h-4 w-4 text-[#119abf]" />
-                 Medicine Details
-              </Label>
-              {medicines.length === 0 ? (
-                <div className="p-4 border border-dashed border-slate-300 rounded-xl bg-white text-slate-500 text-sm flex items-center justify-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin text-[#119abf]" /> Loading database...
-                </div>
-              ) : (
-                <div className="relative shadow-sm">
-                  <MedicineAutocomplete
-                    medicines={medicines}
-                    value={medicineSearchTerm}
-                    onChange={setMedicineSearchTerm}
-                    onSelect={(medicine) => {
-                      setSelectedMedicine(medicine);
-                      setMedicineSearchTerm(medicine?.name ?? "");
-                    }}
-                    placeholder="Type to find medicine..."
-                    className="w-full"
+              <DialogHeader className="relative z-10">
+                <DialogTitle className="text-2xl font-extrabold flex items-center gap-3 text-white">
+                  <div className="p-2.5 bg-white/20 rounded-xl backdrop-blur-md shadow-lg border border-white/10">
+                    {formMode === "edit" ? (
+                      <Edit className="h-6 w-6" />
+                    ) : (
+                      <Plus className="h-6 w-6" />
+                    )}
+                  </div>
+                  {formMode === "edit" ? "Update Offer" : "Donate Medicine"}
+                </DialogTitle>
+                <DialogDescription className="text-blue-100 mt-2 font-medium">
+                  {formMode === "edit"
+                    ? "Modify the details of your donation."
+                    : "Help someone in need by sharing your medicine."}
+                </DialogDescription>
+              </DialogHeader>
+            </div>
+
+            <div className="p-8 space-y-7 bg-slate-50/50">
+              <div className="space-y-3">
+                <Label className="text-sm font-bold text-slate-800 flex items-center gap-2 uppercase tracking-wide">
+                  <Pill className="h-4 w-4 text-[#119abf]" />
+                  Medicine Details
+                </Label>
+                {medicines.length === 0 ? (
+                  <div className="p-4 border border-dashed border-slate-300 rounded-xl bg-white text-slate-500 text-sm flex items-center justify-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin text-[#119abf]" />{" "}
+                    Loading database...
+                  </div>
+                ) : (
+                  <div className="relative shadow-sm">
+                    <MedicineAutocomplete
+                      medicines={medicines}
+                      value={medicineSearchTerm}
+                      onChange={setMedicineSearchTerm}
+                      onSelect={(medicine) => {
+                        setSelectedMedicine(medicine);
+                        setMedicineSearchTerm(medicine?.name ?? "");
+                      }}
+                      placeholder="Type to find medicine..."
+                      className="w-full"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-3">
+                <Label className="text-sm font-bold text-slate-800 flex items-center gap-2 uppercase tracking-wide">
+                  <MapPin className="h-4 w-4 text-[#119abf]" />
+                  Pickup City
+                </Label>
+                {LEBANON_CITIES.length === 0 ? (
+                  <div className="p-4 border border-dashed border-slate-300 rounded-xl bg-white text-slate-500 text-sm">
+                    Loading cities...
+                  </div>
+                ) : (
+                  <CityAutocomplete
+                    cities={LEBANON_CITIES}
+                    value={city}
+                    onChange={setCity}
+                    placeholder="Select a city..."
+                    className="w-full shadow-sm"
                   />
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
-            <div className="space-y-3">
-              <Label className="text-sm font-bold text-slate-800 flex items-center gap-2 uppercase tracking-wide">
-                 <MapPin className="h-4 w-4 text-[#119abf]" />
-                 Pickup City
-              </Label>
-              {LEBANON_CITIES.length === 0 ? (
-                <div className="p-4 border border-dashed border-slate-300 rounded-xl bg-white text-slate-500 text-sm">
-                  Loading cities...
-                </div>
-              ) : (
-                <CityAutocomplete
-                  cities={LEBANON_CITIES}
-                  value={city}
-                  onChange={setCity}
-                  placeholder="Select a city..."
-                  className="w-full shadow-sm"
-                />
-              )}
+            <div className="bg-white p-6 flex flex-row-reverse gap-3 border-t border-slate-100">
+              <Button
+                onClick={handleDialogSubmit}
+                disabled={formLoading}
+                className="bg-[#119abf] hover:bg-[#0e8cae] text-white shadow-lg shadow-blue-200 transition-all hover:scale-105 active:scale-95 min-w-[140px] rounded-xl h-11 font-bold tracking-wide"
+              >
+                {formLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : formMode === "edit" ? (
+                  "Save Changes"
+                ) : (
+                  "Create Offer"
+                )}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsFormDialogOpen(false);
+                  resetForm();
+                }}
+                disabled={formLoading}
+                className="bg-white hover:bg-slate-50 text-slate-600 border-slate-200 rounded-xl h-11 px-6 font-medium hover:text-slate-900"
+              >
+                Cancel
+              </Button>
             </div>
-          </div>
-
-          <div className="bg-white p-6 flex flex-row-reverse gap-3 border-t border-slate-100">
-            <Button 
-              onClick={handleDialogSubmit} 
-              disabled={formLoading} 
-              className="bg-[#119abf] hover:bg-[#0e8cae] text-white shadow-lg shadow-blue-200 transition-all hover:scale-105 active:scale-95 min-w-[140px] rounded-xl h-11 font-bold tracking-wide"
-            >
-              {formLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              ) : formMode === "edit" ? (
-                "Save Changes"
-              ) : (
-                "Create Offer"
-              )}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setIsFormDialogOpen(false);
-                resetForm();
-              }}
-              disabled={formLoading}
-              className="bg-white hover:bg-slate-50 text-slate-600 border-slate-200 rounded-xl h-11 px-6 font-medium hover:text-slate-900"
-            >
-              Cancel
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
       )}
 
       {/* Assist Donor Dialog */}
-      <Dialog open={isAssistDialogOpen} onOpenChange={(open) => {
-        setIsAssistDialogOpen(open);
-        if (!open) setAssistingOffer(null);
-      }}>
+      <Dialog
+        open={isAssistDialogOpen}
+        onOpenChange={(open) => {
+          setIsAssistDialogOpen(open);
+          if (!open) setAssistingOffer(null);
+        }}
+      >
         <DialogContent
           className="sm:max-w-[500px] p-0 gap-0 overflow-visible bg-white border-none shadow-2xl rounded-3xl"
           onPointerDownOutside={(e) => {
@@ -834,7 +957,9 @@ export default function PatientDonationsPage() {
                         <User className="h-4 w-4 text-green-600" />
                       </div>
                       <div>
-                        <p className="font-semibold text-slate-900">{assistingOffer.patient?.name || "Anonymous Donor"}</p>
+                        <p className="font-semibold text-slate-900">
+                          {assistingOffer.patient?.name || "Anonymous Donor"}
+                        </p>
                         <p className="text-sm text-slate-500">Donor Name</p>
                       </div>
                     </div>
@@ -844,8 +969,12 @@ export default function PatientDonationsPage() {
                         <Pill className="h-4 w-4 text-amber-600" />
                       </div>
                       <div>
-                        <p className="font-semibold text-slate-900">{assistingOffer.medicine.name}</p>
-                        <p className="text-sm text-slate-500">Medicine Offered</p>
+                        <p className="font-semibold text-slate-900">
+                          {assistingOffer.medicine.name}
+                        </p>
+                        <p className="text-sm text-slate-500">
+                          Medicine Offered
+                        </p>
                       </div>
                     </div>
 
@@ -854,8 +983,12 @@ export default function PatientDonationsPage() {
                         <MapPin className="h-4 w-4 text-indigo-600" />
                       </div>
                       <div>
-                        <p className="font-semibold text-slate-900">{assistingOffer.city}</p>
-                        <p className="text-sm text-slate-500">Pickup Location</p>
+                        <p className="font-semibold text-slate-900">
+                          {assistingOffer.city}
+                        </p>
+                        <p className="text-sm text-slate-500">
+                          Pickup Location
+                        </p>
                       </div>
                     </div>
 
@@ -864,7 +997,11 @@ export default function PatientDonationsPage() {
                         <Calendar className="h-4 w-4 text-orange-600" />
                       </div>
                       <div>
-                        <p className="font-semibold text-slate-900">{new Date(assistingOffer.createdAt).toLocaleDateString()}</p>
+                        <p className="font-semibold text-slate-900">
+                          {new Date(
+                            assistingOffer.createdAt,
+                          ).toLocaleDateString()}
+                        </p>
                         <p className="text-sm text-slate-500">Posted Date</p>
                       </div>
                     </div>
@@ -879,7 +1016,7 @@ export default function PatientDonationsPage() {
                         const whatsappUrl = getWhatsAppUrl(
                           assistingOffer.patient?.phone || null,
                           `Donation Offer: ${assistingOffer.medicine.name}`,
-                          `Hello! I'm contacting you through Dawalocate regarding your generous donation offer for ${assistingOffer.medicine.name} in ${assistingOffer.city}. I need this medicine and would like to coordinate pickup. Can we discuss the details?`
+                          `Hello! I'm contacting you through Dawalocate regarding your generous donation offer for ${assistingOffer.medicine.name} in ${assistingOffer.city}. I need this medicine and would like to coordinate pickup. Can we discuss the details?`,
                         );
                         window.open(whatsappUrl, "_blank");
                       }}
