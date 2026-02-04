@@ -1,29 +1,35 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import * as DialogPrimitive from "@radix-ui/react-dialog"
-import { X } from "lucide-react"
+import * as React from "react";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { X } from "lucide-react";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 /* =========================
    Root Wrappers (unchanged)
 ========================= */
 
 function Dialog(props: React.ComponentProps<typeof DialogPrimitive.Root>) {
-  return <DialogPrimitive.Root {...props} />
+  return <DialogPrimitive.Root {...props} />;
 }
 
-function DialogTrigger(props: React.ComponentProps<typeof DialogPrimitive.Trigger>) {
-  return <DialogPrimitive.Trigger {...props} />
+function DialogTrigger(
+  props: React.ComponentProps<typeof DialogPrimitive.Trigger>,
+) {
+  return <DialogPrimitive.Trigger {...props} />;
 }
 
-function DialogPortal(props: React.ComponentProps<typeof DialogPrimitive.Portal>) {
-  return <DialogPrimitive.Portal {...props} />
+function DialogPortal(
+  props: React.ComponentProps<typeof DialogPrimitive.Portal>,
+) {
+  return <DialogPrimitive.Portal {...props} />;
 }
 
-function DialogClose(props: React.ComponentProps<typeof DialogPrimitive.Close>) {
-  return <DialogPrimitive.Close {...props} />
+function DialogClose(
+  props: React.ComponentProps<typeof DialogPrimitive.Close>,
+) {
+  return <DialogPrimitive.Close {...props} />;
 }
 
 /* =========================
@@ -42,11 +48,11 @@ function DialogOverlay({
         "backdrop-blur-md",
         "data-[state=open]:animate-in data-[state=open]:fade-in-0",
         "data-[state=closed]:animate-out data-[state=closed]:fade-out-0",
-        className
+        className,
       )}
       {...props}
     />
-  )
+  );
 }
 
 /* =========================
@@ -66,48 +72,41 @@ function DialogContent({
         className={cn(
           "fixed left-1/2 top-1/2 z-50",
           "w-full max-w-xl -translate-x-1/2 -translate-y-1/2",
-          "overflow-hidden rounded-2xl",
+          "overflow-auto rounded-2xl",
           "bg-white dark:bg-slate-900",
           "shadow-[0_25px_80px_-20px_rgba(0,0,0,0.35)]",
           "border border-slate-200/60 dark:border-slate-800",
           "data-[state=open]:animate-in data-[state=open]:zoom-in-95 data-[state=open]:fade-in-0",
           "data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=closed]:fade-out-0",
-          className
+          className,
         )}
         {...props}
       >
         {children}
       </DialogPrimitive.Content>
     </DialogPortal>
-  )
+  );
 }
-
 
 /* =========================
    Header / Footer
 ========================= */
 
-function DialogHeader({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
         "px-6 pt-6 pb-3",
         "border-b border-slate-100 dark:border-slate-800",
         "space-y-1",
-        className
+        className,
       )}
       {...props}
     />
-  )
+  );
 }
 
-function DialogFooter({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+function DialogFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
@@ -115,11 +114,11 @@ function DialogFooter({
         "border-t border-slate-100 dark:border-slate-800",
         "bg-slate-50/60 dark:bg-slate-900/60",
         "flex flex-col-reverse sm:flex-row sm:justify-end sm:gap-2",
-        className
+        className,
       )}
       {...props}
     />
-  )
+  );
 }
 
 /* =========================
@@ -135,11 +134,11 @@ function DialogTitle({
       className={cn(
         "text-lg font-bold tracking-tight",
         "text-slate-900 dark:text-slate-50",
-        className
+        className,
       )}
       {...props}
     />
-  )
+  );
 }
 
 function DialogDescription({
@@ -150,11 +149,11 @@ function DialogDescription({
     <DialogPrimitive.Description
       className={cn(
         "text-sm text-slate-500 dark:text-slate-400 leading-relaxed",
-        className
+        className,
       )}
       {...props}
     />
-  )
+  );
 }
 
 /* =========================
@@ -172,4 +171,4 @@ export {
   DialogFooter,
   DialogTitle,
   DialogDescription,
-}
+};
