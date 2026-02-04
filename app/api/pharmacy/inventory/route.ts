@@ -4,6 +4,19 @@ import { InventoryStatus } from "@/lib/generated/prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+// Threshold for low stock (units)
+const LOW_STOCK_THRESHOLD = 20;
+
+/**
+ * Calculate inventory status based on quantity
+ * @param quantity - Current quantity in stock
+ * @returns Calculated inventory status
+ */
+function calculateInventoryStatus(quantity: number): InventoryStatus {
+  if (quantity === 0) return "OUT";
+  if (quantity <= LOW_STOCK_THRESHOLD) return "LOW";
+  return "IN_STOCK";
+}
 
 /**
  * GET /api/pharmacy/inventory
@@ -124,7 +137,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Validate required fields
-    const { medicineId, quantity, status, expiresAt } = body;
+    const { medicineId, quantity, expiresAt } = body;
 
     if (!medicineId || typeof medicineId !== "number") {
       return NextResponse.json(
@@ -146,19 +159,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate status if provided
-    const validStatuses: InventoryStatus[] = ["IN_STOCK", "LOW","OUT"];
-    const inventoryStatus: InventoryStatus = status || (quantity > 0 ? "IN_STOCK" : "OUT");
-    
-    if (status && !validStatuses.includes(status)) {
+    // Validate quantity upper limit
+    if (quantity > 10000) {
       return NextResponse.json(
         { 
           success: false,
-          error: `Invalid status. Must be one of: ${validStatuses.join(", ")}` 
+          error: "Quantity exceeds maximum allowed limit (10,000 units)." 
         },
         { status: 400 }
       );
     }
+
+    // Calculate status automatically based on quantity
+    const inventoryStatus: InventoryStatus = calculateInventoryStatus(quantity);
 
     // Validate expiresAt if provided
     let expiryDate: Date | undefined;
@@ -330,7 +343,7 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
 
     // Validate required fields
-    const { inventoryId, quantity, status, expiresAt } = body;
+    const { inventoryId, quantity, expiresAt } = body;
 
     if (!inventoryId || typeof inventoryId !== "number") {
       return NextResponse.json(
@@ -343,11 +356,11 @@ export async function PUT(request: NextRequest) {
     }
 
     // At least one field must be provided for update
-    if (quantity === undefined && !status && expiresAt === undefined) {
+    if (quantity === undefined && expiresAt === undefined) {
       return NextResponse.json(
         { 
           success: false,
-          error: "At least one field (quantity, status, or expiresAt) must be provided for update." 
+          error: "At least one field (quantity or expiresAt) must be provided for update." 
         },
         { status: 400 }
       );
@@ -364,13 +377,12 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Validate status if provided
-    const validStatuses: InventoryStatus[] = ["IN_STOCK", "LOW", "OUT"];
-    if (status && !validStatuses.includes(status)) {
+    // Validate quantity upper limit
+    if (quantity !== undefined && quantity > 10000) {
       return NextResponse.json(
         { 
           success: false,
-          error: `Invalid status. Must be one of: ${validStatuses.join(", ")}` 
+          error: "Quantity exceeds maximum allowed limit (10,000 units)." 
         },
         { status: 400 }
       );
@@ -455,23 +467,12 @@ export async function PUT(request: NextRequest) {
 
     if (quantity !== undefined) {
       updateData.quantity = quantity;
-    }
-
-    if (status) {
-      updateData.status = status;
+      // Always recalculate status when quantity changes
+      updateData.status = calculateInventoryStatus(quantity);
     }
 
     if (expiresAt !== undefined) {
       updateData.expiresAt = expiryDate;
-    }
-
-    // If quantity is updated and status is not explicitly provided, auto-adjust status
-    if (quantity !== undefined && !status) {
-      if (quantity === 0) {
-        updateData.status = "OUT";
-      } else if (quantity > 0 && existingInventory.status === "OUT") {
-        updateData.status = "IN_STOCK";
-      }
     }
 
     // Update pharmacy medicine inventory entry
