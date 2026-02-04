@@ -496,20 +496,58 @@ function PharmacyInventoryContent() {
                         Expiry Date
                       </Label>
                       <div className="relative group">
-                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none">
-                          <Calendar className="h-4 w-4" />
-                        </div>
-                        <input
-                          type="datetime-local"
-                          value={formData.expiresAt}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              expiresAt: e.target.value,
-                            })
-                          }
-                          className="w-full pl-10 h-12 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium shadow-sm"
-                        />
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button
+                              type="button"
+                              className={cn(
+                                "w-full h-12 px-4 rounded-xl border bg-slate-50 border-slate-200 flex items-center justify-between text-left transition-all font-medium text-sm hover:bg-white hover:border-indigo-300 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500",
+                                !formData.expiresAt && "text-slate-400",
+                              )}
+                            >
+                              <div className="flex items-center gap-3">
+                                <Calendar className="h-4 w-4 text-slate-400" />
+                                <span>
+                                  {formData.expiresAt
+                                    ? format(
+                                        new Date(formData.expiresAt),
+                                        "PPP",
+                                      )
+                                    : "Select date"}
+                                </span>
+                              </div>
+                              <Calendar className="h-4 w-4 text-slate-400" />
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            className="w-auto p-4 bg-white rounded-2xl shadow-xl border border-slate-100"
+                            align="start"
+                          >
+                            <div className="block">
+                              <CalendarComponent
+                                mode="single"
+                                selected={
+                                  formData.expiresAt
+                                    ? new Date(formData.expiresAt)
+                                    : undefined
+                                }
+                                onSelect={(date) => {
+                                  if (!date) return;
+
+                                  // Set midday to avoid timezone rollbacks
+                                  const adjustedDate = new Date(date);
+                                  adjustedDate.setHours(12, 0, 0, 0);
+
+                                  setFormData({
+                                    ...formData,
+                                    expiresAt: adjustedDate.toISOString(),
+                                  });
+                                }}
+                                initialFocus
+                              />
+                            </div>
+                          </PopoverContent>
+                        </Popover>
                       </div>
                     </div>
 
