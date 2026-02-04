@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Charity {
@@ -41,7 +41,7 @@ export function CharityAutocomplete({
   const filteredCharities = charities.filter(
     (charity) =>
       charity.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (charity.city?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false)
+      (charity.city?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false),
   );
 
   useEffect(() => {
@@ -75,8 +75,12 @@ export function CharityAutocomplete({
   };
 
   return (
-    <div ref={containerRef} className={cn("relative", className)}>
+    <div ref={containerRef} className={cn("relative group", className)}>
       <div className="relative">
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#119abf] transition-colors pointer-events-none">
+          <Search className="w-4 h-4" />
+        </div>
+
         <input
           ref={inputRef}
           type="text"
@@ -84,39 +88,50 @@ export function CharityAutocomplete({
           onChange={handleInputChange}
           onFocus={() => setIsOpen(true)}
           placeholder={placeholder}
-          className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className={cn(
+            "w-full pl-10 pr-10 h-12 rounded-xl border border-slate-200 bg-white shadow-sm text-sm font-medium text-slate-700 placeholder:text-slate-400 transition-all",
+            "focus:outline-none focus:ring-2 focus:ring-[#119abf]/20 focus:border-[#119abf]",
+            "hover:border-slate-300",
+          )}
         />
+
         <ChevronDown
           className={cn(
-            "absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none transition-transform",
-            isOpen && "rotate-180"
+            "absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 transition-transform duration-200 cursor-pointer hover:text-slate-600",
+            isOpen && "rotate-180 text-[#119abf]",
           )}
+          onClick={() => {
+            setIsOpen(!isOpen);
+            if (!isOpen) inputRef.current?.focus();
+          }}
         />
       </div>
 
       {isOpen && filteredCharities.length > 0 && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-50 max-h-48 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-xl shadow-2xl z-[100] max-h-80 overflow-y-auto w-full animate-in fade-in zoom-in-95 duration-100">
           {filteredCharities.map((charity) => (
             <button
               key={charity.id}
               onClick={() => handleSelect(charity)}
-              className="w-full text-left px-3 py-2 hover:bg-blue-50 transition-colors flex items-center justify-between group"
+              className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-slate-50 transition-colors flex items-start justify-between group"
             >
-              <div className="flex-1">
-                <div className="font-medium text-sm">{charity.name}</div>
+              <div className="flex-1 min-w-0 pr-2">
+                <div className="font-medium text-sm text-slate-900 truncate group-hover:text-[#119abf] transition-colors">
+                  {charity.name}
+                </div>
                 {charity.city && (
-                  <div className="text-xs text-gray-500">{charity.city}</div>
+                  <div className="text-xs text-slate-500">{charity.city}</div>
                 )}
               </div>
-              <Check className="w-4 h-4 text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2" />
+              <Check className="w-4 h-4 text-[#119abf] mt-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2" />
             </button>
           ))}
         </div>
       )}
 
       {isOpen && searchTerm && filteredCharities.length === 0 && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-10 p-3 text-sm text-gray-500">
-          No charities found for &quot;{searchTerm}&quot;
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-xl shadow-2xl z-[100] p-4 text-sm text-slate-500">
+          No charities found for "{searchTerm}"
         </div>
       )}
     </div>

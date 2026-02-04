@@ -1,4 +1,4 @@
-import { Package, Building2, Search, RotateCcw, Filter } from "lucide-react";
+import { Package, Search, RotateCcw, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MedicineAutocomplete } from "@/components/ui/MedicineAutocomplete";
 import { CharityAutocomplete } from "@/components/ui/CharityAutocomplete";
@@ -78,7 +78,6 @@ export default function CampaignFilters({
 
           {/* Charity Name Search */}
           <div className="relative charity-autocomplete-wrapper">
-            <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
             <CharityAutocomplete
               charities={charities}
               value={searchCharity}
