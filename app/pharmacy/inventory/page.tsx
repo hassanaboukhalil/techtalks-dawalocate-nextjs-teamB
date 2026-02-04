@@ -162,6 +162,13 @@ function PharmacyInventoryContent() {
     fetchInventory();
   }, []);
 
+  // Ensure Add dialog expiry field starts empty when opening
+  useEffect(() => {
+    if (open) {
+      setFormData((prev) => ({ ...prev, expiresAt: "" }));
+    }
+  }, [open]);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
