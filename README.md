@@ -8,7 +8,6 @@
 ![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)
 ![Next.js](https://img.shields.io/badge/Next.js-15-black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
-
 <!-- ![License](https://img.shields.io/badge/license-MIT-blue) -->
 
 DawaLocate is a full-stack web application that helps patients in Lebanon locate essential medicines at nearby pharmacies while connecting donors, pharmacies, and charities to address medication shortages and accessibility challenges.
