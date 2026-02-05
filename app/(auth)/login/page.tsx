@@ -100,7 +100,8 @@ export default function LoginPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, password: e.target.value })
                   }
-                  className="h-11 rounded-lg border-gray-300 focus:border-primary focus:ring-primary pr-10 text-gray-900"
+                  // We use Tailwind arbitrary variants to hide the browser's native icons
+                   className="h-11 rounded-lg border-gray-300 focus:border-primary focus:ring-primary pr-10 text-gray-900 [&::-ms-reveal]:hidden [&::-ms-clear]:hidden [&::-webkit-password-toggle-button]:hidden [&::-webkit-credentials-auto-fill-button]:hidden [&::-webkit-contacts-auto-fill-button]:hidden [&::-webkit-credentials-auto-fill-button]:none  "
                   placeholder="••••••••"
                   required
                 />
