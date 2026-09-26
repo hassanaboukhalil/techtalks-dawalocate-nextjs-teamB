@@ -5,10 +5,11 @@ import { StaticImageData } from "next/image";
 // import fatima_img from "../public/images/landing-page/our-team-1/fatima-hodroj.jpeg";
 // import hadi_img from "../public/images/landing-page/our-team-1/hadi-orabi.jpeg";
 import hassan_img from "../public/images/landing-page/our-team/hassan-abou-khalil.png";
-import zainab_img from "../public/images/landing-page/our-team/zainab-atris.png";
+//import zainab_img from "../public/images/landing-page/our-team/zainab-atris.png";
 import mhmd_img from "../public/images/landing-page/our-team/mhmd-saleh.png";
 import fatima_img from "../public/images/landing-page/our-team/fatima-hodroj.png";
 import hadi_img from "../public/images/landing-page/our-team/hadi-orabi.png";
+import zainab_img from "../public/images/landing-page/our-team/zainab.png";
 
 export interface TeamMember {
   name: string;
